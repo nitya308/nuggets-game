@@ -66,7 +66,6 @@ Any errors are logged to stderr with an informative message (such as if argument
 ### Pseudo code for logic/algorithmic flow
 
 #### main
-
 Calling parseArgs with the arguments provided. Initializes the message loop
 
 	call parseArgs
@@ -82,7 +81,6 @@ Calling parseArgs with the arguments provided. Initializes the message loop
 			exit
 
 #### parseArgs
-
 parses arguments of hostname and port and stores them in the variables given by main. Sends a join as player or spectator message based on 3rd argument. If any errors are found in the arguments, prints an error to stderr and exits 0.
 
 	Parse and verify hostname and port from arguments
@@ -140,9 +138,8 @@ Any errors are logged to our log file which we keep as stderr
 * parseArgs: verifies all arguments and exits non-zero if error is found
 * initializeGame: sets up the game
 * spectatorJoin: allows a new spectator to join
-* playerJoin:
-* handleMessages
-* playerQuit
+* playerJoin: allows a new player to join the game
+* handleMessages: carries out functions based on received message type
 
 
 ### Pseudo code for logic/algorithmic flow
@@ -171,11 +168,11 @@ verifies all arguments. If any errors are found in the arguments, prints an erro
 Do the initial setup for the game
 
 	pass seed if it exists or call srand(getpid())
-  call buildGrid to store map in a 2D array of characters
-  drop random Gold piles in random rooms
-  initialize the 'message' module
-  initialize the network and announce the port number
-  call message_loop(), to await clients
+	call buildGrid to store map in a 2D array of characters
+	drop random Gold piles in random rooms
+	initialize the 'message' module
+	initialize the network and announce the port number
+	call message_loop(), to await clients
 
 #### spectatorJoin
 Allow a new spectator to join. If an existing spectator exists, kick it out and replace it with the new one.
@@ -199,7 +196,6 @@ Allow a new player to join if number of players is less than maxPlayers. Create 
 		Send GOLD message to player with 0 gold
 		call display module to get a display string
 		Send DISPLAY message to player with display string
-
 
 #### handleMessages
 Handle all messages passed from the client to the server based on protocol in requirements spec.
@@ -228,8 +224,6 @@ Handle all messages passed from the client to the server based on protocol in re
 				send them updated GOLD message
 				send them updated DISPLAY message
 
-#### 
-
 ### Major data structures
 
 #### player
@@ -240,14 +234,14 @@ This data structure stores the following information about each player
 * current Coordinates: an integer representation of current position on grid
 * seen Before: a set of inetger coordinates on grid it has already seen
 
-#### all Players
+#### allplayers
 This will be a hashtable (from libscs50 data structures) that will store all the player in the game
 The key of the hashtable will be a string representation of the player's address.
 The item will be a player data type as defined above.
 
-#### Game
+#### game
 This holds the following information about the game:
-* all Players: a hashtable of all the player
+* allplayers: a hashtable of all the player
 * numGoldLeft: an integer amount of gold left in the game
 * grid: a 2D array of characters the map in the game
 * gold: a counter with keys as integer location and count as number of gold in that location
@@ -260,8 +254,8 @@ Handles all functionality to do with the grid and calculates visibility
 
 ### Functional decomposition
 
-1. grid_read : initializes the grid from file
-2. grid_isOpne: verifies whether given location is wall or not
+1. grid_read: initializes the grid from file
+2. grid_isOpen: verifies whether given location is wall or not
 3. grid_isVisible: gives set of visible locations from viewpoint
 4. grid_displayVisible: gives visible set + known set, with gold and players in visible part only
 5. grid_print: turns set of locations into formatted string 
@@ -271,22 +265,18 @@ Handles all functionality to do with the grid and calculates visibility
 ### Pseudo code for logic/algorithmic flow
 
 #### grid_read
-
 	Reads from text file
 	stores each char in a 2D array of characters
 	stores the 2D array in Game data structure
  
 #### grid_isOpen
-
 	Takes int location input
 	extracts grid from Game data structure
 	finds the location in the grid
 	returns false is this location is a wall
 	return true if this is an open space.
-
  
 #### grid_isVisible
-
 	Takes int location input
 	calulates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec
 	returns this set
@@ -307,17 +297,16 @@ Creates a set of locations and characters to display at that location to represe
 #### grid_displaySpectator
 Creates a set of locations and characters to display at that location to represent other players and gold
 
-		create an empty set of integer keys (locations) and character items
-		loop over allplayers hashtable
-			add the player's location to the set with player ID character
-		for each key in the gold counter of Game
-			add the key (location) to the set with *
-		return the set
+	create an empty set of integer keys (locations) and character items
+	loop over allplayers hashtable
+		add the player's location to the set with player ID character
+	for each key in the gold counter of Game
+		add the key (location) to the set with *
+	return the set
  
 #### grid_locationConvert
-
-A helper function which takes an integer input, grid number of columns, grid number of rows, and turns it into a 2-d coordinate on the grid through modulo division.
-
+	A helper function which takes an integer input, grid number of columns, grid number of rows
+	Turns it into a 2D coordinate on the grid through modulo division
  
 #### grid_Print
 	creates a set of visible locations by calling grid_displayVisible or grid_displaySpectator
@@ -330,7 +319,6 @@ A helper function which takes an integer input, grid number of columns, grid num
 		when the row ends
 			add a newline character to the printstring
 	return the printstring
- 
 
 ### Major data structures
 Grid structure stores:
@@ -344,11 +332,11 @@ Handles all functionality to do with a player struct and modifies the player str
 ### Functional decomposition
 
 1. player_new, which initializes a new player struct
-2. player_update_coordinate, which updates with new coordinate information
-3. player_move_regular, which calculates new coordinate based on direction of movement
-4. player_move_capital, which does the same as above except movement only stop until it is not possible anymore
-5. player_collectgold, which increases gold in player’s purse if location contains gold
-6. player_swaplocations, which swaps player locations if some player is in the newCoordinate 
+2. player_updateCoordinate, which updates with new coordinate information
+3. player_moveRegular, which calculates new coordinate based on direction of movement
+4. player_moveCapital, which does the same as above except movement only stop until it is not possible anymore
+5. player_collectGold, which increases gold in player’s purse if location contains gold
+6. player_swapLocations, which swaps player locations if some player is in the newCoordinate 
 7. player_quit, which deletes a player struct
 
 ### Pseudo code for logic/algorithmic flow
@@ -363,13 +351,13 @@ Handles all functionality to do with a player struct and modifies the player str
 	initialize seenBefore to an empty set and add currentCoordinate
 	return that player struct
 
-#### player_update_coordinate
+#### player_updateCoordinate
 
 	takes reference to a player datatype and new coordinate 
 	updates the currCoordinate for player to newCoordinate
 	update seenBefore to add new coordinate
 
-#### player_move_regular
+#### player_moveRegular
 
 	takes reference to a player datatype and the move character
 	based on character(h, j, k, l) switches between left/right/up/down/diagonal
@@ -381,7 +369,7 @@ Handles all functionality to do with a player struct and modifies the player str
 			call player_update_coordinate
 			call player_collectgold
   
-#### player_move_capital
+#### player_moveCapital
 
 	takes reference to a player datatype and the move character
 	based on character(h, j, k, l) switches between left/right/up/down/diagonal
@@ -393,7 +381,7 @@ Handles all functionality to do with a player struct and modifies the player str
 			call player_update_coordinate
 			call player_collectgold
 
-#### player_collectgold
+#### player_collectGold
 
 Takes in the new coordinates of the player and a reference to a player datatype and collects gold if gold exists
 
@@ -403,7 +391,7 @@ Takes in the new coordinates of the player and a reference to a player datatype 
 		decrement numGoldLeft in Game by number of gold in gold counter
 		set that gold counter count to 0.
 
-#### player_swaplocations
+#### player_swapLocations
 Takes in pointer to a player struct and its integer new coordinate
 
 	gets the hashtable of all player in the Game
