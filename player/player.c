@@ -15,6 +15,7 @@
 #include "../libcs50/hashtable.h"
 #include "../libcs50/mem.h"
 #include "../libcs50/set.h"
+#include "grid.h"
 
 typedef struct player {
   char pID;
@@ -24,7 +25,7 @@ typedef struct player {
   set_t* seenBefore;
 } player_t;
 
-player_t* player_new(char* name, int* numPlayers, grid_t* grid)
+player_t* player_new(char* name, grid_t* grid)
 {
   mem_assert(name, "name provided was null");
   player_t* player = mem_malloc(sizeof(player_t));
@@ -56,7 +57,6 @@ player_t* player_new(char* name, int* numPlayers, grid_t* grid)
     return NULL;
   }
   set_insert(player->seenBefore, player->currCoor, NULL);
-  *numPlayers++;
   return player;
 }
 
@@ -215,4 +215,24 @@ void player_delete(player_t* player)
   mem_free(player->name);
   set_delete(player->seenBefore, NULL);
   mem_free(player);
+}
+
+char* player_summary(hashtable_t* allPlayers)
+{
+  char* summary;
+  hashtable_iterate(allPlayers, &summary, summaryHelper);
+  return summary;
+}
+
+static void summaryHelper(void* arg, char* key, void* item)
+{
+  player_t* player = item;
+  char* addition = player->pID;
+  char num[4];
+  sprintf(num, "%5d ", player->purse);
+  strcat(addition, num);
+  strcat(addition, player->name);
+  strcat(addition, "\n");
+  char** summary = arg;
+  strcat(*summary, addition);
 }
