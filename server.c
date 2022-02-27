@@ -38,6 +38,7 @@ static void itemcount(void* arg, const char* key, void* item);
 /**************** local types ****************/
 typedef struct game {
   hashtable_t* allPlayers;
+  hashtable_t* addresses;
   int numGoldLeft;
   int numPlayers;
   grid_t* grid;
@@ -242,7 +243,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
   }
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
-    playerJoin(realName, game->allPlayers, from, game->grid, &game->numPlayers);
+    playerJoin(realName, game->allPlayers, game->addresses from, game->grid, &game->numPlayers);
   }
   else if (strncmp(message, "SPECTATE ", strlen("SPECTATE ")) == 0) {
     spectatorJoin();
@@ -315,12 +316,13 @@ handleInput(void* arg)
 }
 
 static void
-playerJoin(char* name, hashtable_t* allPlayers, addr_t* client, grid_t* grid, int* numPlayers)
+playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers)
 {
   if (*numPlayers < MaxPlayers) {
     player_t* newPlayer = player_new(name, grid);
-    *numPlayers++;
     hashtable_insert(allPlayers, message_stringAddr(client), newPlayer);
+    hashtable_insert(addresses, message_stringAddr(client), client);
+    *numPlayers++;
     message_send(client, );  // send grid message
     message_send(client, );  // send gold message
     message_send(client, );  // send display message
