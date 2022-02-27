@@ -57,17 +57,19 @@ This is a hashtable (from libscs50 data structures) that stores all the players 
 
 #### game
 This holds all the information about the game:
-struct Game {
+typedef struct game {
   hashtable_t* allPlayers;
+  hashtable_t* addresses;
   int numGoldLeft;
+  int numPlayers;
   grid_t* grid;
   counters_t* gold;
-  address_t* spectator;
-}
+  address_t* spectatorAddress;
+} game_t;
 
 ### Definition of function prototypes
 
-A function to parse the command-line arguments, initialize the game struct, initialize the message module, and (BEYOND SPEC) initialize analytics module.
+A function to parse the command-line arguments, initialize the game struct and initialize the message module.
 
 ```c
 static int parseArgs(const int argc, char* argv[]);
