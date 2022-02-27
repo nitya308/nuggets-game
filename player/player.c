@@ -17,6 +17,20 @@
 #include "../libcs50/set.h"
 #include "grid.h"
 
+// function prototypes
+player_t* player_new(char* name, grid_t* grid);
+bool player_updateCoordinate(player_t* player, int newCoor);
+bool player_moveRegular(player_t* player, char move, game_t* game);
+bool player_moveCapital(player_t* player, char move, game_t* game);
+bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
+bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
+bool player_quit(char* address, hashtable_t* allPlayers);
+void player_delete(player_t* player);
+char* player_summary(hashtable_t* allPlayers);
+
+static void swapHelper(void* arg, const char* key, void* item);
+static void summaryHelper(void* arg, char* key, void* item);
+
 typedef struct player {
   char pID;
   char* name;
