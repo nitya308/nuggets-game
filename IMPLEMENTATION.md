@@ -18,7 +18,7 @@ We avoid repeating information that is provided in the requirements spec.
 
 ## Player
 
-> Teams of 3 students should delete this section.
+> 
 
 ### Data structures
 
