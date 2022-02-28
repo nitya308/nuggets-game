@@ -17,8 +17,9 @@ typedef struct grid {
 } grid_t;
 
 
-grid_t* grid_read(FILE* file)
+grid_t* grid_read(char* filename)
 {
+  FILE* file = fopen(filename, "r");
   if(file!=NULL){
     grid_t* grid = mem_malloc(sizeof(grid_t));
       char* word = NULL;
@@ -89,7 +90,7 @@ set_t* grid_updateView(grid_t* grid, int loc,
 
 set_t* grid_displaySpectator(grid_t* grid, counters_t* playerLocations, counters_t* gold)
 {
-  
+
 }
 
 static void matchplayer(void* arg, const int key, const int count)
