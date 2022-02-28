@@ -519,6 +519,22 @@ Creates a set of locations and characters to display at that location to represe
 set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* gold)
 ```
 
+Helper function to merge two sets (taking the union of locations seen before, and adding in any newly visible locations).
+```c
+static void mergeHelper(void* arg, const char* key, void* item)
+```
+
+Helper function to insert gold symbols into set based on the locations in the gold counter.
+```c
+static void insertGold(void* arg, const char* key, void* item)
+```
+
+Helper function to insert other player symbols  into set based on the locations in the set of other players.
+```c
+ static void insertPlayers(void* arg, const char* key, void* item)
+
+```
+
 A helper function which takes an integer input, grid number of columns, grid number of rows. Returns 2D location coordinate
 ```c
 int* grid_locationConvert(grid_t*, int location);
@@ -575,7 +591,39 @@ static void grid_delete(grid_t* grid);
 		return false;
 
 #### grid_isVisible
-	Call locationConvert on the input integer
+	call locationConvert on the input integer
+	if current location is in passage 
+		for all adjacent locations (rownum +-1, col +-1)
+			if the grid character is not space
+				add the location to the set
+
+	if current location is in room spot
+	set small tolerance value 
+	set oncorner boolean to false
+
+	for angles from 0 to 360
+		for radius starting at 0
+			convert to rectangular coordinates	
+
+				if math.floor of coordinate is wall location
+					set oncorner to false
+					Add to visible set
+					Break radius loop
+					
+				else if abs value(polar coordinate - nearest coordinate) < tolerance
+					if nearest coordinate is room spot
+						Add to visible set
+						Increase radius
+					if the nearest coordinate is corner spot
+						Add to visible set
+						Break radius loop
+						set oncorner to true
+
+				if oncorner is true
+					if floor( of coordinate) is corner location
+						break radius loop (corner is treated like wall spot now)
+
+
 
 #### grid_updateView
 	If grid, gold counter, player locations set, input set not null, and int input location >=0
@@ -590,6 +638,19 @@ static void grid_delete(grid_t* grid);
 				insert gold symbol * item for the key location
 		have set item be null by default
 		set_insert the input argument set into this set
+
+#### static void insertGold
+	sscanf the string key into an integer key
+	if counters_get the key from the gold counter returns > 0
+		print a gold symbol * to the item (item in newly visible set)
+
+#### static void insertPlayers
+	if set_find the string key in the players set returns not null
+		insert its return value into the item (item in newly visible set)
+
+#### static void mergeHelper
+	if set_find the string key (from seen-before) returns null for newly-visible
+		insert the key into newly visible, with dummy char “g” item
 
 #### grid_displaySpectator
 	if grid, gold counter, player locations set all not null,
