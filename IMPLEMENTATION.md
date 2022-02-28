@@ -373,6 +373,11 @@ A function that prepares and returns a string summary of all players and the gol
 char* player_summary(hashtable_t* allPlayers);
 ```
 
+A function that returns a set of (int player locations and char player IDs)
+```c
+set_t* player_locations(hashtable_t* allPlayers)
+```
+
 ### Detailed pseudo code
 
 #### `player_new`:
@@ -458,6 +463,16 @@ char* player_summary(hashtable_t* allPlayers);
 	call set_delete on seenBefore set
 	free the player struct memory
 
+### `player_summary`:
+  create a summary string
+  iterate over hashtable and add each player's summary
+  return the summary
+
+### `player_locations(hashtable_t* allPlayers)`:
+  create a new set
+  iterate over all players hashtable
+    add each player's location and ID to set
+  return the set
 ---
 
 ## grid module
