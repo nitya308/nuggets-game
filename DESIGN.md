@@ -296,18 +296,22 @@ Handles all functionality to do with the grid and calculates visibility
 
 ### Functional decomposition
 
-1. grid_read: initializes the grid from file
+1. grid_read: initializes the grid from file name
 2. grid_isOpen: verifies whether given location is wall or not
 3. grid_isVisible: gives set of visible locations from viewpoint
-4. grid_displayVisible: gives visible set + known set, with gold and players in visible part only
+4. grid_updateView: gives visible set from new location + known set, 				with gold and players symbols in visible part only
+5. grid_displaySpectator: gives set of all locations, with gold and 				players symbols as chars
 5. grid_print: turns set of locations into formatted string 
 6. grid_locationConvert: converts integer into 2-d coordinates
+7. grid_getNumberRows: gives number of rows in grid
+8. grid_getNumberCols: gives number of cols in grid
+9. grid_delete: deletes the grid
 
 
 ### Pseudo code for logic/algorithmic flow
 
 #### grid_read
-	Reads from text file
+	Reads from file 
 	stores each char in a 2D array of characters
 	stores the 2D array in Game data structure
  
@@ -323,48 +327,61 @@ Handles all functionality to do with the grid and calculates visibility
 	calulates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec
 	returns this set
 
-#### grid_displayVisible
-Creates a set of locations and characters to display at that location to represent other players and gold
+#### grid_updateView
+Creates a set of locations and characters to display at that location to represent other players and gold. (Takes set of player locations/symbols, counter of gold locations)
 
-	takes pointer to a player structure
+	takes current location
 	create a set of everything visible by calling 	grid_isVisible
-	loop over allplayers hashtable
+	by default, set stores location key and the char item (from grid, like corner or room symbol)
+	loop over the set of players' locations
 		if player's location is in visible set
-			add the player's location to the set with player ID character
+			add the player's char symbol to the set with player ID character
 	for each key (location) in the gold counter of Game
 		if the key (location) is in visible set
-			add the key (location) to the set with *
+			add the char symbol * to the visible set
 	return the set
 
 #### grid_displaySpectator
-Creates a set of locations and characters to display at that location to represent other players and gold
+Returns whole grid as set, with symbols for players and gold stored as items. (Takes set of player locations/symbols, counter of gold locations)
 
-	create an empty set of integer keys (locations) and character items
-	loop over allplayers hashtable
-		add the player's location to the set with player ID character
+	create a set of char items (from grid) with all grid locations as keys
+	loop over players set
+		insert the player's symbol into the proper location in the locations set
 	for each key in the gold counter of Game
-		add the key (location) to the set with *
+		insert the gold symbol * into the proper location in the locations set
 	return the set
  
 #### grid_locationConvert
-	A helper function which takes an integer input, grid number of columns, grid number of rows
-	Turns it into a 2D coordinate on the grid through modulo division
+A helper function which takes an integer input, grid number of columns, grid number of rows
+Turns it into a 2D coordinate on the grid through modulo division
  
 #### grid_print
-	creates a set of visible locations by calling grid_displayVisible or grid_displaySpectator
+Takes set of locations input, null items, save for player and gold symbols (set created by grid_displaySpectator or grid_updateView)
+	
 	Initialize empty printstring.
-	For each location in the grid 
+	For each location in the grid
 		if location is not in the set of visible locations
 			add a space “ “ to the printstring. 
-		else
+		else 
 			add the char stored in the set to the printstring.
 		when the row ends
 			add a newline character to the printstring
 	return the printstring
 
+#### grid_getNumberRows
+Gives number of rows
+
+#### grid_getNumberCols
+Gives number of columns
+
+#### grid_delete
+Frees all associated memory
+
 ### Major data structures
 Grid structure stores:
   2D array of chars, representing the grid
+	number of columns
+	number of rows
 
 
 ## player module
