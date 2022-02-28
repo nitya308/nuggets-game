@@ -234,11 +234,11 @@ void player_delete(player_t* player)
 char* player_summary(hashtable_t* allPlayers)
 {
   char* summary;
-  hashtable_iterate(allPlayers, &summary, summaryHelper);
+  hashtable_iterate(allPlayers, &summary, summary_helper);
   return summary;
 }
 
-static void summaryHelper(void* arg, char* key, void* item)
+static void summary_helper(void* arg, char* key, void* item)
 {
   player_t* player = item;
   char* addition = player->pID;
@@ -249,4 +249,20 @@ static void summaryHelper(void* arg, char* key, void* item)
   strcat(addition, "\n");
   char** summary = arg;
   strcat(*summary, addition);
+}
+
+set_t* player_locations(hashtable_t* allPlayers)
+{
+  set_t* locationSet = set_new();
+  hashtable_iterate(allPlayers, locationSet, location_helper);
+  return locationSet;
+}
+
+static void location_helper(void* arg, char* key, void* item)
+{
+  set_t* locationSet = arg;
+  player_t* player = item;
+  if (player != NULL) {
+    set_insert(locationSet, player->currCoor, player->pID);
+  }
 }
