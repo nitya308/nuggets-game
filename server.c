@@ -289,6 +289,7 @@ gameDelete()
   if (spectatorAddress != NULL) {
     mem_free(spectatorAddress);
   }
+  mem_free(game);
 }
 
 // delete a player
@@ -323,7 +324,7 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
     hashtable_insert(allPlayers, message_stringAddr(client), newPlayer);
     hashtable_insert(addresses, message_stringAddr(client), client);
     *numPlayers++;
-    message_send(client, );  // send grid message
+    message_send(client, "GRID");  // send grid message
     message_send(client, );  // send gold message
     message_send(client, );  // send display message
   }
