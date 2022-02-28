@@ -145,7 +145,7 @@ static void checkDisplay(int nrow, int ncol);
 		print to stderr that message has bad format
 	return false
 
-#### checkDisplay
+#### `checkDisplay`:
 	call initscr()
 	call cbreak()
 	call noecho()
@@ -163,13 +163,13 @@ static void checkDisplay(int nrow, int ncol);
 
 ### Data structures
 
-#### allPlayers
+#### `allPlayers`:
 This is a hashtable (from libscs50 data structures) that stores all the players in the game. The key of the hashtable is a string representation of the player's address. The item is a player_t struct as defined in the player module.
 
-#### addresses
+#### `addresses`:
 This is a hashtable (from libscs50 data structures) that stores the string representation of the player's address as the key and the actual address as the item.
 
-#### game
+#### `game`:
 This holds all the information about the game:
 typedef struct game {
   hashtable_t* allPlayers;
@@ -289,15 +289,15 @@ static void sendQuit(void* arg, const char* addr, void* item);
 				send them updated DISPLAY message
 
 #### `gameDelete`: 
-  delete the allPlayers hashtable and all the players inside it
-  delete the gold counter
-  delete the grid
-  free the spectator address
-  free the game struct
+	delete the allPlayers hashtable and all the players inside it
+	delete the gold counter
+	delete the grid
+	free the spectator address
+	free the game struct
 
 #### `sendQuit`:
-  create a message with "QUIT GAME OVER:\n summary"
-  send the message to provided address
+	create a message with "QUIT GAME 	OVER:\n summary"
+	send the message to provided address
 
 ---
 
@@ -305,7 +305,7 @@ static void sendQuit(void* arg, const char* addr, void* item);
 
 ### Data structures
 
-#### player_t
+#### `player_t`
 This data structure stores information for each player in the game. It has the player ID, the player name, an integer purse, an integer representation of the current coordinate, and a set of all coordinates seenBefore.
 ```c
 typedef struct player {
@@ -317,7 +317,7 @@ typedef struct player {
 } player_t;
 ```
 
-#### playerSwap
+#### `playerSwap`
 This structure stores the current player, the new coordinate it is trying to move to and a boolean variable to show if it was swapped. This struct is passed to hashtable_iterate as it checks if any of the players have the same coordinate as the new coordinate and swap them.
 ```c
 struct playerSwap {
@@ -471,6 +471,7 @@ Grid structure stores:
   2D array of chars, representing the grid
   Integer height
   Integer width
+  
 ```c
 typedef struct grid{
 char** map;
@@ -534,7 +535,7 @@ static void grid_delete(grid_t* grid);
 
 ### Pseudo code for logic/algorithmic flow
 
-#### grid_read
+#### `grid_read`
 	if file can be opened, assumes valid format for map
 	if file pointer is null
 		print to stderr
@@ -553,7 +554,7 @@ static void grid_delete(grid_t* grid);
 	Set grid height and width elements
 
 
-#### grid_isOpen
+#### `grid_isOpen`
 	if null grid or location < 0 or location > height times width
 		return false;
 	make array of 2 ints by calling grid_locationConvert on the int location.
@@ -563,10 +564,10 @@ static void grid_delete(grid_t* grid);
 		return false;
 
 
-#### grid_isVisible
+#### `grid_isVisible`
 	Call locationConvert on the input integer
 
-#### grid_updateView
+#### `grid_updateView`
 	If grid, gold counter, player locations set, input set not null, and int input location >=0
 		locationConvert on int location
 	Make set grid_isVisible on current location
@@ -580,7 +581,7 @@ static void grid_delete(grid_t* grid);
 		have set item be null by default
 		set_insert the input argument set into this set
 
-#### grid_displaySpectator
+#### `grid_displaySpectator`
 	if grid, gold counter, player locations set all not null,
 		create an empty set of integer keys (locations) and character items
 		convert integer location to string
@@ -592,11 +593,11 @@ static void grid_delete(grid_t* grid);
 			Replace the value of the returned pointer with gold symbol * char
 		return the set
 
-#### grid_locationConvert
+#### `grid_locationConvert`
 	int y coordinate is  location/width;
 	int x coordinate is location%width;
  
-#### grid_Print
+#### `grid_Print`
 	Initialize empty printstring.
 	For int 0 to grid’s height*width
 		if the int (key) is not in the set of visible locations (set_find)
@@ -607,13 +608,13 @@ static void grid_delete(grid_t* grid);
 			add a newline character to the printstring
 	return the printstring
 
-#### grid_getNumberRows
+#### `grid_getNumberRows`
 	Gives number of rows in grid
 
-#### grid_getNumberCols
+#### `grid_getNumberCols`
 	Gives number of columns in grid
 
-#### grid_delete
+#### `grid_delete`
 	Free the 2D char array in grid
 		Free the grid
 
