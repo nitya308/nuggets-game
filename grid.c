@@ -7,6 +7,7 @@
 #include "../libcs50/counters.h"
 #include "../libcs50/mem.h"
 #include "../libcs50/file.h"
+#include <math.h>
 
 
 /**************** local types ****************/
@@ -76,30 +77,126 @@ set_t* grid_isVisible(grid_t* grid, int loc)
 {
 }
 
-set_t* grid_updateView(grid_t* grid, int loc, 
-    set_t* seenBefore, counters_t* playerLocations, counters_t* gold )
+
+/**************grid_updateView()*********************/
+/*returns an expanded set, from the seenbefore set input. The newly visible
+*portion of the set could contain gold or player symbols if locations match
+*/
+set_t* grid_updateView(grid_t* grid, int newloc, 
+    set_t* seenBefore, set_t* playerLocations, counters_t* gold)
 {
-  if (grid!=NULL && playerLocations!=NULL && gold !=NULL){
-      set_t* visible = grid_isVisible(grid,loc);
+  if (grid!=NULL){
+      set_t* visible = grid_isVisible(grid,newloc);
       if (visible!=NULL){
-        void* arg = visible;
-        counters_iterate(playerLocations, arg, matchplayer);
+        void* arg = seenBefore;
+        void* plocations = playerLocations;
+        void* goldlocations = gold;
+        set_iterate(visible,gold,insertgold);
+        set_iterate(visible,plocations,insertplayers);
+        set_iterate(visible,arg,insertHelper);      //insert visible location
+                                                    //into seenBefore set
+                                                    //if not already there
+      
       }
   }
 }
 
-set_t* grid_displaySpectator(grid_t* grid, counters_t* playerLocations, counters_t* gold)
+static void insertgold(void* arg, const char* key, void* item)
 {
+  counters_t* gold = arg;
+  int location; 
+  sscanf(key, "%d", &location); 
+  if (counters_get(gold, location)>0){ //if this location is in gold locations 
+                                        //insert gold symbol as this item
+    item = mem_malloc(sizeof(char));
+    strcpy(item, "*");
+  }
+}
+
+static void insertplayers(void* arg, const char* key, void* item)
+{
+  set_t* plocations = arg;              //if this location is in player locations 
+                                        //insert player symbol as this item
+  item = set_find(plocations,key);
+}
+
+
+/****************gold_displaySpectator()*******************/
+/* returns set of all locations in the grid, with gold symbols and player symbol
+*characters in approporatie locxations
+*/
+set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* gold)
+{
+  set_t* allLocations = set_new();              
+  int gridSize = (grid->ncols)*(grid->nrows);         
+   //get size of grid
+   //convert the int location to string literal, to insert into set
+  char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize)); 
+  for (int i =0; i < gridSize; i++){
+      sprintf(intToStr, "%d", i);
+      if(counters_get(gold,i)>0){
+        set_insert(allLocations,intToStr,"*");
+      }
+      else {
+        set_insert(allLocations, intToStr, set_find(playerLocations,intToStr));
+      } 
+  }
+}
+
+
+static void insertHelper(void* arg, const char* key, void* item)
+{
+  set_t* seenBefore = arg;
+  if(set_find(seenBefore,key)==NULL){
+    set_insert(seenBefore,key,item);
+  }
 
 }
 
-static void matchplayer(void* arg, const int key, const int count)
+
+
+char* grid_print(grid_t* grid, set_t* locations, 
+    set_t* playerlocations, counters_t* gold)
 {
 
+  if (grid!=NULL && locations!= NULL && playerlocations!=NULL && gold !=NULL){
+    int gridSize = (grid->ncols)*(grid->nrows);
+    char** carr = grid->map;
+    int* coordinates; 
+    char* printString = mem_malloc(sizeof(char)*gridSize);
+
+    char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize)); 
+    char symbol;
+    for (int i =0; i < gridSize; i++){
+      if(i%grid->ncols == 1){
+        strcat(printString, "\n");
+      }
+      sprintf(intToStr, "%d", i);
+      if(set_find(locations,intToStr)!=NULL){
+        symbol = set_find(locations,intToStr);
+        strcat(printString, symbol);
+      }
+      else {
+        coordinates = grid_locationConvert(grid, i);
+        strcat(printString, carr[coordinates[0]][coordinates[1]]);
+      } 
+  }
+  }
 }
 
-char* grid_print(grid_t* grid, set_t* playerlocations, counters_t* gold)
+int grid_getNumberCols(grid_t* grid)
 {
+  return grid->ncols;
+}
 
+int grid_getNumberRows(grid_t* grid)
+{
+  return grid->nrows;
+}
+
+static void grid_delete(grid_t* grid)
+{
+  mem_free(grid->map);
+  mem_free(grid);
 }
 
