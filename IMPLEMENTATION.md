@@ -47,13 +47,19 @@ A function to parse the command-line arguments, initialize the playerAttributes 
 static int parseArgs(const int argc, char* argv[]);
 ```
 
+This function performs error checks, reads from stdin, and calls message_send with the appropriate messages.
+
 ```c
 static bool handleInput(void* arg);
 ```
 
+This function handles the bulk of the logic when receiving messages such as ‘QUIT’, ‘GOLD’, ‘OK’, ‘DISPLAY’,  ‘GRID’, and ‘ERROR’.
+
 ```c
 static bool receiveMessage(void* arg, const addr_t from, const char* message);
 ```
+
+This function uses the ncurses module to check that the user’s display is sufficiently large enough for the grid.
 
 ```c
 static void checkDisplay(int nrow, int ncol);
