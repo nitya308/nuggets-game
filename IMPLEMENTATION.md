@@ -394,38 +394,38 @@ char* player_summary(hashtable_t* allPlayers);
     set player->currCoor to newCoor
     add newCoor key to the set seenBefore with null item
     if set_insert succeeds
-      return true
+    	return true
     if set_insert fails
-      return false
+    	return false
 
 #### `player_moveRegular`:
 	use switch case on character move provided
 		based on case calulate new coordinate (left/right/up/down/diagonal)
 	call grid_isOpen to check if new coordinate in game grid is open
 	if the spot in that grid is open
-	  call player_swap location to swap if another player exists
+		call player_swap location to swap if another player exists
     if player_swap swaps with a player
-      return true
-		else
-			call player_update_coordinate to update coordinate
-      if player_updateCoordinate is a success
-			  call player_collectGold to collect gold if there is any
+    	return true
+	else
+		all player_update_coordinate to update coordinate
+    if player_updateCoordinate is a success
+		call player_collectGold to collect gold if there is any
         return true
-      else
-        return false
+	else
+    	return false
   
 #### `player_moveCapital`:
 	use switch case on character move provided
   		based on case calulate new coordinate (left/right/up/down/diagonal)
     call grid_isOpen to check if new coordinate in grid is open
 	while the spot in that grid is open
-	  call player_swap location to swap if another player exists
+		call player_swap location to swap if another player exists
     if player_swap does not swap with a player
-			call player_update_coordinate to update coordinate
-      if player_updateCoordinate fails
-        return false
-      else
-			  call player_collectGold to collect gold if there is any
+		call player_update_coordinate to update coordinate
+    	if player_updateCoordinate fails
+        	return false
+     	 else
+			call player_collectGold to collect gold if there is any
         calulate new coordinate (left/right/up/down/diagonal)
 	return true
 
@@ -439,20 +439,19 @@ char* player_summary(hashtable_t* allPlayers);
 	takes a currPlayer and int newCoor where currPlayer is trying to move
 	for each player in allPlayers hashtable
 		if any player’s current location matches newCoor
-      store player's currCoor in an int variable temp
-			set player's currCoor to currPlayer's currCoor
-      set currPlayer's currCoor to temp
-      return true
+		store player's currCoor in an int variable temp
+			set player's currCoor to currPlayer's currCoorset currPlayer's currCoor to temp
+    	return true
 	return false
 
 #### `player_quit`:
 	call hashtable_find to find player with given address
 	if player cannot be found
-    return false
+    	return false
 	else
-    call player_delete on the player
-    set it to null
-    return true
+    	call player_delete on the player
+    	set it to null
+    	return true
 
 ### `player_delete`:
 	free real name of player
