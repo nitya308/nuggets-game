@@ -17,6 +17,7 @@ We avoid repeating information that is provided in the requirements spec.
 
 Each team member is responsible for testing and documentation of their module/program based on a consistent style defined by CS50 style guidelines.
 
+
 ## Player
 
 ### Data structures
@@ -36,19 +37,17 @@ typedef struct playerAttributes {
 ### Definition of function prototypes
 
 A main function, a function to parse the command-line arguments, and a function to receive messages and handle messages.
-
+The main function calls parseArgs and handles calling the functions of the message module.
 ```c
 static int main(const int argc, char* argv[]);
 ```
 
-A function to parse the command-line arguments, initialize the playerAttributes struct, initialize the message module.
-
+This function validates the command-line arguments, printing to stderr if any errors are encountered, and sends a message to the server depending on whether the client is a player or spectator.
 ```c
-static int parseArgs(const int argc, char* argv[]);
+static void parseArgs(const int argc, char* argv[]);
 ```
 
 This function performs error checks, reads from stdin, and calls message_send with the appropriate messages.
-
 ```c
 static bool handleInput(void* arg);
 ```
@@ -60,7 +59,6 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message);
 ```
 
 This function uses the ncurses module to check that the user’s display is sufficiently large enough for the grid.
-
 ```c
 static void checkDisplay(int nrow, int ncol);
 ```
@@ -168,7 +166,7 @@ static void checkDisplay(int nrow, int ncol);
 #### allPlayers
 This is a hashtable (from libscs50 data structures) that stores all the players in the game. The key of the hashtable is a string representation of the player's address. The item is a player_t struct as defined in the player module.
 
-#### adresses
+#### addresses
 This is a hashtable (from libscs50 data structures) that stores the string representation of the player's address as the key and the actual address as the item.
 
 #### game
@@ -186,17 +184,16 @@ typedef struct game {
 ### Definition of function prototypes
 
 A function to parse the command-line arguments, initialize the game struct and initialize the message module.
-
 ```c
 static int parseArgs(const int argc, char* argv[]);
 ```
-Do the initial setup for the game, pass seed if it exists, call function to build the grid, drop random Gold piles in random rooms, initialize the 'message' module, initialize the network and announce the port number and call message_loop(), to await clients
 
+Do the initial setup for the game, pass seed if it exists, call function to build the grid, drop random Gold piles in random rooms, initialize the 'message' module, initialize the network and announce the port number and call message_loop(), to await clients
 ```c
 static void initializeGame(char* argv);
 ```
 
-Handles all messages from client by comparing first word of message to known types of messages and then calling the appropriate modules to handle the message. Deals with bad messages by printing error.
+Handles all messages from client by comparing first word of message to known types of messages and then calling the appropriate modules to handle the message. Deals with bad messages by printing error. 
 ```c
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 ```
@@ -207,13 +204,11 @@ static void playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* address
 ```
 
 Allows a new spectator to join. If an existing spectator exists, kicks it out and replaces it with the new one.
-
 ```c
 static void spectatorJoin(addr_t* address);
 ```
 
 Function to free all memory and delete each player in the game along with both hashtables used by server and the gold counter.
-
 ```c
 static void gameDelete();
 ```
@@ -233,7 +228,6 @@ static void sendQuit(void* arg, const char* addr, void* item);
   exit with 0 code
 
 #### `parseArgs`:
-
 	validate commandline
 	verify map file can be opened for reading
 	if seed provided
@@ -243,7 +237,6 @@ static void sendQuit(void* arg, const char* addr, void* item);
 		seed the random-number generator with getpid()
 
 #### `initializeGame`:
-
   allocate memory for game struct
   initialize the game struct
 	call grid_read to store map in a 2D array of characters
@@ -251,7 +244,6 @@ static void sendQuit(void* arg, const char* addr, void* item);
 	
 
 #### `spectatorJoin`:
-
 	if spectator is NULL
 		store address of spectator is spectator variable
 	else
@@ -262,7 +254,6 @@ static void sendQuit(void* arg, const char* addr, void* item);
 		Send DISPLAY message to spectator with entire map
 
 #### `playerJoin`:
-
 	If numPlayers< maxPlayers
     call players_new to create new player
 		store the new player it the allPlayers hashtable with its address
@@ -273,8 +264,6 @@ static void sendQuit(void* arg, const char* addr, void* item);
 		Send DISPLAY message to player with display string
 
 #### `handleMessage`:
-Handle all messages passed from the client to the server based on protocol in requirements spec.
-
 	If message first word is PLAY
 		Call playerJoin with player name
 	If message first word is SPECTATE
@@ -309,6 +298,7 @@ Handle all messages passed from the client to the server based on protocol in re
 #### `sendQuit`:
   create a message with "QUIT GAME OVER:\n summary"
   send the message to provided address
+
 ---
 
 ## player module
@@ -340,53 +330,46 @@ struct playerSwap {
 ### Definition of function prototypes
 
 A function that returns a pointer to a new initialized player struct.
-
 ```c
 player_t* player_new(char* name, grid_t* grid);
 ```
-A function that updates the coordinates of the given player to the new coordinate give.
 
+A function that updates the coordinates of the given player to the new coordinate give.
 ```c
 bool player_updateCoordinate(player_t* player, int newCoor);
 ```
 
 A function that handles a single move by the player and takes a lowecase character to specify move direction.
-
 ```c
 bool player_moveRegular(player_t* player, char move, game_t* game);
 ```
 
 A function that handles a single moving until it is no longer possible in that direction. It takes an uppercase character to specify move direction.
-
 ```c
 bool player_moveCapital(player_t* player, char move, game_t* game);
 ```
 
 A function that collects gold if there is any in a grid location.
-
 ```c
 bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 ```
-A function that checks if another player is in a new location and swaps with the current player if there is.
 
+A function that checks if another player is in a new location and swaps with the current player if there is.
 ```c
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
 ```
 
 A function that deletes a player when it quits and sets that item in hashtable to null
-
 ```c
 bool player_quit(char* address, hashtable_t* allPlayers);
 ```
 
 A function that deletes a player struct and frees all associated memory
-
 ```c
 void player_delete(player_t* player);
 ```
 
 A function that prepares and returns a string summary of all players and the gold they have when the game ends
-
 ```c
 char* player_summary(hashtable_t* allPlayers);
 ```
@@ -394,7 +377,6 @@ char* player_summary(hashtable_t* allPlayers);
 ### Detailed pseudo code
 
 #### `player_new`:
-
 	if name is not null
 		malloc space for a new player struct
 		if malloced memory returns null
@@ -410,7 +392,6 @@ char* player_summary(hashtable_t* allPlayers);
       return that player struct
 
 #### `player_updateCoordinate`:
-
     set player->currCoor to newCoor
     add newCoor key to the set seenBefore with null item
     if set_insert succeeds
@@ -419,7 +400,6 @@ char* player_summary(hashtable_t* allPlayers);
       return false
 
 #### `player_moveRegular`:
-
 	use switch case on character move provided
 		based on case calulate new coordinate (left/right/up/down/diagonal)
 	call grid_isOpen to check if new coordinate in game grid is open
@@ -434,10 +414,8 @@ char* player_summary(hashtable_t* allPlayers);
         return true
       else
         return false
-
   
 #### `player_moveCapital`:
-
 	use switch case on character move provided
   		based on case calulate new coordinate (left/right/up/down/diagonal)
     call grid_isOpen to check if new coordinate in grid is open
@@ -453,14 +431,12 @@ char* player_summary(hashtable_t* allPlayers);
 	return true
 
 #### `player_collectGold`:
-
 	if counters_get on newCoor does not return 0
 		increment player's purse by number of gold
 		decrement numGoldLeft in Game by number of gold
 		counters_set the newCoor to 0
 
 #### `player_swapLocations`:
-
 	takes a currPlayer and int newCoor where currPlayer is trying to move
 	for each player in allPlayers hashtable
 		if any player’s current location matches newCoor
@@ -471,7 +447,6 @@ char* player_summary(hashtable_t* allPlayers);
 	return false
 
 #### `player_quit`:
-
 	call hashtable_find to find player with given address
 	if player cannot be found
     return false
@@ -481,10 +456,169 @@ char* player_summary(hashtable_t* allPlayers);
     return true
 
 ### `player_delete`:
-
 	free real name of player
 	call set_delete on seenBefore set
 	free the player struct memory
+
+---
+
+## grid module
+Handles all functionality to do with the grid and calculates visibility
+
+### Data structures
+
+Grid structure stores:
+  2D array of chars, representing the grid
+  Integer height
+  Integer width
+```c
+typedef struct grid{
+char** map;
+int nrows;
+int ncols;
+} grid_t;
+```
+
+### Function prototypes 
+
+Reads from text file stores each char in a 2D array of characters stores the 2D array in Game data structure.
+```c
+grid_t* grid_read(char* filename);
+```
+
+Takes int location input and grid structure.finds the location in the grid and states whether it is wall/corner or an open space.
+```c
+bool grid_isOpen(grid_t* grid, int location);
+```
+
+Takes int location input and calculates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec. Returns this set
+```c
+set_t* grid_isVisible(grid_t* grid, int location);
+```
+
+Modifies the player’s seen-before set of locations to include the newly visible portions of the map. Includes gold and other player symbols as items only in the newly visible portion.
+```c
+set_t* grid_updateView(grid_t* grid, int newlocation, set_t* seenBefore, set_t* playerLocations, counters_t* gold);
+```
+
+Creates a set of locations and characters to display at that location to represent other players and gold (the whole map is visible)
+```c
+set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* gold)
+```
+
+A helper function which takes an integer input, grid number of columns, grid number of rows. Returns 2D location coordinate
+```c
+int* grid_locationConvert(grid_t*, int location);
+```
+
+creates a string of visible locations from a set returned by grid_updateView or grid_displaySpectator  
+```c
+char* grid_print(grid_t* grid, set_t* locations, set_t* playerLocations, counters_t* gold);
+```
+
+Gives number of rows in grid
+```c
+int grid_getNumberRows(grid_t* grid);
+```
+
+Gives number of cols in grid
+```c
+int  grid_getNumberCols(grid_t* grid);
+```
+
+Deletes the given grid
+```c
+static void grid_delete(grid_t* grid);
+```
+
+
+### Pseudo code for logic/algorithmic flow
+
+#### grid_read
+	if file can be opened, assumes valid format for map
+	if file pointer is null
+		print to stderr
+		return null
+	Read chars until new line, store num of reads as integer width (add 1) 
+	Read lines until EOF, store num reads as integer height (add 1) 
+	Initialize empty 2-d array of chars dimensions width, height
+	if NULL
+		print to stderr
+		return NULL
+	while not end of file
+		Append the char from file to the current row in the 2-d array
+		if reached newline in file
+			Increment current array row
+	Initialize array element of grid to this array
+	Set grid height and width elements
+
+
+#### grid_isOpen
+	if null grid or location < 0 or location > height times width
+		return false;
+	make array of 2 ints by calling grid_locationConvert on the int location.
+	if the appropriate char in grid’s char** array  is a . or # (room spot or passage) 
+		return true;
+	else
+		return false;
+
+
+#### grid_isVisible
+	Call locationConvert on the input integer
+
+#### grid_updateView
+	If grid, gold counter, player locations set, input set not null, and int input location >=0
+		locationConvert on int location
+	Make set grid_isVisible on current location
+		for location keys in player locations set
+	Convert location to string key
+			if the location (key)  is in visible set (set_find)
+				make corresponding value of isVisible set’s char* the ID (key location)
+		for each location in the gold counter of Game
+			if the location (key)  is in visible set (set_find)
+				insert gold symbol * item for the key location
+		have set item be null by default
+		set_insert the input argument set into this set
+
+#### grid_displaySpectator
+	if grid, gold counter, player locations set all not null,
+		create an empty set of integer keys (locations) and character items
+		convert integer location to string
+		for each location in playerlocations
+			call set_find with location as key 
+			Replace the value of the returned pointer with playerLocations char ID element.
+		for each key in the gold counter of Game
+			call set_find with location as key 
+			Replace the value of the returned pointer with gold symbol * char
+		return the set
+
+#### grid_locationConvert
+	int y coordinate is  location/width;
+	int x coordinate is location%width;
+ 
+#### grid_Print
+	Initialize empty printstring.
+	For int 0 to grid’s height*width
+		if the int (key) is not in the set of visible locations (set_find)
+			append a space “ “ to the printstring. 
+		else
+			Append the char stored in the set to the printstring.
+		If int%grid width is 0
+			add a newline character to the printstring
+	return the printstring
+
+#### grid_getNumberRows
+	Gives number of rows in grid
+
+#### grid_getNumberCols
+	Gives number of columns in grid
+
+#### grid_delete
+	Free the 2D char array in grid
+		Free the grid
+
+---
+
 
 ## Testing plan
 
@@ -504,5 +638,4 @@ char* player_summary(hashtable_t* allPlayers);
 
 ## Limitations
 
-> Bulleted list of any limitations of your implementation.
-> This section may not be relevant when you first write your Implementation Plan, but could be relevant after completing the implementation.
+> None forseen at this point in development.
