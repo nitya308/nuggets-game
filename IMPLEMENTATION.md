@@ -426,7 +426,7 @@ char* player_summary(hashtable_t* allPlayers);
         	return false
      	 else
 			call player_collectGold to collect gold if there is any
-        calulate new coordinate (left/right/up/down/diagonal)
+        calculate new coordinate (left/right/up/down/diagonal)
 	return true
 
 #### `player_collectGold`:
