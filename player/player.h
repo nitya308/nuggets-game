@@ -1,10 +1,9 @@
 /* 
  * player.h - header file for CS50 player module
  *
- * The player module stores a structure for 
+ * The player module stores a structure for a player in the game
  * 
- * David Kotz, April 2016, 2017, 2019, 2021
- * Xia Zhou, July 2017
+ * Nitya Agarwala 2022
  */
 
 #ifndef __player_H

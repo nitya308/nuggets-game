@@ -1,9 +1,9 @@
 /*
- * bag.c - CS50 'bag' module
+ * player.c
  *
- * see bag.h for more information.
+ * see player.h for more information.
  *
- * David Kotz, April 2016, 2017, 2019, 2021
+ * Nitya Agarwala, Feb 2022
  */
 
 #include <stdio.h>
@@ -16,6 +16,26 @@
 #include "../libcs50/mem.h"
 #include "../libcs50/set.h"
 #include "grid.h"
+#include "server.h"
+
+/**************** file-local global variables ****************/
+/* none */
+
+/**************** local types ****************/
+struct playerSwap {
+  player_t* player;
+  int newCoor;
+  bool swapped;
+};
+
+/**************** global types ****************/
+typedef struct player {
+  char pID;
+  char* name;
+  int purse;
+  int currCoor;
+  set_t* seenBefore;
+} player_t;
 
 // function prototypes
 player_t* player_new(char* name, grid_t* grid);
@@ -28,17 +48,14 @@ bool player_quit(char* address, hashtable_t* allPlayers);
 void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
 
-static void swapHelper(void* arg, const char* key, void* item);
-static void summaryHelper(void* arg, char* key, void* item);
+/**************** local functions ****************/
+/* not visible outside this file */
+static counternode_t* counternode_new(const int key);
+static void swap_helper(void* arg, const char* key, void* item);
+static void summary_helper(void* arg, char* key, void* item);
 
-typedef struct player {
-  char pID;
-  char* name;
-  int purse;
-  int currCoor;
-  set_t* seenBefore;
-} player_t;
-
+/**************** player_new ****************/
+/* see player.h for description */
 player_t* player_new(char* name, grid_t* grid)
 {
   mem_assert(name, "name provided was null");
@@ -74,12 +91,16 @@ player_t* player_new(char* name, grid_t* grid)
   return player;
 }
 
+/**************** player_updateCoordinate ****************/
+/* see player.h for description */
 bool player_updateCoordinate(player_t* player, int newCoor)
 {
   player->currCoor = newCoor;
   return set_insert(player->seenBefore, newCoor, NULL);
 }
 
+/**************** player_moveRegular ****************/
+/* see player.h for description */
 bool player_moveRegular(player_t* player, char move, game_t* game)
 {
   int newCoor;
@@ -127,6 +148,8 @@ bool player_moveRegular(player_t* player, char move, game_t* game)
   }
 }
 
+/**************** player_moveCapital ****************/
+/* see player.h for description */
 bool player_moveCapital(player_t* player, char move, game_t* game)
 {
   int newCoor;
@@ -176,6 +199,8 @@ bool player_moveCapital(player_t* player, char move, game_t* game)
   }
 }
 
+/**************** player_collectGold ****************/
+/* see player.h for description */
 bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
 {
   int newGold = counters_get(gold, player->currCoor);
@@ -187,12 +212,8 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
   return false;
 }
 
-struct playerSwap {
-  player_t* player;
-  int newCoor;
-  bool swapped;
-};
-
+/**************** player_swapLocations ****************/
+/* see player.h for description */
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor)
 {
   struct playerSwap args = {currPlayer, newCoor, false};
@@ -200,7 +221,9 @@ bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int new
   return args.swapped;
 }
 
-static void swapHelper(void* arg, const char* key, void* item)
+/**************** swap_helper ****************/
+/* swaps players if one at the same location is found */
+static void swap_helper(void* arg, const char* key, void* item)
 {
   struct playerSwap* args = (struct playerSwap*)arg;
   int newCoor = args->newCoor;
@@ -213,6 +236,8 @@ static void swapHelper(void* arg, const char* key, void* item)
   }
 }
 
+/**************** player_quit ****************/
+/* see player.h for description */
 bool player_quit(char* address, hashtable_t* allPlayers)
 {
   player_t* player = hashtable_find(allPlayers, address);
@@ -224,6 +249,8 @@ bool player_quit(char* address, hashtable_t* allPlayers)
   return true;
 }
 
+/**************** player_delete ****************/
+/* see player.h for description */
 void player_delete(player_t* player)
 {
   mem_free(player->name);
@@ -231,6 +258,8 @@ void player_delete(player_t* player)
   mem_free(player);
 }
 
+/**************** player_summary ****************/
+/* see player.h for description */
 char* player_summary(hashtable_t* allPlayers)
 {
   char* summary;
@@ -238,6 +267,8 @@ char* player_summary(hashtable_t* allPlayers)
   return summary;
 }
 
+/**************** summary_helper ****************/
+/* helps add the summary of each player */
 static void summary_helper(void* arg, char* key, void* item)
 {
   player_t* player = item;
@@ -251,6 +282,8 @@ static void summary_helper(void* arg, char* key, void* item)
   strcat(*summary, addition);
 }
 
+/**************** player_locations ****************/
+/* see player.h for description */
 set_t* player_locations(hashtable_t* allPlayers)
 {
   set_t* locationSet = set_new();
@@ -258,6 +291,8 @@ set_t* player_locations(hashtable_t* allPlayers)
   return locationSet;
 }
 
+/**************** location_Helper ****************/
+/* helps add the location of each player to the locationSet */
 static void location_helper(void* arg, char* key, void* item)
 {
   set_t* locationSet = arg;
