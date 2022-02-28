@@ -550,7 +550,6 @@ static void grid_delete(grid_t* grid);
 	Initialize array element of grid to this array
 	Set grid height and width elements
 
-
 #### grid_isOpen
 	if null grid or location < 0 or location > height times width
 		return false;
@@ -559,7 +558,6 @@ static void grid_delete(grid_t* grid);
 		return true;
 	else
 		return false;
-
 
 #### grid_isVisible
 	Call locationConvert on the input integer
