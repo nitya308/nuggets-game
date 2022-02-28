@@ -492,7 +492,7 @@ Takes int location input and grid structure. It finds the location in the grid a
 bool grid_isOpen(grid_t* grid, int location);
 ```
 
-Takes int location input and calculates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec. Returns this set.
+Takes int location input and calculates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec. Returns this set
 ```c
 set_t* grid_isVisible(grid_t* grid, int location);
 ```
@@ -620,20 +620,27 @@ static void grid_delete(grid_t* grid);
 
 ---
 
-
 ## Testing plan
 
 ### unit testing
 
-> How will you test each unit (module) before integrating them with a main program (client or server)?
+Each module will be tested by a unittest class before integrating it with main. 
+For example, for player module, we will create a player, modify its coordinates, try to move it and delete it to make sure there are no memory leaks.
+The grid module will be tested on reading and printing a variety of maps. We will call grid_updateView on locations within the grid to make a running set of seen-before locations, then call grid_print on that set. All the while, we will use pre-made gold locations counter and set of player locations as keys and symbol items. For visibility, we will test the grid_isVisible function by calling it on various int locations within the grid, grid_print the result and seeing whether it conforms to demonstrations.
 
 ### integration testing
 
-> How will you test the complete main programs: the server, and for teams of 4, the client?
+The complete main programs: the server and the client will be tested separately first with a number of invalid command line arguments. The server will be given a map to read a file. We will then create a test client to pass a variety of messages to the server and check that they are handled correctly. Each type of message, including error messages will be tested. 
+For client, we will test that it can correctly recieve and print all types of messages by manually passing a variety of messages to it. Error messages and other edge cases like window size being too small will also be tested.
 
 ### system testing
 
-> For teams of 4: How will you test your client and server together?
+Client and server will be tested together by running sample games. We will test a number of possible cases for example:
+player stepping on another player
+player attempting to move to a location that is not open for moving
+player quitting in the middle of the game
+new spectator joining when a previous one already exists
+trying to have more than maxPlayers number of player join
 
 ---
 
