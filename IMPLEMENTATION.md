@@ -21,30 +21,137 @@ Each team member is responsible for testing and documentation of their module/pr
 
 ### Data structures
 
-The player side of the program does not use any data structures.
+We use a struct called playerAttributes which stores information about the player/spectator that the client program needs to reference as the game progresses.
+
+typedef struct playerAttributes {
+  char playerID;
+  int purse;
+  bool isPlayer;
+  int numGoldLeft;
+  int goldCollected;
+  char* display;
+} playerAttributes_t;
+
 
 ### Definition of function prototypes
 
-> For function, provide a brief description and then a code block with its function prototype.
-> For example:
+A main function, a function to parse the command-line arguments, and a function to receive messages and handle messages.
 
-A function to parse the command-line arguments, initialize the game struct, initialize the message module, and (BEYOND SPEC) initialize analytics module.
+```c
+static int main(const int argc, char* argv[]);
+```
+
+A function to parse the command-line arguments, initialize the playerAttributes struct, initialize the message module.
 
 ```c
 static int parseArgs(const int argc, char* argv[]);
 ```
+
+```c
+static bool handleInput(void* arg);
+```
+
+```c
+static bool receiveMessage(void* arg, const addr_t from, const char* message);
+```
+
+```c
+static void checkDisplay(int nrow, int ncol);
+```
+
 ### Detailed pseudo code
 
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> For example:
+#### `main`:
+	call parseArgs on argc and argv
+	if message_init(NULL) is 0
+	exit w/ non-zero int
+	initialize address type for server
+	call message_setAddr using argv[1] and argv[2] and address, check if returns false
+		print to stderr and exit w/ non-zero status
+	set bool variable to what calling message_loop returns
+	call message_done()
+	call endwin()
+	return 0
 
 #### `parseArgs`:
+	if argc is < 3 or argc > 4
+		print to stderr that there are an invalid number of args and exit
+	if argv[1] or argv[2] is NULL
+		print to stderr that the hostname or port is invalid and exit
+	if argc is 4 and argv[3] is not NULL
+		set playerAttributes➞isPlayer to true
+		call message_send to server for `PLAY argv[3]`
+	else
+		set playerAttributes➞isPlayer to false
+	call message_send to server for `SPECTATE`
+	
 
-	validate commandline
-	initialize message module
-	print assigned port number
-	decide whether spectator or player
+#### `handleInput`
+	set server address type to arg from param
+	check if address pointer is NULL
+		print to stderr
+		return true
+	if message_isAddr() returns false (address invalid)
+		print to stderr
+		return true
+	get character c from stdin
+	if c is EOF or EOT
+		call message_send with quit message
+	else
+		call message_send with the inputted character
+	return false
+
+#### `receiveMessage`:
+	if first word of message is QUIT 
+		endwin()
+	print explanation line
+		return true
+	if first word of message is GOLD
+		scan message for n p r
+		set playerAttributes➞goldCollected to n
+		set playerAttributes➞purse to p
+		set playerAttributes➞numGoldLeft to r
+	if first word of message is GRID
+		scan nrows and ncols from input
+		call checkDisplay(nrows, ncols)
+	if first word of message is OK
+		set playerAttributes➞playerID to input
+	if first word of message is DISPLAY
+		set playerAttributes➞display to input
+		call clear() from ncurses
+		if playerAttributes➞isPlayer
+			if playerAttributes➞goldCollected is 0
+				print appropriate message if gold picked up
+			else
+				print appropriate message
+		else
+			print appropriate message for spectator
+		print playerAttributes➞display
+		call refresh() from ncurses
+	if first word of message is ERROR
+		print message to stderr
+		clear()
+		if playerAttributes➞isPlayer
+			print appropriate message
+		else
+			print appropriate message
+		print playerAttributes➞display
+		call refresh() from ncurses
+	else
+		print to stderr that message has bad format
+	return false
+
+#### checkDisplay
+	call initscr()
+	call cbreak()
+	call noecho()
+	initialize row and col variables
+	set playerAttributes➞display to mem_malloc_assert(65507)
+	call getmaxyx(stdscr, row, col) from ncurses
+	while row < nrow + 1 or col < ncol + 1
+		printw prompting user to increase window size and click enter
+		call getch() to check for new line character
+		call getmaxyx(stdscr, row, col)
 
 ---
 
