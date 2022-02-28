@@ -487,12 +487,12 @@ Reads from text file stores each char in a 2D array of characters stores the 2D 
 grid_t* grid_read(char* filename);
 ```
 
-Takes int location input and grid structure.finds the location in the grid and states whether it is wall/corner or an open space.
+Takes int location input and grid structure. It finds the location in the grid and states whether it is wall/corner or an open space.
 ```c
 bool grid_isOpen(grid_t* grid, int location);
 ```
 
-Takes int location input and calculates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec. Returns this set
+Takes int location input and calculates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec. Returns this set.
 ```c
 set_t* grid_isVisible(grid_t* grid, int location);
 ```
