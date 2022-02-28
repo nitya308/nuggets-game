@@ -17,6 +17,7 @@ We avoid repeating information that is provided in the requirements spec.
 
 Each team member is responsible for testing and documentation of their module/program based on a consistent style defined by CS50 style guidelines.
 
+
 ## Player
 
 ### Data structures
