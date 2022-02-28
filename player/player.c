@@ -104,30 +104,55 @@ bool player_updateCoordinate(player_t* player, int newCoor)
 bool player_moveRegular(player_t* player, char move, game_t* game)
 {
   int newCoor;
+  int cols = grid_getNumberCols(game->grid);
   switch (move) {
     case 'k':
-      newCoor = player->currCoor - grid_getNumberCols(game->grid);
+      newCoor = player->currCoor - cols;
       break;
     case 'h':
+      if (player->currCoor % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       newCoor = player->currCoor - 1;
       break;
     case 'l':
+      if ((player->currCoor + 1) % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       newCoor = player->currCoor + 1;
       break;
     case 'j':
-      newCoor = player->currCoor + grid_getNumberCols(game->grid);
+      newCoor = player->currCoor + cols;
       break;
     case 'y':
-      newCoor = player->currCoor - grid_getNumberCols(game->grid) - 1;
+      newCoor = player->currCoor - cols - 1;
+      if ((newCoor + 1) % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       break;
     case 'u':
-      newCoor = player->currCoor - grid_getNumberCols(game->grid) + 1;
+      newCoor = player->currCoor - cols + 1;
+      if (newCoor % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       break;
     case 'b':
-      newCoor = player->currCoor + grid_getNumberCols(game->grid) - 1;
+      newCoor = player->currCoor + cols - 1;
+      if ((newCoor + 1) % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       break;
     case 'n':
-      newCoor = player->currCoor + grid_getNumberCols(game->grid) + 1;
+      newCoor = player->currCoor + cols + 1;
+      if (newCoor % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       break;
     default:
       return false;
