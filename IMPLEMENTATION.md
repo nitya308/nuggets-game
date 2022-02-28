@@ -13,7 +13,7 @@ We avoid repeating information that is provided in the requirements spec.
 * Client: Ashna
 * Server: Vico
 * Player module: Nitya
-* Grid module including visibility: Matthew
+* Grid module with visibility: Matthew
 
 Each team member is responsible for testing and documentation of their module/program based on a consistent style defined by CS50 style guidelines.
 
@@ -53,7 +53,10 @@ static int parseArgs(const int argc, char* argv[]);
 ### Data structures
 
 #### allPlayers
-This is a hashtable (from libscs50 data structures) that stores all the players in the game. The key of the hashtable is a string representation of the player's address. The item is a player data type as defined above.
+This is a hashtable (from libscs50 data structures) that stores all the players in the game. The key of the hashtable is a string representation of the player's address. The item is a player_t struct as defined in the player module.
+
+#### adresses
+This is a hashtable (from libscs50 data structures) that stores the string representation of the player's address as the key and the actual address as the item.
 
 #### game
 This holds all the information about the game:
@@ -73,10 +76,48 @@ A function to parse the command-line arguments, initialize the game struct and i
 
 ```c
 static int parseArgs(const int argc, char* argv[]);
+```
+Do the initial setup for the game, pass seed if it exists, call function to build the grid, drop random Gold piles in random rooms, initialize the 'message' module, initialize the network and announce the port number and call message_loop(), to await clients
 
+```c
+static void initializeGame(char* argv);
+```
+
+Handles all messages from client by comparing first word of message to known types of messages and then calling the appropriate modules to handle the message. Deals with bad messages by printing error.
+```c
+static bool handleMessage(void* arg, const addr_t from, const char* message);
+```
+
+Allows a new player to join if number of players is less than maxPlayers. Calls player module to create a new player and saves the player in the hashtable of all players.
+```c
+static void playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers)
+```
+
+Allows a new spectator to join. If an existing spectator exists, kicks it out and replaces it with the new one.
+
+```c
+static void spectatorJoin(addr_t* address);
+```
+
+Function to free all memory and delete each player in the game along with both hashtables used by server and the gold counter.
+
+```c
+static void gameDelete();
+```
+
+Helper function to iterate over hashtable and send a quit message to each player
+```c
+static void sendQuit(void* arg, const char* addr, void* item);
 ```
 
 ### Detailed pseudo code
+
+#### `main`:
+  call parseArgs
+  initialize the 'message' module
+	initialize the network and announce the port number
+	call message_loop(), to await clients
+  exit with 0 code
 
 #### `parseArgs`:
 
@@ -90,12 +131,11 @@ static int parseArgs(const int argc, char* argv[]);
 
 #### `initializeGame`:
 
-	pass seed if it exists or call srand(getpid())
+  allocate memory for game struct
+  initialize the game struct
 	call grid_read to store map in a 2D array of characters
 	drop random Gold piles in random rooms
-	initialize the 'message' module
-	initialize the network and announce the port number
-	call message_loop(), to await clients
+	
 
 #### `spectatorJoin`:
 
@@ -113,6 +153,7 @@ static int parseArgs(const int argc, char* argv[]);
 	If numPlayers< maxPlayers
     call players_new to create new player
 		store the new player it the allPlayers hashtable with its address
+    increment numPlayers
 		Send GRID message to player with grid size
 		Send GOLD message to player with 0 gold
 		call display module to get a display string
@@ -145,9 +186,16 @@ Handle all messages passed from the client to the server based on protocol in re
 				send them updated GOLD message
 				send them updated DISPLAY message
 
-#### `handleInput`:
-		return false as we don't expect input from stdin so this should never be called
+#### `gameDelete`: 
+  delete the allPlayers hashtable and all the players inside it
+  delete the gold counter
+  delete the grid
+  free the spectator address
+  free the game struct
 
+#### `sendQuit`:
+  create a message with "QUIT GAME OVER:\n summary"
+  send the message to provided address
 ---
 
 ## player module
