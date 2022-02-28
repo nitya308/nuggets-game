@@ -107,16 +107,16 @@ static void insertgold(void* arg, const char* key, void* item)
   int location; 
   sscanf(key, "%d", &location); 
   if (counters_get(gold, location)>0){ //if this location is in gold locations 
-                                        //insert gold symbol as this item
+                                        //make gold symbol as this item
     item = mem_malloc(sizeof(char));
-    strcpy(item, "*");
+    sprintf(item, "%c", "*");
   }
 }
 
 static void insertplayers(void* arg, const char* key, void* item)
 {
   set_t* plocations = arg;              //if this location is in player locations 
-                                        //insert player symbol as this item
+                                        //make player symbol as this item
   item = set_find(plocations,key);
 }
 
@@ -127,20 +127,27 @@ static void insertplayers(void* arg, const char* key, void* item)
 */
 set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* gold)
 {
-  set_t* allLocations = set_new();              
-  int gridSize = (grid->ncols)*(grid->nrows);         
-   //get size of grid
-   //convert the int location to string literal, to insert into set
-  char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize)); 
-  for (int i =0; i < gridSize; i++){
-      sprintf(intToStr, "%d", i);
-      if(counters_get(gold,i)>0){
-        set_insert(allLocations,intToStr,"*");
-      }
-      else {
-        set_insert(allLocations, intToStr, set_find(playerLocations,intToStr));
-      } 
+  if (grid != NULL){
+    set_t* allLocations = set_new();              
+    int gridSize = (grid->ncols)*(grid->nrows);      
+    //get size of grid
+    //convert the int location to string literal, to insert into set
+    char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize)); 
+    for (int i =0; i < gridSize; i++){
+        sprintf(intToStr, "%d", i);
+        if(counters_get(gold,i)>0){
+          set_insert(allLocations,intToStr,"*");
+        }
+        else if (set_find(playerLocations,intToStr)!=NULL){
+          set_insert(allLocations, intToStr, set_find(playerLocations,intToStr));
+        } 
+        else{
+          set_insert(allLocations, intToStr, "g");
+        }
+    }
+    return allLocations;
   }
+  return NULL;
 }
 
 
@@ -150,35 +157,42 @@ static void insertHelper(void* arg, const char* key, void* item)
   if(set_find(seenBefore,key)==NULL){
     set_insert(seenBefore,key,item);
   }
-
 }
 
 
 
-char* grid_print(grid_t* grid, set_t* locations, 
-    set_t* playerlocations, counters_t* gold)
+char* grid_print(grid_t* grid, set_t* locations)
 {
 
-  if (grid!=NULL && locations!= NULL && playerlocations!=NULL && gold !=NULL){
+  if (grid!=NULL && locations!= NULL){
     int gridSize = (grid->ncols)*(grid->nrows);
     char** carr = grid->map;
     int* coordinates; 
     char* printString = mem_malloc(sizeof(char)*gridSize);
 
     char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize)); 
-    char symbol;
+    char* symbol;
+    //running printstring, loop through locations in set
     for (int i =0; i < gridSize; i++){
       if(i%grid->ncols == 1){
-        strcat(printString, "\n");
+        strcat(printString, "\n");                //insert newlines
       }
       sprintf(intToStr, "%d", i);
-      if(set_find(locations,intToStr)!=NULL){
-        symbol = set_find(locations,intToStr);
-        strcat(printString, symbol);
+      if(set_find(locations,intToStr)!=NULL){     
+        symbol = set_find(locations,intToStr);    //if set contains a particular location from grid
+        //contains "g", means no player or gold there, so insert grid character from that locations
+        if (strcmp(symbol, "g")==0){              
+          coordinates = grid_locationConvert(grid, i);
+          strcat(printString, carr[coordinates[0]][coordinates[1]]);
+        }
+        else{
+          //set location contains a gold or player symbol, so print that
+          strcat(printString, symbol);
+        }
       }
       else {
-        coordinates = grid_locationConvert(grid, i);
-        strcat(printString, carr[coordinates[0]][coordinates[1]]);
+        //the location was not in the set, so user won't see it. Print a space.
+        strcat(printString, " ");
       } 
   }
   }
