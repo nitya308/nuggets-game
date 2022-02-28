@@ -81,9 +81,24 @@ set_t* grid_updateView(grid_t* grid, int loc,
   if (grid!=NULL && playerLocations!=NULL && gold !=NULL){
       set_t* visible = grid_isVisible(grid,loc);
       if (visible!=NULL){
-        
+        void* arg = visible;
+        counters_iterate(playerLocations, arg, matchplayer);
       }
   }
+}
+
+set_t* grid_displaySpectator(grid_t* grid, counters_t* playerLocations, counters_t* gold)
+{
   
+}
+
+static void matchplayer(void* arg, const int key, const int count)
+{
+
+}
+
+char* grid_print(grid_t* grid, set_t* playerlocations, counters_t* gold)
+{
+
 }
 
