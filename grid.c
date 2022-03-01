@@ -63,7 +63,8 @@ bool grid_isOpen(grid_t* grid, int loc)
 {
   int* coordinates = grid_locationConvert(grid, loc);
   char** carr = grid->map;
-  if (strcmp(carr[coordinates[0]][coordinates[1]], ".") != 0) {
+  if (strcmp(carr[coordinates[0]][coordinates[1]], ".") != 0 && 
+    strcmp(carr[coordinates[0]][coordinates[1]], "#") != 0) {
     return false;
   }
   else {
@@ -73,6 +74,11 @@ bool grid_isOpen(grid_t* grid, int loc)
 
 set_t* grid_isVisible(grid_t* grid, int loc)
 {
+
+  //returns set of locations (string literal key for location, 
+  //and char* "g" as dummy items.)
+  //needs to contain a dummy item, else later one effectively cannot use set_find to
+  //distinguish between a location being or not being in the set 
 }
 
 /**************grid_updateView()*********************/
@@ -85,19 +91,19 @@ set_t* grid_updateView(grid_t* grid, int newloc,
   if (grid != NULL) {
     set_t* visible = grid_isVisible(grid, newloc);
     if (visible != NULL) {
-      void* arg = seenBefore;
+      void* arg = visible;
       void* plocations = playerLocations;
       void* goldlocations = gold;
-      set_iterate(visible, gold, insertgold);
-      set_iterate(visible, plocations, insertplayers);
-      set_iterate(visible, arg, insertHelper);  // insert visible location
+      set_iterate(visible, gold, insertGold);
+      set_iterate(visible, plocations, insertPlayers);
+      set_iterate(seenBefore, arg, mergeHelper);  // insert visible location
                                                 // into seenBefore set
                                                 // if not already there
     }
   }
 }
 
-static void insertgold(void* arg, const char* key, void* item)
+static void insertGold(void* arg, const char* key, void* item)
 {
   counters_t* gold = arg;
   int location;
@@ -109,7 +115,7 @@ static void insertgold(void* arg, const char* key, void* item)
   }
 }
 
-static void insertplayers(void* arg, const char* key, void* item)
+static void insertPlayers(void* arg, const char* key, void* item)
 {
   set_t* plocations = arg;  // if this location is in player locations
                             // insert player symbol as this item
@@ -139,11 +145,11 @@ set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* g
   return NULL;
 }
 
-static void insertHelper(void* arg, const char* key, void* item)
+static void mergeHelper(void* arg, const char* key, void* item)
 {
-  set_t* seenBefore = arg;
-  if (set_find(seenBefore, key) == NULL) {
-    set_insert(seenBefore, key, item);
+  set_t* newlyVisible = arg;
+  if (set_find(newlyVisible, key) == NULL) {
+    set_insert(newlyVisible, key, "g");
   }
 }
 
