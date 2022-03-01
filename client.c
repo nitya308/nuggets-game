@@ -113,26 +113,18 @@ static bool handleInput(void* arg)
     return true;
   }
 
-  // Allocate buffer for message that's maxBytes in length
-  char line[message_MaxBytes];
-
-  // read a line from stdin
-  if (fgets(line, message_MaxBytes, stdin) == NULL || fgets(line, message_MaxBytes, stdin) == 'Q') {
+  // Read client keystroke
+  char c = getch();
+  if (c == 'Q') {
     // EOF/EOT case: stop looping
-    message_send(*serverp, "QUIT");
+    message_send(*serverp, "KEY Q");
     return true;
   }
   
-  // Credit: miniclient.c
   else {
-    // strip trailing newline
-    const int len = strlen(line);
-    if (len > 0 && line[len - 1] == '\n') {
-      line[len - 1] = '\0';
-    }
-
     // send as message to server
-    message_send(*serverp, line);
+    char* message = "KEY %c", c;
+    message_send(*serverp, message);
   }
   return false;
 }
@@ -148,7 +140,29 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     return true;
   }
 
+  if (strncmp(message, "GOLD", strlen("GOLD")) == 0) {
 
+  }
+
+  if (strncmp(message, "GRID", strlen("GRID")) == 0) {
+    
+  }
+
+  if (strncmp(message, "OK", strlen("OK")) == 0) {
+    
+  }
+
+  if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
+    
+  }
+
+  if (strncmp(message, "ERROR", strlen("ERROR")) == 0) {
+    
+  }
+
+  else {
+    fprintf(stderr, "Server message has bad format.\n");
+  }
 }
 
 /**
