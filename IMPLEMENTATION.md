@@ -542,7 +542,7 @@ int* grid_locationConvert(grid_t*, int location);
 
 creates a string of visible locations from a set returned by grid_updateView or grid_displaySpectator  
 ```c
-char* grid_print(grid_t* grid, set_t* locations, set_t* playerLocations, counters_t* gold);
+char* grid_print(grid_t* grid, set_t* locations);
 ```
 
 Gives number of rows in grid
@@ -639,16 +639,16 @@ static void grid_delete(grid_t* grid);
 		have set item be null by default
 		set_insert the input argument set into this set
 
-#### static void insertGold
+#### insertGold
 	sscanf the string key into an integer key
 	if counters_get the key from the gold counter returns > 0
 		print a gold symbol * to the item (item in newly visible set)
 
-#### static void insertPlayers
+#### insertPlayers
 	if set_find the string key in the players set returns not null
 		insert its return value into the item (item in newly visible set)
 
-#### static void mergeHelper
+#### mergeHelper
 	if set_find the string key (from seen-before) returns null for newly-visible
 		insert the key into newly visible, with dummy char “g” item
 
@@ -670,10 +670,13 @@ static void grid_delete(grid_t* grid);
  
 #### grid_Print
 	Initialize empty printstring.
-	For int 0 to grid’s height*width
-		if the int (key) is not in the set of visible locations (set_find)
+	grid_locationConvert for coordinates
+		make string literal of int for keys into set
+		if the key) is not in the set of visible locations (set_find)
 			append a space “ “ to the printstring. 
-		else
+		else if key corresponds to dummy item “g”
+			append the grid character from that location to the printstring
+		else (means set contains special character like gold or player)
 			Append the char stored in the set to the printstring.
 		If int%grid width is 0
 			add a newline character to the printstring
