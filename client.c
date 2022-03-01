@@ -114,8 +114,8 @@ static bool handleInput(void* arg)
   }
 
   // Read client keystroke
-  char c = getch();
-  if (c == 'Q') {
+  char* c = getch();
+  if (c == "Q") {
     // EOF/EOT case: stop looping
     message_send(*serverp, "KEY Q");
     return true;
@@ -123,7 +123,7 @@ static bool handleInput(void* arg)
   
   else {
     // send as message to server
-    char* message = "KEY %c", c;
+    char* message = strcat("KEY", c);
     message_send(*serverp, message);
   }
   return false;
