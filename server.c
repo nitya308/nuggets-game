@@ -409,7 +409,7 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
   }
 }
 
-/* ***************** playerJoin ********************** */
+/* ***************** spectatorJoin ********************** */
 /*  
  * Adds a spectator to the server and sends GRID, GOLD, DISPLAY message to the spectator
  */
