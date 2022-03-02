@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ncurses.h>
-//#include "./libcs50/mem.h"
+#include "./libcs50/mem.h"
 #include "./support/message.h"
 #include "./support/log.h"
 
@@ -74,7 +74,7 @@ static int main(const int argc, char* argv[])
 
   mem_free(playerAttributes->display);
 
-  return 0; // if successful
+  return loopResult? 0 : 1; 
 }
 
 /**
