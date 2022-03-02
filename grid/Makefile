@@ -9,7 +9,6 @@ LIBS =
 LLIBS = ../libcs50/libcs50.a 
 
 
-
 CFLAGS = -Wall -pedantic -std=c11 -ggdb $(LOGGING) -I../lib
 CC = gcc
 MAKE = make
