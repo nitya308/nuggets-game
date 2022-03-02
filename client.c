@@ -141,23 +141,54 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   }
 
   if (strncmp(message, "GOLD", strlen("GOLD")) == 0) {
-
+    int n, p, r;
+    char* strMessage;
+    sscanf(message, "%s %d %d %d", strMessage, &n, &p, &r);
+    playerAttributes->goldCollected = n;
+    playerAttributes->purse = p;
+    playerAttributes->numGoldLeft = r;
   }
 
   if (strncmp(message, "GRID", strlen("GRID")) == 0) {
-    
+    int nrows;
+    int ncols;
+    char* strMessage;
+    sscanf(message, "%s %d %d", strMessage, &nrows, &ncols);
+    checkDisplay(nrows, ncols);
   }
 
   if (strncmp(message, "OK", strlen("OK")) == 0) {
-    
+    playerAttributes->playerID = message;
   }
 
   if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
+    playerAttributes->display = message;
+    clear();
+    if (playerAttributes->isPlayer) {
+      if (playerAttributes->goldCollected == 0) {
+        printf("Player %s has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft, playerAttributes->goldCollected);
+      }
+      else {
+          printf("Player %s has %d nuggets (%d nuggets unclaimed).\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft);
+      }
+    }
+    else {
+      printf("Spectator: %d nuggets unclaimed.\n", playerAttributes->numGoldLeft);
+    }
     
+    printf(playerAttributes->display);
+    refresh();
+
   }
 
   if (strncmp(message, "ERROR", strlen("ERROR")) == 0) {
-    
+    printf(stderr, "Error message received from server.\n");
+    clear();
+    if (playerAttributes->isPlayer) {
+      printf("Player %s has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft, playerAttributes->goldCollected);
+    }
+    printf(playerAttributes->display);
+    refresh();
   }
 
   else {
