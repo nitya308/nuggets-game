@@ -261,7 +261,6 @@ handleMessage(void* arg, const addr_t from, const char* message)
     if (islower(message)) {
       if (!player_moveRegular(player, message, game)) {
         // if character is not a valid move
-        // todo: log error here and ignore message
         printf(stderr, "Error. Invalid keystroke %s", message); // invalid input keystroke
       }
     }
@@ -330,8 +329,8 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
     hashtable_insert(addresses, message_stringAddr(client), client);
     *numPlayers++;
     message_send(client, "GRID");  // send grid message
-    message_send(client, );        // send gold message
-    message_send(client, );        // send display message
+    message_send(client, );  // send gold message
+    message_send(client, );  // send display message
   }
 }
 
