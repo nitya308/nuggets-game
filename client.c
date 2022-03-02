@@ -58,7 +58,7 @@ static int main(const int argc, char* argv[])
   // Check if client is player or spectator
   if (argc == 4 && argv[3] != NULL) {
     playerAttributes->isPlayer = true;
-    char* message = "PLAY %s", argv[3];
+    char* message = strcat("PLAY ", argv[3]);
     message_send(server, message);
   }
 
@@ -71,6 +71,8 @@ static int main(const int argc, char* argv[])
   bool loopResult = message_loop(&server, 0, NULL, handleInput, receiveMessage);
   message_done();
   endwin();
+
+  mem_free(playerAttributes->display);
 
   return 0; // if successful
 }
@@ -114,7 +116,7 @@ static bool handleInput(void* arg)
   }
 
   // Read client keystroke
-  char* c = getch();
+  char c = getch();
   if (c == "Q") {
     // EOF/EOT case: stop looping
     message_send(*serverp, "KEY Q");
