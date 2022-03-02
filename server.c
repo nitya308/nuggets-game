@@ -243,14 +243,13 @@ handleMessage(void* arg, const addr_t from, const char* message)
   }
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
-    playerJoin(realName, game->allPlayers, game->addresses from, game->grid, &game->numPlayers);
+    playerJoin(realName, game->allPlayers, game->addresses, from, game->grid, &game->numPlayers);
   }
   else if (strncmp(message, "SPECTATE ", strlen("SPECTATE ")) == 0) {
     spectatorJoin();
   }
   else if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
-    player_quit(from);
-    player_delete()
+    player_quit(from, game->allPlayers);
   }
   else if (isalpha(message)) {  // if message is a character
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
@@ -258,6 +257,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
       if (!player_moveRegular(player, message, game)) {
         // if character is not a valid move
         // todo: log error here and ignore message
+        printf(stderr, "Error. Invalid keystroke %s", message); // invalid input keystroke
       }
     }
     else {
