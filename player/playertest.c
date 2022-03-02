@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "player.h"
-#include "file.h"
+#include "../libcs50/file.h"
 
 /* **************************************** */
 int main()

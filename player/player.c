@@ -33,6 +33,7 @@ typedef struct player {
   char pID;
   char* name;
   int purse;
+  int recentGoldCollected;
   int currCoor;
   set_t* seenBefore;
 } player_t;
@@ -40,9 +41,9 @@ typedef struct player {
 // function prototypes
 player_t* player_new(char* name, grid_t* grid);
 bool player_updateCoordinate(player_t* player, hashtable_t allPlayers, grid_t* grid, counters_t* gold, int newCoor);
-int player_moveRegular(player_t* player, char move, game_t* game);
-int player_moveCapital(player_t* player, char move, game_t* game);
-int player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
+bool player_moveRegular(player_t* player, char move, game_t* game);
+bool player_moveCapital(player_t* player, char move, game_t* game);
+bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
 bool player_quit(char* address, hashtable_t* allPlayers);
 void player_delete(player_t* player);
