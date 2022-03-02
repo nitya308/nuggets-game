@@ -3,10 +3,10 @@
 #
 #
 
-OBJS = grid.o 
+OBJS = grid.o
 TOBJS = gridtest.o
-LIBS =
-LLIBS = ../libcs50/libcs50.a 
+LIBS = -lm
+LLIBS = ../libcs50/libcs50-given.a 
 
 
 
@@ -16,23 +16,22 @@ MAKE = make
 # for memory-leak tests
 VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 
-grid: $(OBJS) $(LLIBS)
-	$(CC) $(CFLAGS) $(OBJS) $(LLIBS) $(LIBS) -o $@
 
 grid.o: grid.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/file.h ../libcs50/mem.h
-
-gridtest:  $(OBJS) $(LLIBS)
-	$(CC) $(CFLAGS) $(TOBJS) $(LLIBS) $(LIBS) -o $@
-
 gridtest.o: grid.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/file.h ../libcs50/mem.h
 
+
+gridtest:  $(TOBJS) $(LLIBS)
+	$(CC) $(CFLAGS) $(TOBJS) $(OBJS) $(LLIBS) $(LIBS) -o $@
+
+
+
+all: gridtest
 
 .PHONY: test valgrind clean
 
 
-test: 
-	make -C ../libcs50
-	grid
+test: gridtest
 	./gridtest
 
 
