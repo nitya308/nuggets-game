@@ -21,7 +21,7 @@ grid.o: grid.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/file.h ../libcs
 gridtest.o: grid.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/file.h ../libcs50/mem.h
 
 
-gridtest:  $(TOBJS) $(LLIBS)
+gridtest:  $(TOBJS) $(OBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $(TOBJS) $(OBJS) $(LLIBS) $(LIBS) -o $@
 
 

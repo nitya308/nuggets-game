@@ -33,7 +33,7 @@ grid_t* grid_read(char* filename)
     char* word = NULL;
     int numrows = 0;
     int numcols = 0;
-    while (word = file_readLine(file)) {
+    while ((word = file_readLine(file))) {
       // count num rows
       // assume all rows same length
       numrows++;               
@@ -50,6 +50,7 @@ grid_t* grid_read(char* filename)
     grid->map = carr;
     grid->ncols = numcols;
     grid->nrows = numrows;
+    printf("%c\n", carr[4][5]);
     return grid;
   }
   else {
@@ -60,11 +61,11 @@ grid_t* grid_read(char* filename)
 
 int* grid_locationConvert(grid_t* grid, int loc)
 {
-  int coordinates[2];
+  int* coordinates = mem_malloc(2*sizeof(int));
   if (grid != NULL) {
     if (loc >= 0 && loc < (grid->ncols) * (grid->nrows)) {
-      coordinates[0] = loc / (grid->nrows);
-      coordinates[1] = loc % (grid->nrows);
+      coordinates[0] = loc / (grid->ncols);
+      coordinates[1] = loc % (grid->ncols);
       return coordinates;
     }
   }
@@ -112,7 +113,7 @@ set_t* grid_isVisible(grid_t* grid, int loc)
         for(int j = coordinates[1] -1; j <= coordinates[1] + 1; j++){
           if (carr[coordinates[0]][coordinates[1]]!=' '){
             //convert location back to integer
-            location = i*(grid_getNumberCols(grid)) + j-1;
+            location = i*(grid->ncols) + j-1;
             sprintf(intToStr, "%d", location);
             set_insert(visible,intToStr, "g");
           }
@@ -134,7 +135,7 @@ set_t* grid_isVisible(grid_t* grid, int loc)
 
           // if close to wall location, stop increasing radius, add to visible set
           if (carr[(int)col][(int)row]=='|' || carr[(int)col][(int)row]=='-'){
-            location = (int)row*(grid_getNumberCols(grid)) + (int)col-1;
+            location = (int)row*(grid->ncols) + (int)col-1;
             sprintf(intToStr, "%d", location);
             set_insert(visible,intToStr, "g");
             oncorner = false;
@@ -146,7 +147,7 @@ set_t* grid_isVisible(grid_t* grid, int loc)
             //if exactly on wall location
             if(carr[(int)col][(int)row]=='.'){
               //add the location, dummy character
-              location = (int)row*(grid_getNumberCols(grid)) + (int)col-1;
+              location = (int)row*(grid->ncols) + (int)col-1;
               sprintf(intToStr, "%d", location);
               set_insert(visible,intToStr, "g");
 
@@ -154,7 +155,7 @@ set_t* grid_isVisible(grid_t* grid, int loc)
             //if exactly on corner
             //add the location, dummy character
             if(carr[(int)col][(int)row]=='+'){
-              location = (int)row*(grid_getNumberCols(grid)) + (int)col-1;
+              location = (int)row*(grid->ncols) + (int)col-1;
               sprintf(intToStr, "%d", location);
               set_insert(visible,intToStr, "g");
               oncorner = true;
@@ -192,16 +193,13 @@ set_t* grid_updateView(grid_t* grid, int newloc,
   if (grid != NULL) {
     set_t* visible = grid_isVisible(grid, newloc);
     if (visible != NULL) {
-      void* arg = visible;
-      void* plocations = playerLocations;
-      void* goldlocations = gold;
-
+     
       //insert gold symbols into visible portion
       set_iterate(visible, gold, insertGold);  
       //insert players symbols into visible portion
-      set_iterate(visible, plocations, insertPlayers);
+      set_iterate(visible, playerLocations, insertPlayers);
       //extend visible using seenbefore locations
-      set_iterate(seenBefore, arg, mergeHelper);      
+      set_iterate(seenBefore, visible, mergeHelper);      
       return visible;
     }
   }
@@ -216,7 +214,7 @@ static void insertGold(void* arg, const char* key, void* item)
   if (counters_get(gold, location) > 0) {  // if this location is in gold locations
                                            // insert gold symbol as this item
     item = mem_malloc(sizeof(char));
-    sprintf(item, "%c", "*");
+    sprintf(item, "*");
   }
 }
 
@@ -240,13 +238,20 @@ set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* g
     // get size of grid
     // convert the int location to string literal, to insert into set
     char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
+    char* symbol;
     for (int i = 0; i < gridSize; i++) {
       sprintf(intToStr, "%d", i);
       if (counters_get(gold, i) > 0) {
         set_insert(allLocations, intToStr, "*");
       }
       else {
-        set_insert(allLocations, intToStr, set_find(playerLocations, intToStr));
+        symbol = set_find(playerLocations, intToStr);
+        if (symbol!=NULL){
+          set_insert(allLocations, intToStr, symbol);
+        }
+        else{
+          set_insert(allLocations, intToStr, "g");
+        }
       }
     }
     mem_free(intToStr);
@@ -269,36 +274,42 @@ char* grid_print(grid_t* grid, set_t* locations)
     int gridSize = (grid->ncols) * (grid->nrows);
     char** carr = grid->map;
     int* coordinates;
-    char* printString = mem_malloc(sizeof(char) * gridSize);
+    char* printString = mem_malloc(sizeof(char)* gridSize);
 
     char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
-    char symbol;
+    char* symbol;
 
     //run through all grid locations
     for (int i = 0; i < gridSize; i++) {           
       sprintf(intToStr, "%d", i);
-
+      printf("%s-------------\n", intToStr);
     //add newline chars
-      if (i % grid->ncols == 1) {                   
+      if (i % grid->ncols == 0) {                   
         strcat(printString, "\n");
+        printf("Added newline\n");
       }
       //if location is in set
-      if (set_find(locations, intToStr) != NULL) {
+      else if (set_find(locations, intToStr) != NULL) {
 
         //if not dummy character (means gold /player), print the symbol
         symbol = set_find(locations, intToStr);
         if(strcmp(symbol, "g")!=0){                 
-           strcat(printString, symbol);            
+           strcat(printString, symbol);  
+           printf("Added a symbol\n");          
         }
         else {
           //print the grid character corresponding to the location
-          coordinates = grid_locationConvert(grid, i);                           
-          strcat(printString, carr[coordinates[0]][coordinates[1]]);
+          coordinates = grid_locationConvert(grid, i); 
+          printf("%d %d\n", coordinates[0], coordinates[1]);
+          printf("%c\n", carr[coordinates[0]][coordinates[1]]);                          
+          sprintf(printString +i, "%c", carr[coordinates[0]][coordinates[1]]);
+          printf("Added grid point\n");   
         }
       }
       //if location not in set, print space (indicates not visible)
       else {
         strcat(printString, " ");
+        printf("Added space\n");
       }
     }
     mem_free(intToStr);
@@ -317,7 +328,7 @@ int grid_getNumberRows(grid_t* grid)
   return grid->nrows;
 }
 
-static void grid_delete(grid_t* grid)
+void grid_delete(grid_t* grid)
 {
   mem_free(grid->map);
   mem_free(grid);
