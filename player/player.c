@@ -81,6 +81,7 @@ player_t* player_new(char* name, grid_t* grid)
   }
   player->currCoor = coor;
   player->purse = grid_getGold(player->currCoor);
+  player->recentGoldCollected = player->purse;
   player->seenBefore = set_new();
   if (player->seenBefore == NULL) {
     // error allocating memory for name;
@@ -103,7 +104,7 @@ bool player_updateCoordinate(player_t* player, hashtable_t allPlayers, grid_t* g
 
 /**************** player_moveRegular ****************/
 /* see player.h for description */
-int player_moveRegular(player_t* player, char move, game_t* game)
+bool player_moveRegular(player_t* player, char move, game_t* game)
 {
   int newCoor;
   int cols = grid_getNumberCols(game->grid);
@@ -114,14 +115,14 @@ int player_moveRegular(player_t* player, char move, game_t* game)
     case 'h':
       if (player->currCoor % cols == 0) {
         // cannot move in that direction
-        return -1;
+        return false;
       }
       newCoor = player->currCoor - 1;
       break;
     case 'l':
       if ((player->currCoor + 1) % cols == 0) {
         // cannot move in that direction
-        return -1;
+        return false;
       }
       newCoor = player->currCoor + 1;
       break;
@@ -132,32 +133,32 @@ int player_moveRegular(player_t* player, char move, game_t* game)
       newCoor = player->currCoor - cols - 1;
       if ((newCoor + 1) % cols == 0) {
         // cannot move in that direction
-        return -1;
+        return false;
       }
       break;
     case 'u':
       newCoor = player->currCoor - cols + 1;
       if (newCoor % cols == 0) {
         // cannot move in that direction
-        return -1;
+        return false;
       }
       break;
     case 'b':
       newCoor = player->currCoor + cols - 1;
       if ((newCoor + 1) % cols == 0) {
         // cannot move in that direction
-        return -1;
+        return false;
       }
       break;
     case 'n':
       newCoor = player->currCoor + cols + 1;
       if (newCoor % cols == 0) {
         // cannot move in that direction
-        return -1;
+        return false;
       }
       break;
     default:
-      return -1;
+      return false;
   }
   if (grid_isOpen(game->grid, newCoor)) {
     if (player_swapLocations(player, game->allPlayers, newCoor)) {
@@ -165,7 +166,8 @@ int player_moveRegular(player_t* player, char move, game_t* game)
     }
     else {
       if (player_updateCoordinate(player, game->allPlayers, game->grid, game->gold, newCoor)) {
-        return player_collectGold(player, game->numGoldLeft, game->gold);
+        player_collectGold(player, game->numGoldLeft, game->gold);
+        return true;
       }
       else {
         return false;
@@ -179,34 +181,58 @@ int player_moveRegular(player_t* player, char move, game_t* game)
 bool player_moveCapital(player_t* player, char move, game_t* game)
 {
   int newCoor;
-  int move;
+  int cols = grid_getNumberCols(game->grid);
   switch (move) {
     case 'K':
-      newCoor = player->currCoor - grid_getNumberCols(game->grid);
+      newCoor = player->currCoor - cols;
       break;
     case 'H':
+      if (player->currCoor % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       newCoor = player->currCoor - 1;
       break;
     case 'L':
+      if ((player->currCoor + 1) % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       newCoor = player->currCoor + 1;
       break;
     case 'J':
-      newCoor = player->currCoor + grid_getNumberCols(game->grid);
+      newCoor = player->currCoor + cols;
       break;
     case 'Y':
-      newCoor = player->currCoor - grid_getNumberCols(game->grid) - 1;
+      newCoor = player->currCoor - cols - 1;
+      if ((newCoor + 1) % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       break;
     case 'U':
-      newCoor = player->currCoor - grid_getNumberCols(game->grid) + 1;
+      newCoor = player->currCoor - cols + 1;
+      if (newCoor % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       break;
     case 'B':
-      newCoor = player->currCoor + grid_getNumberCols(game->grid) - 1;
+      newCoor = player->currCoor + cols - 1;
+      if ((newCoor + 1) % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       break;
     case 'N':
-      newCoor = player->currCoor + grid_getNumberCols(game->grid) + 1;
+      newCoor = player->currCoor + cols + 1;
+      if (newCoor % cols == 0) {
+        // cannot move in that direction
+        return false;
+      }
       break;
     default:
-      return -1;
+      return false;
   }
   while (grid_isOpen(game->grid, newCoor)) {
     if (player_swapLocations(player, game->allPlayers, newCoor)) {
@@ -214,10 +240,11 @@ bool player_moveCapital(player_t* player, char move, game_t* game)
     }
     else {
       if (player_updateCoordinate(player, game->allPlayers, game->grid, game->gold, newCoor)) {
-        return player_collectGold(player, game->numGoldLeft, game->gold);
+        player_collectGold(player, game->numGoldLeft, game->gold);
+        return true;
       }
       else {
-        return -1;
+        return false;
       }
     }
     newCoor = newCoor + move;
@@ -232,10 +259,10 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
   if (newGold > 0 && newGold != 251) {
     player->purse = player->purse + newGold;
     *numGoldLeft -= newGold;
-    counters_set(gold, player->currCoor, 251);
-    return newGold;
+    player->recentGoldCollected = newGold;
+    return counters_set(gold, player->currCoor, 251);
   }
-  return 0;
+  return false;
 }
 
 /**************** player_swapLocations ****************/
