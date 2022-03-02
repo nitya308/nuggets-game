@@ -10,6 +10,8 @@
 #include "../libcs50/mem.h"
 #include "../libcs50/set.h"
 
+#define PI 3.14159265
+
 /**************** local types ****************/
 typedef struct grid {
   char** map;
@@ -88,27 +90,90 @@ set_t* grid_isVisible(grid_t* grid, int loc)
   //distinguish between a location being or not being in the set 
 
 
-  int* coordinates = grid_locationConvert(grid, loc);
-  if (coordinates!=NULL){
+
+  if (!grid_isOpen(grid,loc)){
+    int* coordinates = grid_locationConvert(grid, loc);
     set_t* visible = set_new();
     int gridSize = (grid->ncols) * (grid->nrows);
     char** carr = grid->map;
     char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize));
+    int location;
     
 
-
+    //for passageways, survey only adjacent points
     if (carr[coordinates[0]][coordinates[1]]=='#'){
       for(int i = coordinates[0] -1; i <= coordinates[0] + 1; i++){
         for(int j = coordinates[1] -1; j <= coordinates[1] + 1; j++){
           if (carr[coordinates[0]][coordinates[1]]!=' '){
-            sprintf(intToStr, "%d", loc);
+            //convert location back to integer
+            location = i*(grid_getNumberCols(grid)) + j-1;
+            sprintf(intToStr, "%d", location);
             set_insert(visible,intToStr, "g");
           }
         }
       }
     }
-    
-  }
+    else{
+      //location is in room spot
+      int maxr = (grid->ncols) + (grid->nrows);
+      double row = 0;
+      double col = 0;
+      bool oncorner = false;
+      double tolerance = 0.1;
+      //"look" in all directions
+      for (double theta = 0; theta < 2*PI; theta+=PI/180){
+        for (double radius = 0; radius <maxr; radius += 0.1){
+          row = coordinates[0]+radius*sin(theta);
+          col = coordinates[1]+radius*cos(theta);
+
+          // if close to wall location, stop increasing radius, add to visible set
+          if (carr[(int)col][(int)row]=='|' || carr[(int)col][(int)row]=='-'){
+            location = (int)row*(grid_getNumberCols(grid)) + (int)col-1;
+            sprintf(intToStr, "%d", location);
+            set_insert(visible,intToStr, "g");
+            oncorner = false;
+            //stop increasing radius
+            break;
+          }
+          //if exactly on some location
+          else if(((int)col - col)*((int)col - col) + ((int)row - row)*((int)row - row) < tolerance){
+            //if exactly on wall location
+            if(carr[(int)col][(int)row]=='.'){
+              //add the location, dummy character
+              location = (int)row*(grid_getNumberCols(grid)) + (int)col-1;
+              sprintf(intToStr, "%d", location);
+              set_insert(visible,intToStr, "g");
+
+            }
+            //if exactly on corner
+            //add the location, dummy character
+            if(carr[(int)col][(int)row]=='+'){
+              location = (int)row*(grid_getNumberCols(grid)) + (int)col-1;
+              sprintf(intToStr, "%d", location);
+              set_insert(visible,intToStr, "g");
+              oncorner = true;
+              //stop increasing radius
+              break;
+            }
+          }
+          else{
+            continue;
+          }
+          //if just recently encountered corner
+          //treat it like a wall (immediately stop increasing radius)
+          if(oncorner){
+            if(carr[(int)col][(int)row]=='+'){
+              break;
+            }
+          }
+        }
+      }
+    }
+    mem_free(intToStr);
+
+    return visible;
+  } 
+  return NULL;
 }
 
 /**************grid_updateView()*********************/
@@ -163,19 +228,23 @@ static void insertPlayers(void* arg, const char* key, void* item)
  */
 set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* gold)
 {
-  set_t* allLocations = set_new();
-  int gridSize = (grid->ncols) * (grid->nrows);
-  // get size of grid
-  // convert the int location to string literal, to insert into set
-  char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
-  for (int i = 0; i < gridSize; i++) {
-    sprintf(intToStr, "%d", i);
-    if (counters_get(gold, i) > 0) {
-      set_insert(allLocations, intToStr, "*");
+  if (grid!=NULL){
+    set_t* allLocations = set_new();
+    int gridSize = (grid->ncols) * (grid->nrows);
+    // get size of grid
+    // convert the int location to string literal, to insert into set
+    char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
+    for (int i = 0; i < gridSize; i++) {
+      sprintf(intToStr, "%d", i);
+      if (counters_get(gold, i) > 0) {
+        set_insert(allLocations, intToStr, "*");
+      }
+      else {
+        set_insert(allLocations, intToStr, set_find(playerLocations, intToStr));
+      }
     }
-    else {
-      set_insert(allLocations, intToStr, set_find(playerLocations, intToStr));
-    }
+    mem_free(intToStr);
+    return allLocations;
   }
   return NULL;
 }
@@ -226,7 +295,10 @@ char* grid_print(grid_t* grid, set_t* locations)
         strcat(printString, " ");
       }
     }
+    mem_free(intToStr);
+    return printString;
   }
+  return NULL;
 }
 
 int grid_getNumberCols(grid_t* grid)
