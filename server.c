@@ -410,6 +410,8 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
     hashtable_insert(allPlayers, message_stringAddr(*client), newPlayer);  // store new player in allPlayers
     hashtable_insert(addresses, message_stringAddr(*client), client);      // store new player's address
     message_send(*client, gridMessage);                                    // send grid message
+    hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);            // send gold messages to all players
+    hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);         // send display messages to all players
     // message_send(*client, goldMessage);     // send gold message
     // message_send(*client, displayMessage);  // send display message
     *numPlayers++;
