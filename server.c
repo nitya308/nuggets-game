@@ -157,9 +157,14 @@ generateRandomLocations(int numGoldPiles, int* arr)
 static void
 generateGoldDistribution(int numGoldPiles, int* arr)
 {
-  int goldRemaining = GoldTotal;  // track number of gold left to allocate
-  int i = numGoldPiles;
-  // while (i)
+  int goldRemaining = GoldTotal - numGoldPiles;  // track number of gold left to allocate -1 for each pile
+  int i = numGoldPiles - 1;
+  while (i > 0) {
+    int gold = (rand() % goldRemaining) + 1;
+    arr[i] = gold;
+    goldRemaining -= gold;
+  }
+  arr[0] = goldRemaining + 1;
 }
 
 /* ***************** parseArgs ********************** */
@@ -325,8 +330,8 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
     hashtable_insert(addresses, message_stringAddr(client), client);
     *numPlayers++;
     message_send(client, "GRID");  // send grid message
-    message_send(client, );  // send gold message
-    message_send(client, );  // send display message
+    message_send(client, );        // send gold message
+    message_send(client, );        // send display message
   }
 }
 
