@@ -170,5 +170,22 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
  */
 static void checkDisplay(int nrow, int ncol)
 {
+  // Initialize display
+  initscr();
+  cbreak();
+  noecho();
 
+  // Set uo row and column variables
+  int row;
+  int col;
+
+  playerAttributes->display = mem_malloc_assert(65507, "Out of memory\n");
+  getmaxyx(stdscr, row, col);
+
+  while (row < nrow + 1 || col < ncol + 1) {
+    printw("Please increase the size of your display window and click enter\n");
+    if (getch() == "\n") {
+      getmaxyx(stdscr, row, col);
+    }
+  }
 }
