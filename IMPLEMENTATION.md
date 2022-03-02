@@ -582,12 +582,7 @@ static void grid_delete(grid_t* grid);
 	Initialize array element of grid to this array
 	Set grid height and width elements
 
-<<<<<<< HEAD
 #### grid_isOpen
-=======
-
-#### `grid_isOpen`
->>>>>>> origin/player-feature
 	if null grid or location < 0 or location > height times width
 		return false;
 	make array of 2 ints by calling grid_locationConvert on the int location.
@@ -596,7 +591,6 @@ static void grid_delete(grid_t* grid);
 	else
 		return false;
 
-<<<<<<< HEAD
 #### grid_isVisible
 	call locationConvert on the input integer
 	if current location is in passage 
@@ -631,11 +625,6 @@ static void grid_delete(grid_t* grid);
 						break radius loop (corner is treated like wall spot now)
 
 
-=======
-
-#### `grid_isVisible`
-	Call locationConvert on the input integer
->>>>>>> origin/player-feature
 
 #### `grid_updateView`
 	If grid, gold counter, player locations set, input set not null, and int input location >=0
@@ -651,7 +640,6 @@ static void grid_delete(grid_t* grid);
 		have set item be null by default
 		set_insert the input argument set into this set
 
-<<<<<<< HEAD
 #### insertGold
 	sscanf the string key into an integer key
 	if counters_get the key from the gold counter returns > 0
@@ -666,9 +654,6 @@ static void grid_delete(grid_t* grid);
 		insert the key into newly visible, with dummy char “g” item
 
 #### grid_displaySpectator
-=======
-#### `grid_displaySpectator`
->>>>>>> origin/player-feature
 	if grid, gold counter, player locations set all not null,
 		create an empty set of integer keys (locations) and character items
 		convert integer location to string
