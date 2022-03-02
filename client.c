@@ -19,7 +19,7 @@ typedef struct playerAttributes {
   bool isPlayer;
   int numGoldLeft;
   int goldCollected;
-  char* display;
+  const char* display;
 } playerAttributes_t;
 
 
@@ -36,7 +36,7 @@ playerAttributes_t* playerAttributes;
 /**
  * main
  */
-static int main(const int argc, char* argv[])
+int main(const int argc, char* argv[])
 {
   // Validate argv[1] and argv[2] from command-line args first
   parseArgs(argc, argv);
@@ -74,7 +74,7 @@ static int main(const int argc, char* argv[])
 
   mem_free(playerAttributes->display);
 
-  return 0; // if successful
+  return loopResult? 0 : 1; // if successful
 }
 
 /**
@@ -117,7 +117,8 @@ static bool handleInput(void* arg)
 
   // Read client keystroke
   char c = getch();
-  if (c == "Q") {
+  char str[2] = {c, '\0'};
+  if (c == 'Q') {
     // EOF/EOT case: stop looping
     message_send(*serverp, "KEY Q");
     return true;
@@ -125,7 +126,7 @@ static bool handleInput(void* arg)
   
   else {
     // send as message to server
-    char* message = strcat("KEY", c);
+    char* message = strcat("KEY", str);
     message_send(*serverp, message);
   }
   return false;
@@ -144,7 +145,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
 
   if (strncmp(message, "GOLD", strlen("GOLD")) == 0) {
     int n, p, r;
-    char* strMessage;
+    char* strMessage = "";
     sscanf(message, "%s %d %d %d", strMessage, &n, &p, &r);
     playerAttributes->goldCollected = n;
     playerAttributes->purse = p;
@@ -154,13 +155,13 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   if (strncmp(message, "GRID", strlen("GRID")) == 0) {
     int nrows;
     int ncols;
-    char* strMessage;
+    char* strMessage = "";
     sscanf(message, "%s %d %d", strMessage, &nrows, &ncols);
     checkDisplay(nrows, ncols);
   }
 
   if (strncmp(message, "OK", strlen("OK")) == 0) {
-    playerAttributes->playerID = message;
+    playerAttributes->playerID = message[0];
   }
 
   if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
@@ -168,34 +169,34 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     clear();
     if (playerAttributes->isPlayer) {
       if (playerAttributes->goldCollected == 0) {
-        printf("Player %s has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft, playerAttributes->goldCollected);
+        printf("Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft, playerAttributes->goldCollected);
       }
       else {
-          printf("Player %s has %d nuggets (%d nuggets unclaimed).\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft);
+          printf("Player %c has %d nuggets (%d nuggets unclaimed).\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft);
       }
     }
     else {
       printf("Spectator: %d nuggets unclaimed.\n", playerAttributes->numGoldLeft);
     }
     
-    printf(playerAttributes->display);
+    printf("%s", playerAttributes->display);
     refresh();
-
   }
 
   if (strncmp(message, "ERROR", strlen("ERROR")) == 0) {
-    printf(stderr, "Error message received from server.\n");
+    fprintf(stderr, "Error message received from server.\n");
     clear();
     if (playerAttributes->isPlayer) {
-      printf("Player %s has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft, playerAttributes->goldCollected);
+      printf("Player %c has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft);
     }
-    printf(playerAttributes->display);
+    printf("%s", playerAttributes->display);
     refresh();
   }
 
   else {
     fprintf(stderr, "Server message has bad format.\n");
   }
+  return false;
 }
 
 /**
@@ -217,7 +218,7 @@ static void checkDisplay(int nrow, int ncol)
 
   while (row < nrow + 1 || col < ncol + 1) {
     printw("Please increase the size of your display window and click enter\n");
-    if (getch() == "\n") {
+    if (getch() == '\n') {
       getmaxyx(stdscr, row, col);
     }
   }
