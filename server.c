@@ -33,7 +33,7 @@ static void spectatorJoin(addr_t* address);
 static void buildGrid(grid_t* grid, char* argv);
 static void gameDelete();
 static void deletePlayer(void* item);
-static void sendQuit(void* arg, const char* addr, void* item);
+static void sendEndGame(void* arg, const char* addr, void* item);
 static void itemcount(void* arg, const char* key, void* item);
 /**************** local types ****************/
 typedef struct game {
@@ -254,30 +254,26 @@ handleMessage(void* arg, const addr_t from, const char* message)
     spectatorJoin();
   }
   else if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
+    message_send(from, "QUIT Thanks for playing!\n");
     player_quit(from, game->allPlayers);
   }
   else if (isalpha(message)) {  // if message is a character
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
-    if (islower(message)) {
+    if (islower(message)) { // lower character
       if (!player_moveRegular(player, message, game)) {
         // if character is not a valid move
         printf(stderr, "Error. Invalid keystroke %s", message); // invalid input keystroke
       }
     }
-    else {
-      if (message == 'Q') {  // if quit
-        player_quit(from, game->allPlayers);
-      }
-      else {
-        if (!player_moveCapital(player, message, game)) {
-          // if character is not a valid move
-          printf(stderr, "Error. Invalid keystroke %s", message); // invalid input keystroke
-        }
+    else {  // if capital letter
+      if (!player_moveCapital(player, message, game)) {
+        // if character is not a valid move
+        printf(stderr, "Error. Invalid keystroke %s", message); // invalid input keystroke
       }
     }
-    if (game->numGoldLeft == 0) {
+    if (game->numGoldLeft == 0) { // if no more gold left
       char* summary = player_summary(game->allPlayers);
-      hashtable_iterate(game->allPlayers, summary, sendQuit);  // send quit message to all clients with summary
+      hashtable_iterate(game->allPlayers, summary, sendEndGame);  // send quit message to all clients with summary
       hashtable_delete(game->allPlayers, deletePlayer);        // delete every player in hashtable
       return true;
     }
@@ -307,13 +303,15 @@ deletePlayer(void* item)
 }
 
 static void
-sendQuit(void* arg, const char* addr, void* item)
+sendEndGame(void* arg, const char* addr, void* item)
 {
-  char* quitMessage = "QUIT GAME OVER:\n";
-  char* message = arg;
-  strcat(quitMessage, message);
-  addr_t addrCast = addr;
-  message_send((addr_t*)addrCast, quitMessage);
+  char* message = "QUIT GAME OVER:\n";
+  char* summary = arg;
+  strcat(message, summary);
+  addr_t addrCast = hashtable_find(game->addresses, addr);
+  if (addrCast != NULL) {
+    message_send(addrCast, message);
+  }
 }
 
 static void
@@ -329,7 +327,7 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
     hashtable_insert(allPlayers, message_stringAddr(client), newPlayer);
     hashtable_insert(addresses, message_stringAddr(client), client);
     *numPlayers++;
-    message_send(client, "GRID");  // send grid message
+    message_send(client, "GRID %d %d", grid_getNumberRows(game->grid), grid_getNumberCols(game->grid));  // send grid message
     message_send(client, );  // send gold message
     message_send(client, );  // send display message
   }
@@ -338,14 +336,14 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
 static void
 spectatorJoin(addr_t* address)
 {
-  if (game->spectatorAddress == NULL) {
+  if (game->spectatorAddress == NULL) { // if no spectator, set address
     game->spectatorAddress = address;
   }
   else {
-    message_send(game->spectatorAddress, "QUIT");
-    game->spectatorAddress = address;
-    message_send(game->spectatorAddress, "GRID");     // send grid message
-    message_send(game->spectatorAddress, "GOLD");     // send gold message
+    message_send(game->spectatorAddress, "QUIT You have been replaced by a new spectator.\n");
+    game->spectatorAddress = address;                 // update new address
+    message_send(game->spectatorAddress, "GRID %d %d", grid_getNumberRows(game->grid), grid_getNumberCols(game->grid));     // send grid message
+    message_send(game->spectatorAddress, "GOLD %d %d %d", 0, 0, game->numGoldLeft);     // send gold message
     message_send(game->spectatorAddress, "DISPLAY");  // send display message
   }
 }
