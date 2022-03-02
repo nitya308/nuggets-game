@@ -7,9 +7,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ncurses.h>
-//#include "./libcs50/mem.h"
-#include "./support/message.h"
-#include "./support/log.h"
+#include "libcs50/mem.h"
+#include "support/message.h"
+#include "support/log.h"
 
 
 // Data structures
@@ -72,7 +72,7 @@ int main(const int argc, char* argv[])
   message_done();
   endwin();
 
-  mem_free(playerAttributes->display);
+  mem_free((char*)(playerAttributes->display));
 
   return loopResult? 0 : 1; // if successful
 }
@@ -145,8 +145,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
 
   if (strncmp(message, "GOLD", strlen("GOLD")) == 0) {
     int n, p, r;
-    char* strMessage = "";
-    sscanf(message, "%s %d %d %d", strMessage, &n, &p, &r);
+    sscanf(message, "GOLD %d %d %d", &n, &p, &r);
     playerAttributes->goldCollected = n;
     playerAttributes->purse = p;
     playerAttributes->numGoldLeft = r;
@@ -155,13 +154,13 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   if (strncmp(message, "GRID", strlen("GRID")) == 0) {
     int nrows;
     int ncols;
-    char* strMessage = "";
-    sscanf(message, "%s %d %d", strMessage, &nrows, &ncols);
+    sscanf(message, "GRID %d %d", &nrows, &ncols);
     checkDisplay(nrows, ncols);
   }
 
   if (strncmp(message, "OK", strlen("OK")) == 0) {
-    playerAttributes->playerID = message[0];
+    const char* id = message + strlen("OK");
+    playerAttributes->playerID = *id;
   }
 
   if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
