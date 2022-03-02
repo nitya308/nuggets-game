@@ -271,7 +271,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
       else {
         if (!player_moveCapital(player, message, game)) {
           // if character is not a valid move
-          // todo: log error here and ignore message
+          printf(stderr, "Error. Invalid keystroke %s", message); // invalid input keystroke
         }
       }
     }
@@ -309,10 +309,11 @@ deletePlayer(void* item)
 static void
 sendQuit(void* arg, const char* addr, void* item)
 {
-  // message = "QUIT GAME OVER:\n" + arg;
+  char* quitMessage = "QUIT GAME OVER:\n";
   char* message = arg;
+  strcat(quitMessage, message);
   addr_t addrCast = addr;
-  message_send((addr_t*)addrCast, message);
+  message_send((addr_t*)addrCast, quitMessage);
 }
 
 static void
