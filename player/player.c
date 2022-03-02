@@ -10,12 +10,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../grid/grid.h"
 #include "../libcs50/bag.h"
 #include "../libcs50/counters.h"
 #include "../libcs50/hashtable.h"
 #include "../libcs50/mem.h"
 #include "../libcs50/set.h"
-#include "grid.h"
 #include "server.h"
 
 /**************** file-local global variables ****************/
@@ -40,9 +40,9 @@ typedef struct player {
 // function prototypes
 player_t* player_new(char* name, grid_t* grid);
 bool player_updateCoordinate(player_t* player, hashtable_t allPlayers, grid_t* grid, counters_t* gold, int newCoor);
-bool player_moveRegular(player_t* player, char move, game_t* game);
-bool player_moveCapital(player_t* player, char move, game_t* game);
-bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
+int player_moveRegular(player_t* player, char move, game_t* game);
+int player_moveCapital(player_t* player, char move, game_t* game);
+int player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
 bool player_quit(char* address, hashtable_t* allPlayers);
 void player_delete(player_t* player);
@@ -102,7 +102,7 @@ bool player_updateCoordinate(player_t* player, hashtable_t allPlayers, grid_t* g
 
 /**************** player_moveRegular ****************/
 /* see player.h for description */
-bool player_moveRegular(player_t* player, char move, game_t* game)
+int player_moveRegular(player_t* player, char move, game_t* game)
 {
   int newCoor;
   int cols = grid_getNumberCols(game->grid);
@@ -113,14 +113,14 @@ bool player_moveRegular(player_t* player, char move, game_t* game)
     case 'h':
       if (player->currCoor % cols == 0) {
         // cannot move in that direction
-        return false;
+        return -1;
       }
       newCoor = player->currCoor - 1;
       break;
     case 'l':
       if ((player->currCoor + 1) % cols == 0) {
         // cannot move in that direction
-        return false;
+        return -1;
       }
       newCoor = player->currCoor + 1;
       break;
@@ -131,32 +131,32 @@ bool player_moveRegular(player_t* player, char move, game_t* game)
       newCoor = player->currCoor - cols - 1;
       if ((newCoor + 1) % cols == 0) {
         // cannot move in that direction
-        return false;
+        return -1;
       }
       break;
     case 'u':
       newCoor = player->currCoor - cols + 1;
       if (newCoor % cols == 0) {
         // cannot move in that direction
-        return false;
+        return -1;
       }
       break;
     case 'b':
       newCoor = player->currCoor + cols - 1;
       if ((newCoor + 1) % cols == 0) {
         // cannot move in that direction
-        return false;
+        return -1;
       }
       break;
     case 'n':
       newCoor = player->currCoor + cols + 1;
       if (newCoor % cols == 0) {
         // cannot move in that direction
-        return false;
+        return -1;
       }
       break;
     default:
-      return false;
+      return -1;
   }
   if (grid_isOpen(game->grid, newCoor)) {
     if (player_swapLocations(player, game->allPlayers, newCoor)) {
@@ -164,8 +164,7 @@ bool player_moveRegular(player_t* player, char move, game_t* game)
     }
     else {
       if (player_updateCoordinate(player, game->allPlayers, game->grid, game->gold, newCoor)) {
-        player_collectGold(player, game->numGoldLeft, game->gold);
-        return true;
+        return player_collectGold(player, game->numGoldLeft, game->gold);
       }
       else {
         return false;
@@ -206,7 +205,7 @@ bool player_moveCapital(player_t* player, char move, game_t* game)
       newCoor = player->currCoor + grid_getNumberCols(game->grid) + 1;
       break;
     default:
-      return false;
+      return -1;
   }
   while (grid_isOpen(game->grid, newCoor)) {
     if (player_swapLocations(player, game->allPlayers, newCoor)) {
@@ -214,11 +213,10 @@ bool player_moveCapital(player_t* player, char move, game_t* game)
     }
     else {
       if (player_updateCoordinate(player, game->allPlayers, game->grid, game->gold, newCoor)) {
-        player_collectGold(player, game->numGoldLeft, game->gold);
-        return true;
+        return player_collectGold(player, game->numGoldLeft, game->gold);
       }
       else {
-        return false;
+        return -1;
       }
     }
     newCoor = newCoor + move;
@@ -233,9 +231,10 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
   if (newGold > 0 && newGold != 251) {
     player->purse = player->purse + newGold;
     *numGoldLeft -= newGold;
-    return counters_set(gold, player->currCoor, 251);
+    counters_set(gold, player->currCoor, 251);
+    return newGold;
   }
-  return false;
+  return 0;
 }
 
 /**************** player_swapLocations ****************/
