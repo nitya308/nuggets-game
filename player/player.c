@@ -39,7 +39,7 @@ typedef struct player {
 
 // function prototypes
 player_t* player_new(char* name, grid_t* grid);
-bool player_updateCoordinate(player_t* player, int newCoor);
+bool player_updateCoordinate(player_t* player, hashtable_t allPlayers, grid_t* grid, counters_t* gold, int newCoor);
 bool player_moveRegular(player_t* player, char move, game_t* game);
 bool player_moveCapital(player_t* player, char move, game_t* game);
 bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
@@ -93,10 +93,11 @@ player_t* player_new(char* name, grid_t* grid)
 
 /**************** player_updateCoordinate ****************/
 /* see player.h for description */
-bool player_updateCoordinate(player_t* player, int newCoor)
+bool player_updateCoordinate(player_t* player, hashtable_t allPlayers, grid_t* grid, counters_t* gold, int newCoor)
 {
   player->currCoor = newCoor;
-  return set_insert(player->seenBefore, newCoor, NULL);
+  set_t playerLocations = player_locations(allPlayers);
+  grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
 }
 
 /**************** player_moveRegular ****************/
@@ -162,7 +163,7 @@ bool player_moveRegular(player_t* player, char move, game_t* game)
       return true;
     }
     else {
-      if (player_updateCoordinate(player, newCoor)) {
+      if (player_updateCoordinate(player, game->allPlayers, game->grid, game->gold, newCoor)) {
         player_collectGold(player, game->numGoldLeft, game->gold);
         return true;
       }
@@ -212,7 +213,7 @@ bool player_moveCapital(player_t* player, char move, game_t* game)
       return true;
     }
     else {
-      if (player_updateCoordinate(player, newCoor)) {
+      if (player_updateCoordinate(player, game->allPlayers, game->grid, game->gold, newCoor)) {
         player_collectGold(player, game->numGoldLeft, game->gold);
         return true;
       }
