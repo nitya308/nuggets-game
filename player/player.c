@@ -12,6 +12,7 @@
 
 #include "../grid/grid.h"
 #include "../libcs50/counters.h"
+#include "../libcs50/file.h"
 #include "../libcs50/hashtable.h"
 #include "../libcs50/mem.h"
 #include "../libcs50/set.h"
@@ -74,10 +75,14 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
   }
   strcpy(player->name, name);
   // set to random coordinate within grid!!!
-  int coor = rand();
+  int coor = rand() % (grid_getNumberRows(grid) * grid_getNumberRows(grid));
+  printf("%s\n", "in player");
+  fflush(stdout);
   while (!grid_isOpen(grid, coor)) {
     coor = rand();
   }
+  printf("%s\n", "fails here");
+  fflush(stdout);
   player->currCoor = coor;
   player_collectGold(player, numGoldLeft, gold);
   player->recentGoldCollected = player->purse;

@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include "../grid/grid.h"
 #include "../libcs50/counters.h"
+#include "../libcs50/file.h"
 #include "../libcs50/hashtable.h"
 #include "../libcs50/mem.h"
 #include "../libcs50/set.h"
