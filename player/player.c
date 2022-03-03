@@ -49,6 +49,13 @@ void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
 set_t* player_locations(hashtable_t* allPlayers);
 
+// Getter method prototypes
+int player_getCurrCoor(player_t* player);
+char player_getID(player_t* player);
+int player_getpurse(player_t* player);
+int player_getRecentGold(player_t* player);
+set_t* player_getSeenBefore(player_t* player);
+
 /**************** local functions ****************/
 /* not visible outside this file */
 static void swap_helper(void* arg, const char* key, void* item);
@@ -76,13 +83,9 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
   strcpy(player->name, name);
   // set to random coordinate within grid!!!
   int coor = rand() % (grid_getNumberRows(grid) * grid_getNumberRows(grid));
-  printf("%s\n", "in player");
-  fflush(stdout);
   while (!grid_isOpen(grid, coor)) {
     coor = rand();
   }
-  printf("%s\n", "fails here");
-  fflush(stdout);
   player->currCoor = coor;
   player_collectGold(player, numGoldLeft, gold);
   player->recentGoldCollected = player->purse;
@@ -103,6 +106,7 @@ bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* 
   player->currCoor = newCoor;
   set_t* playerLocations = player_locations(allPlayers);
   player->seenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
+  set_delete(playerLocations, NULL);
   return true;
 }
 
@@ -367,4 +371,45 @@ static void location_helper(void* arg, const char* key, void* item)
     set_insert(locationSet, coorString, pIDString);
     free(coorString);
   }
+}
+
+// Getter methods
+int player_getCurrCoor(player_t* player)
+{
+  if (player == NULL) {
+    return -1;
+  }
+  return player->currCoor;
+}
+
+char player_getID(player_t* player)
+{
+  if (player == NULL) {
+    return '\0';
+  }
+  return player->pID;
+}
+
+int player_getpurse(player_t* player)
+{
+  if (player == NULL) {
+    return -1;
+  }
+  return player->purse;
+}
+
+int player_getRecentGold(player_t* player)
+{
+  if (player == NULL) {
+    return -1;
+  }
+  return player->recentGoldCollected;
+}
+
+set_t* player_getSeenBefore(player_t* player)
+{
+  if (player == NULL) {
+    return NULL;
+  }
+  return player->seenBefore;
 }

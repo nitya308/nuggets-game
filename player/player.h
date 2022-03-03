@@ -50,7 +50,7 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
  * We do:
  *   update the player's seenBefore set to add the updated coordinate
  */
-bool player_updateCoordinate(player_t* player, int newCoor);
+bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor);
 
 /**************** player_moveRegular ****************/
 /* Allow player to move once with lowercase key press
@@ -173,3 +173,10 @@ char* player_summary(hashtable_t* allPlayers);
 void player_delete(player_t* player);
 
 #endif // __player_H
+
+// Getter method prototypes
+int player_getCurrCoor(player_t* player);
+char player_getID(player_t* player);
+int player_getpurse(player_t* player);
+int player_getRecentGold(player_t* player);
+set_t* player_getSeenBefore(player_t* player);
