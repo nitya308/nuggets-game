@@ -85,11 +85,13 @@ int main(const int argc, char* argv[])
 
 
   //Now test with player locations and gold symbols
+  //Will not display symbols in not-open locations
+  //Should not see player "C"
 
   set_t* playerLoc = set_new();
   set_insert(playerLoc,"42","A");
   set_insert(playerLoc,"58", "B");
-  set_insert(playerLoc,"180", "C");
+  set_insert(playerLoc,"181", "C");
   set_insert(playerLoc, "193","D");
 
   counters_t* gold = counters_new();
@@ -97,32 +99,34 @@ int main(const int argc, char* argv[])
   counters_add(gold,75);
   counters_add(gold,100);
   counters_add(gold,206);
-  counters_add(gold,145);
+  counters_add(gold,146);
 
-  printf("Maxing set of locations...\n");
+  printf("Maxing set of locations, players and gold on grid...\n");
   allLocations = set_new();
   allLocations = grid_displaySpectator(grid, playerLoc,gold);
 
   //print the set to a string
   printf("Printing the view to string...\n");
   printString = grid_print(grid, allLocations);
-  printf("Spectator sees the following: \n%s\n",printString);
+  printf("Spectator sees the following (should not see \"C\"): \n%s\n",printString);
   set_delete(allLocations,NULL);
 
 
-  set_t* visible = set_new();
-  
-  
+  //testing the visiblity feature
 
-  //for(int i =0; i< grid_getNumberRows(grid)*grid_getNumberCols(grid); i++){
-    
-    visible = grid_updateView(grid,38,NULL,NULL,NULL);
-    
-  // }
-  char* printstring = grid_print(grid, visible);
-  printf("%s", printstring);
-  set_delete(visible, NULL);
-  mem_free(printstring);
+  set_t* visible = set_new();
+  visible = grid_isVisible(grid,92);
+  printf("Printing the view to string...\n");
+  //visible = grid_updateView(grid,198,visible,playerLoc,gold);
+  printString = grid_print(grid, visible);
+  printf("Player D sees the following: \n%s\n",printString);
+
+  
+  
+  // char* printstring = grid_print(grid, visible);
+  // printf("%s", printstring);
+  // set_delete(visible, NULL);
+  // mem_free(printstring);
   
     return 0;
 }

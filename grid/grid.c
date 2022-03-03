@@ -97,22 +97,30 @@ set_t* grid_isVisible(grid_t* grid, int loc)
 
 
 
-  if (!grid_isOpen(grid,loc)){
-    int* coordinates = grid_locationConvert(grid, loc);
-    set_t* visible = set_new();
+  if (grid_isOpen(grid,loc)){
     int gridSize = (grid->ncols) * (grid->nrows);
-    char** carr = grid->map;
+    
+    //insert the @ symbol into center of visible set
+    set_t* visible = set_new();
     char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize));
+    sprintf(intToStr, "%d", loc);
+    set_insert(visible,intToStr, "@");
+
+
+    
+    char** carr = grid->map;
+    int* coordinates = grid_locationConvert(grid, loc);
     int location;
     
 
     //for passageways, survey only adjacent points
     if (carr[coordinates[0]][coordinates[1]]=='#'){
+      printf("Passage\n");
       for(int i = coordinates[0] -1; i <= coordinates[0] + 1; i++){
         for(int j = coordinates[1] -1; j <= coordinates[1] + 1; j++){
           if (carr[coordinates[0]][coordinates[1]]!=' '){
             //convert location back to integer
-            location = i*(grid->ncols) + j-1;
+            location = i*(grid->ncols) + j;
             sprintf(intToStr, "%d", location);
             set_insert(visible,intToStr, "g");
           }
@@ -127,48 +135,61 @@ set_t* grid_isVisible(grid_t* grid, int loc)
       bool oncorner = false;
       double tolerance = 0.1;
       //"look" in all directions
-      for (double theta = 0; theta < 2*PI; theta+=PI/180){
+      for (double theta = 0; theta < 2*PI; theta+=PI/3600){
         for (double radius = 0; radius <maxr; radius += 0.1){
           row = coordinates[0]+radius*sin(theta);
           col = coordinates[1]+radius*cos(theta);
-
+          //printf("row %f col %f\n", row, col);
+          
           // if close to wall location, stop increasing radius, add to visible set
-          if (carr[(int)col][(int)row]=='|' || carr[(int)col][(int)row]=='-'){
-            location = (int)row*(grid->ncols) + (int)col-1;
+          if (carr[(int)row][(int)col]=='|' || carr[(int)row][(int)col]=='-'|| carr[(int)row][(int)col]=='#'| carr[(int)row][(int)col]=='+'){
+            //printf("Close to wall\n");
+            location = (int)row*(grid->ncols) + (int)col;
             sprintf(intToStr, "%d", location);
+            //printf("%d\n", location);
             set_insert(visible,intToStr, "g");
+            //printf("%c\n",carr[(int)row][(int)col]);
             oncorner = false;
             //stop increasing radius
             break;
           }
           //if exactly on some location
           else if(((int)col - col)*((int)col - col) + ((int)row - row)*((int)row - row) < tolerance){
-            //if exactly on wall location
-            if(carr[(int)col][(int)row]=='.'){
+            //if exactly on room location
+            //printf("Exactly on: ");
+            if(carr[(int)row][(int)col]=='.'){
+             // printf("room\n");
               //add the location, dummy character
-              location = (int)row*(grid->ncols) + (int)col-1;
+              location = (int)row*(grid->ncols) + (int)col;
               sprintf(intToStr, "%d", location);
               set_insert(visible,intToStr, "g");
+             // printf("%c\n",carr[(int)row][(int)col]);
 
             }
             //if exactly on corner
             //add the location, dummy character
-            if(carr[(int)col][(int)row]=='+'){
-              location = (int)row*(grid->ncols) + (int)col-1;
+            
+            if(carr[(int)row][(int)col]=='+'){
+             // printf("corner\n");
+              location = (int)row*(grid->ncols) + (int)col;
               sprintf(intToStr, "%d", location);
               set_insert(visible,intToStr, "g");
+            //  printf("%c\n",carr[(int)row][(int)col]);
               oncorner = true;
               //stop increasing radius
               break;
             }
           }
           else{
+          //  printf("Continuing\n");
             continue;
           }
           //if just recently encountered corner
           //treat it like a wall (immediately stop increasing radius)
           if(oncorner){
-            if(carr[(int)col][(int)row]=='+'){
+           // printf("oncorner\n");
+            if(carr[(int)row][(int)col]=='+'){
+           //   printf("broke\n");
               break;
             }
           }
@@ -192,13 +213,19 @@ set_t* grid_updateView(grid_t* grid, int newloc,
   if (grid != NULL) {
     set_t* visible = grid_isVisible(grid, newloc);
     if (visible != NULL) {
-     
+      
+      char* intToStr = mem_malloc(sizeof(char)*(int)log10(newloc));
+      sprintf(intToStr, "%d", newloc);
+      
+      
+      
+      
       //insert gold symbols into visible portion
-      set_iterate(visible, gold, insertGold);  
+      //set_iterate(visible, gold, insertGold);  
       //insert players symbols into visible portion
-      set_iterate(visible, playerLocations, insertPlayers);
+      //set_iterate(visible, playerLocations, insertPlayers);
       //extend visible using seenbefore locations
-      set_iterate(seenBefore, visible, mergeHelper);      
+      //set_iterate(seenBefore, visible, mergeHelper);      
       return visible;
     }
   }
@@ -306,7 +333,6 @@ char* grid_print(grid_t* grid, set_t* locations)
         //if location not in set, print space (indicates not visible)
         else {
           strcat(printString, " ");
-          printf("Added space\n");
         }
       
       }
