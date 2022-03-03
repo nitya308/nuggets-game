@@ -18,7 +18,7 @@ playertest: $(OBJS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 playertest.o: player.h
-player.o: player.h  ../libcs50/file.h ../libcs50/hashtable.h ../libcs50/counters.h ../libcs50/set.h ../grid/grid.h 
+player.o: player.h  ../libcs50/mem.h ../libcs50/hashtable.h ../libcs50/counters.h ../libcs50/set.h ../grid/grid.h 
 
 .PHONY: test valgrind clean
 

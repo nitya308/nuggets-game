@@ -11,9 +11,11 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "../libcs50/hashtable.h"
-#include "../libcs50/set.h"
 #include "../grid/grid.h"
+#include "../libcs50/counters.h"
+#include "../libcs50/hashtable.h"
+#include "../libcs50/mem.h"
+#include "../libcs50/set.h"
 
 /**************** global types ****************/
 typedef struct player player_t;  // opaque to users of the module

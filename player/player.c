@@ -11,7 +11,6 @@
 #include <string.h>
 
 #include "../grid/grid.h"
-#include "../libcs50/bag.h"
 #include "../libcs50/counters.h"
 #include "../libcs50/hashtable.h"
 #include "../libcs50/mem.h"
