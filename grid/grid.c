@@ -87,7 +87,7 @@ bool grid_isOpen(grid_t* grid, int loc)
   return false; 
 }
 
-set_t* grid_isVisible(grid_t* grid, int loc)
+set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* gold)
 {
 
   //returns set of locations (string literal key for location, 
@@ -104,13 +104,17 @@ set_t* grid_isVisible(grid_t* grid, int loc)
     set_t* visible = set_new();
     char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize));
     sprintf(intToStr, "%d", loc);
-    set_insert(visible,intToStr, "@");
-
+    
 
     
+    set_insert(visible,intToStr, "@");
+    
+            
+
+    int location;
     char** carr = grid->map;
     int* coordinates = grid_locationConvert(grid, loc);
-    int location;
+    
     
 
     //for passageways, survey only adjacent points
@@ -122,7 +126,17 @@ set_t* grid_isVisible(grid_t* grid, int loc)
             //convert location back to integer
             location = i*(grid->ncols) + j;
             sprintf(intToStr, "%d", location);
-            set_insert(visible,intToStr, "g");
+            
+
+            if(counters_get(gold,location)>0){
+              set_insert(visible,intToStr, "*");
+            }else if(set_find(playerLocations,intToStr)!=NULL){
+              set_insert(visible,intToStr, set_find(playerLocations,intToStr));
+            }
+            else{
+              set_insert(visible,intToStr, "g");
+            }
+
           }
         }
       }
@@ -147,7 +161,17 @@ set_t* grid_isVisible(grid_t* grid, int loc)
             location = (int)row*(grid->ncols) + (int)col;
             sprintf(intToStr, "%d", location);
             //printf("%d\n", location);
-            set_insert(visible,intToStr, "g");
+
+
+
+            if(counters_get(gold,location)>0){
+              set_insert(visible,intToStr, "*");
+            }else if(set_find(playerLocations,intToStr)!=NULL){
+              set_insert(visible,intToStr, set_find(playerLocations,intToStr));
+            }
+            else{
+              set_insert(visible,intToStr, "g");
+            }
             //printf("%c\n",carr[(int)row][(int)col]);
             oncorner = false;
             //stop increasing radius
@@ -162,7 +186,15 @@ set_t* grid_isVisible(grid_t* grid, int loc)
               //add the location, dummy character
               location = (int)row*(grid->ncols) + (int)col;
               sprintf(intToStr, "%d", location);
-              set_insert(visible,intToStr, "g");
+
+              if(counters_get(gold,location)>0){
+                set_insert(visible,intToStr, "*");
+              }else if(set_find(playerLocations,intToStr)!=NULL){
+                set_insert(visible,intToStr, set_find(playerLocations,intToStr));
+              }
+              else{
+                set_insert(visible,intToStr, "g");
+              }
              // printf("%c\n",carr[(int)row][(int)col]);
 
             }
@@ -173,7 +205,16 @@ set_t* grid_isVisible(grid_t* grid, int loc)
              // printf("corner\n");
               location = (int)row*(grid->ncols) + (int)col;
               sprintf(intToStr, "%d", location);
-              set_insert(visible,intToStr, "g");
+
+              if(counters_get(gold,location)>0){
+                set_insert(visible,intToStr, "*");
+              }else if(set_find(playerLocations,intToStr)!=NULL){
+                set_insert(visible,intToStr, set_find(playerLocations,intToStr));
+              }
+              else{
+                set_insert(visible,intToStr, "g");
+              }
+
             //  printf("%c\n",carr[(int)row][(int)col]);
               oncorner = true;
               //stop increasing radius
@@ -211,7 +252,7 @@ set_t* grid_updateView(grid_t* grid, int newloc,
                        set_t* seenBefore, set_t* playerLocations, counters_t* gold)
 {
   if (grid != NULL) {
-    set_t* visible = grid_isVisible(grid, newloc);
+    set_t* visible = grid_isVisible(grid, newloc,playerLocations,gold);
     if (visible != NULL) {
       
       char* intToStr = mem_malloc(sizeof(char)*(int)log10(newloc));
@@ -225,7 +266,7 @@ set_t* grid_updateView(grid_t* grid, int newloc,
       //insert players symbols into visible portion
       //set_iterate(visible, playerLocations, insertPlayers);
       //extend visible using seenbefore locations
-      //set_iterate(seenBefore, visible, mergeHelper);      
+      set_iterate(seenBefore, visible, mergeHelper);      
       return visible;
     }
   }
