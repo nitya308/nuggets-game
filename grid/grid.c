@@ -41,7 +41,7 @@ grid_t* grid_read(char* filename)
       mem_free(word);
     }
     rewind(file);
-    char* carr[numrows];
+    char** carr = mem_malloc(sizeof(char*)*numrows);
 
     // fill the char array
     for (int i = 0; i < numrows; i++) {  
@@ -50,7 +50,6 @@ grid_t* grid_read(char* filename)
     grid->map = carr;
     grid->ncols = numcols;
     grid->nrows = numrows;
-    printf("%c\n", carr[4][5]);
     return grid;
   }
   else {
@@ -226,7 +225,7 @@ static void insertPlayers(void* arg, const char* key, void* item)
   item = set_find(plocations, key);
 }
 
-/****************gold_displaySpectator()*******************/
+/****************grid_displaySpectator()*******************/
 /* returns set of all locations in the grid, with gold symbols and player symbol
  *characters in approporatie locxations
  */
@@ -241,16 +240,21 @@ set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* g
     char* symbol;
     for (int i = 0; i < gridSize; i++) {
       sprintf(intToStr, "%d", i);
-      if (counters_get(gold, i) > 0) {
-        set_insert(allLocations, intToStr, "*");
+      if(!grid_isOpen(grid, i)){
+        set_insert(allLocations, intToStr, "g");
       }
-      else {
-        symbol = set_find(playerLocations, intToStr);
-        if (symbol!=NULL){
-          set_insert(allLocations, intToStr, symbol);
+      else{
+        if (counters_get(gold, i) > 0) {
+          set_insert(allLocations, intToStr, "*");
         }
-        else{
-          set_insert(allLocations, intToStr, "g");
+        else {
+          symbol = set_find(playerLocations, intToStr);
+          if (symbol!=NULL){
+            set_insert(allLocations, intToStr, symbol);
+          }
+          else{
+            set_insert(allLocations, intToStr, "g");
+          }
         }
       }
     }
@@ -280,37 +284,33 @@ char* grid_print(grid_t* grid, set_t* locations)
     char* symbol;
 
     //run through all grid locations
-    for (int i = 0; i < gridSize; i++) {           
-      sprintf(intToStr, "%d", i);
-      printf("%s-------------\n", intToStr);
-    //add newline chars
-      if (i % grid->ncols == 0) {                   
-        strcat(printString, "\n");
-        printf("Added newline\n");
-      }
-      //if location is in set
-      else if (set_find(locations, intToStr) != NULL) {
+    for (int i = 0; i < grid->nrows; i++) {  
+      strcat(printString, "\n");
+        
+      for (int j = 0; j < grid->ncols; j++){
+        sprintf(intToStr, "%d", i*(grid->ncols)+j);
 
-        //if not dummy character (means gold /player), print the symbol
-        symbol = set_find(locations, intToStr);
-        if(strcmp(symbol, "g")!=0){                 
-           strcat(printString, symbol);  
-           printf("Added a symbol\n");          
+        //if location is in set
+        if (set_find(locations, intToStr) != NULL) {
+          //if not dummy character (means gold /player), print the symbol
+          symbol = set_find(locations, intToStr);
+          if(strcmp(symbol, "g")!=0){                 
+            sprintf(printString +i*((grid->ncols)+1)+j+1, "%s", symbol);  
+            printf("Added a symbol %s\n", symbol);          
+          }
+          else {
+          //print the grid character corresponding to the location                       
+            sprintf(printString + i*((grid->ncols)+1)+j+1, "%c", carr[i][j]);
+          }
         }
+        //if location not in set, print space (indicates not visible)
         else {
-          //print the grid character corresponding to the location
-          coordinates = grid_locationConvert(grid, i); 
-          printf("%d %d\n", coordinates[0], coordinates[1]);
-          printf("%c\n", carr[coordinates[0]][coordinates[1]]);                          
-          sprintf(printString +i, "%c", carr[coordinates[0]][coordinates[1]]);
-          printf("Added grid point\n");   
+          strcat(printString, " ");
+          printf("Added space\n");
         }
+      
       }
-      //if location not in set, print space (indicates not visible)
-      else {
-        strcat(printString, " ");
-        printf("Added space\n");
-      }
+      
     }
     mem_free(intToStr);
     return printString;
