@@ -115,7 +115,7 @@ int main(const int argc, char* argv[])
   //testing the visiblity feature
 
   set_t* visible = set_new();
-  visible = grid_isVisible(grid,92);
+  visible = grid_isVisible(grid,82,playerLoc,gold);
   printf("Printing the view to string...\n");
   printString = grid_print(grid, visible);
   printf("Player D sees the following: \n%s\n",printString);

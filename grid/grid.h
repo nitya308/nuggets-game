@@ -18,7 +18,7 @@ int* grid_locationConvert(grid_t* grid, int loc);
 
 bool grid_isOpen(grid_t* grid, int loc);
 
-set_t* grid_isVisible(grid_t* grid, int loc);
+set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* gold);
 
 set_t* grid_updateView(grid_t* grid, int newloc,
                        set_t* seenBefore, set_t* playerLocations, counters_t* gold);
