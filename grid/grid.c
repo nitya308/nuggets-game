@@ -20,8 +20,6 @@ typedef struct grid {
 
 
 /******************local functions**************/
-static void insertPlayers(void* arg, const char* key, void* item);
-static void insertGold(void* arg, const char* key, void* item);
 static void mergeHelper(void* arg, const char* key, void* item);
 
 
@@ -156,7 +154,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* 
           //printf("row %f col %f\n", row, col);
           
           // if close to wall location, stop increasing radius, add to visible set
-          if (carr[(int)row][(int)col]=='|' || carr[(int)row][(int)col]=='-'|| carr[(int)row][(int)col]=='#'| carr[(int)row][(int)col]=='+'){
+          if (carr[(int)row][(int)col]=='|' || carr[(int)row][(int)col]=='-'|| carr[(int)row][(int)col]=='#'|| carr[(int)row][(int)col]=='+'){
             //printf("Close to wall\n");
             location = (int)row*(grid->ncols) + (int)col;
             sprintf(intToStr, "%d", location);
@@ -260,12 +258,6 @@ set_t* grid_updateView(grid_t* grid, int newloc,
       
       
       
-      
-      //insert gold symbols into visible portion
-      //set_iterate(visible, gold, insertGold);  
-      //insert players symbols into visible portion
-      //set_iterate(visible, playerLocations, insertPlayers);
-      //extend visible using seenbefore locations
       set_iterate(seenBefore, visible, mergeHelper);      
       return visible;
     }
@@ -273,25 +265,7 @@ set_t* grid_updateView(grid_t* grid, int newloc,
   return NULL;
 }
 
-static void insertGold(void* arg, const char* key, void* item)
-{
-  counters_t* gold = arg;
-  int location;
-  sscanf(key, "%d", &location);
-  if (counters_get(gold, location) > 0) {  // if this location is in gold locations
-                                           // insert gold symbol as this item
-    item = mem_malloc(sizeof(char));
-    sprintf(item, "*");
-  }
-}
 
-static void insertPlayers(void* arg, const char* key, void* item)
-{
-  // if this location is in player location
-  // insert player symbol as this item
-  set_t* plocations = arg;  
-  item = set_find(plocations, key);
-}
 
 /****************grid_displaySpectator()*******************/
 /* returns set of all locations in the grid, with gold symbols and player symbol
@@ -345,7 +319,7 @@ char* grid_print(grid_t* grid, set_t* locations)
   if (grid != NULL && locations != NULL) {
     int gridSize = (grid->ncols) * (grid->nrows);
     char** carr = grid->map;
-    int* coordinates;
+  
     char* printString = mem_malloc(sizeof(char)* gridSize);
 
     char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
