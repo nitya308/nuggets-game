@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "counters.h"
-#include "grid.h"
-#include "hashtable.h"
-#include "mem.h"
-#include "message.h"
-#include "player.h"
+#include "grid/grid.h"
+#include "libcs50/counters.h"
+#include "libcs50/hashtable.h"
+#include "libcs50/mem.h"
+#include "player/player.h"
+#include "support/message.h"
 
 /**
  * crawler - explores a file starting from the given webpage, and at each page, the
@@ -38,6 +38,7 @@ static void stringDelete(void* item);
 static void sendDisplayMessage(void* arg, const char* addr, void* item);
 static void sendGoldMessage(void* arg, const char* addr, void* item);
 static void sendEndMessage(void* arg, const char* addr, void* item);
+static void initializeGame(char* argv);
 /**************** local types ****************/
 typedef struct game {
   hashtable_t* allPlayers;
@@ -251,10 +252,10 @@ handleMessage(void* arg, const addr_t from, const char* message)
   }
   else if (isalpha(message)) {  // if message is a character
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
-    if (islower(message)) {                                       // lower character
-      if (!player_moveRegular(player, message, game)) {           // if not valid keystroke given
-        fprintf(stderr, "Error. Invalid keystroke %s", message);  // invalid input keystroke
-        message_send(from, "ERROR. Invalid keystroke.\n");        // invalid input keystroke
+    if (islower(message)) {                                                                                        // lower character
+      if (!player_moveRegular(player, message, game->allPlayers, game->grid, game->gold, &(game->numGoldLeft))) {  // if not valid keystroke given
+        fprintf(stderr, "Error. Invalid keystroke %s", message);                                                   // invalid input keystroke
+        message_send(from, "ERROR. Invalid keystroke.\n");                                                         // invalid input keystroke
       }
       else {
         // player was successfully moved
@@ -273,7 +274,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
         player_quit(message_stringAddr(from), game->allPlayers);
       }
       else {
-        if (!player_moveCapital(player, message, game)) {
+        if (!player_moveCapital(player, message, game->allPlayers, game->grid, game->gold, &(game->numGoldLeft))) {
           // if not valid keystroke given
           fprintf(stderr, "Error. Invalid keystroke %s", message);  // invalid input keystroke
           message_send(from, "ERROR. Invalid keystroke.\n");
@@ -390,8 +391,12 @@ static void
 playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers)
 {
   if (*numPlayers < MaxPlayers) {
-    player_t* newPlayer = player_new(name, grid);
-
+    player_t* newPlayer = player_new(name, grid, &(game->numGoldLeft), game->gold);
+    if (game->numGoldLeft == 0) {  // if no more gold left
+      endGame();
+    }
+    set_t* playerLocations = player_locations(allPlayers);
+    player->seenBefore = grid_updateView(grid, player->currCoor, player->seenBefore, playerLocations, game->gold);
     int buffer = 20;
 
     // grid message
@@ -419,7 +424,7 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
 }
 
 /* ***************** spectatorJoin ********************** */
-/*  
+/*
  * Adds a spectator to the server and sends GRID, GOLD, DISPLAY message to the spectator
  */
 static void
