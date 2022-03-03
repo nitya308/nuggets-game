@@ -35,7 +35,7 @@ int main()
   int p1coor = player_getCurrCoor(p1);
   printf("%d\n", p1coor);
 
-  // player_updateCoordinate(p1, allPlayers, grid, gold, 6);
+  player_updateCoordinate(p1, allPlayers, grid, gold, 6);
 
   p1coor = player_getCurrCoor(p1);
   printf("%d\n", p1coor);

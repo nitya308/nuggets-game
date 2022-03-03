@@ -61,6 +61,7 @@ set_t* player_getSeenBefore(player_t* player);
 static void swap_helper(void* arg, const char* key, void* item);
 static void summary_helper(void* arg, const char* key, void* item);
 static void location_helper(void* arg, const char* key, void* item);
+static void stringfree(void* item);
 
 /**************** player_new ****************/
 /* see player.h for description */
@@ -105,9 +106,15 @@ bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* 
 {
   player->currCoor = newCoor;
   set_t* playerLocations = player_locations(allPlayers);
-  player->seenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
-  set_delete(playerLocations, NULL);
+  set_t* newSeenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
+  set_delete(player->seenBefore, stringfree);
+  player->seenBefore = newSeenBefore;
+  set_delete(playerLocations, stringfree);
   return true;
+}
+
+static void stringfree(void* item){
+  free(item);
 }
 
 /**************** player_moveRegular ****************/
