@@ -16,17 +16,9 @@
 #include "../libcs50/hashtable.h"
 #include "../libcs50/mem.h"
 #include "../libcs50/set.h"
-#include "server.h"
 
 /**************** file-local global variables ****************/
 /* none */
-
-/**************** local types ****************/
-struct playerSwap {
-  player_t* player;
-  int newCoor;
-  bool swapped;
-};
 
 /**************** global types ****************/
 typedef struct player {
@@ -38,26 +30,34 @@ typedef struct player {
   set_t* seenBefore;
 } player_t;
 
+/**************** local types ****************/
+typedef struct playerSwap {
+  player_t* player;
+  int newCoor;
+  bool swapped;
+} player_swapstruct;
+
 // function prototypes
-player_t* player_new(char* name, grid_t* grid);
-bool player_updateCoordinate(player_t* player, hashtable_t allPlayers, grid_t* grid, counters_t* gold, int newCoor);
-bool player_moveRegular(player_t* player, char move, game_t* game);
-bool player_moveCapital(player_t* player, char move, game_t* game);
+player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold);
+bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor);
+bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
+bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
 bool player_quit(char* address, hashtable_t* allPlayers);
 void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
+set_t* player_locations(hashtable_t* allPlayers);
 
 /**************** local functions ****************/
 /* not visible outside this file */
-static counternode_t* counternode_new(const int key);
 static void swap_helper(void* arg, const char* key, void* item);
-static void summary_helper(void* arg, char* key, void* item);
+static void summary_helper(void* arg, const char* key, void* item);
+static void location_helper(void* arg, const char* key, void* item);
 
 /**************** player_new ****************/
 /* see player.h for description */
-player_t* player_new(char* name, grid_t* grid)
+player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold)
 {
   mem_assert(name, "name provided was null");
   player_t* player = mem_malloc(sizeof(player_t));
@@ -66,7 +66,7 @@ player_t* player_new(char* name, grid_t* grid)
   }
   char ID = 'A';
   player->pID = ID;
-  player->name = mem_malloc_asser(strlen(name) + 1);
+  player->name = mem_malloc_assert(strlen(name) + 1, "null player");
   if (player->name == NULL) {
     // error allocating memory for name;
     // cleanup and return error
@@ -76,11 +76,11 @@ player_t* player_new(char* name, grid_t* grid)
   strcpy(player->name, name);
   // set to random coordinate within grid!!!
   int coor = rand();
-  while (!grid_isOpen(coor, grid)) {
+  while (!grid_isOpen(grid, coor)) {
     coor = rand();
   }
   player->currCoor = coor;
-  player->purse = grid_getGold(player->currCoor);
+  player_collectGold(player, numGoldLeft, gold);
   player->recentGoldCollected = player->purse;
   player->seenBefore = set_new();
   if (player->seenBefore == NULL) {
@@ -89,25 +89,25 @@ player_t* player_new(char* name, grid_t* grid)
     mem_free(player);
     return NULL;
   }
-  set_insert(player->seenBefore, player->currCoor, NULL);
   return player;
 }
 
 /**************** player_updateCoordinate ****************/
 /* see player.h for description */
-bool player_updateCoordinate(player_t* player, hashtable_t allPlayers, grid_t* grid, counters_t* gold, int newCoor)
+bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor)
 {
   player->currCoor = newCoor;
-  set_t playerLocations = player_locations(allPlayers);
-  grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
+  set_t* playerLocations = player_locations(allPlayers);
+  player->seenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
+  return true;
 }
 
 /**************** player_moveRegular ****************/
 /* see player.h for description */
-bool player_moveRegular(player_t* player, char move, game_t* game)
+bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft)
 {
   int newCoor;
-  int cols = grid_getNumberCols(game->grid);
+  int cols = grid_getNumberCols(grid);
   switch (move) {
     case 'k':
       newCoor = player->currCoor - cols;
@@ -160,13 +160,13 @@ bool player_moveRegular(player_t* player, char move, game_t* game)
     default:
       return false;
   }
-  if (grid_isOpen(game->grid, newCoor)) {
-    if (player_swapLocations(player, game->allPlayers, newCoor)) {
+  if (grid_isOpen(grid, newCoor)) {
+    if (player_swapLocations(player, allPlayers, newCoor)) {
       return true;
     }
     else {
-      if (player_updateCoordinate(player, game->allPlayers, game->grid, game->gold, newCoor)) {
-        player_collectGold(player, game->numGoldLeft, game->gold);
+      if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
+        player_collectGold(player, numGoldLeft, gold);
         return true;
       }
       else {
@@ -174,14 +174,15 @@ bool player_moveRegular(player_t* player, char move, game_t* game)
       }
     }
   }
+  return false;
 }
 
 /**************** player_moveCapital ****************/
 /* see player.h for description */
-bool player_moveCapital(player_t* player, char move, game_t* game)
+bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft)
 {
   int newCoor;
-  int cols = grid_getNumberCols(game->grid);
+  int cols = grid_getNumberCols(grid);
   switch (move) {
     case 'K':
       newCoor = player->currCoor - cols;
@@ -234,13 +235,13 @@ bool player_moveCapital(player_t* player, char move, game_t* game)
     default:
       return false;
   }
-  while (grid_isOpen(game->grid, newCoor)) {
-    if (player_swapLocations(player, game->allPlayers, newCoor)) {
+  while (grid_isOpen(grid, newCoor)) {
+    if (player_swapLocations(player, allPlayers, newCoor)) {
       return true;
     }
     else {
-      if (player_updateCoordinate(player, game->allPlayers, game->grid, game->gold, newCoor)) {
-        player_collectGold(player, game->numGoldLeft, game->gold);
+      if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
+        player_collectGold(player, numGoldLeft, gold);
         return true;
       }
       else {
@@ -249,6 +250,7 @@ bool player_moveCapital(player_t* player, char move, game_t* game)
     }
     newCoor = newCoor + move;
   }
+  return true;
 }
 
 /**************** player_collectGold ****************/
@@ -270,7 +272,7 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor)
 {
   struct playerSwap args = {currPlayer, newCoor, false};
-  hashtable_iterate(allPlayers, &args, swapHelper);
+  hashtable_iterate(allPlayers, &args, swap_helper);
   return args.swapped;
 }
 
@@ -322,12 +324,14 @@ char* player_summary(hashtable_t* allPlayers)
 
 /**************** summary_helper ****************/
 /* helps add the summary of each player */
-static void summary_helper(void* arg, char* key, void* item)
+static void summary_helper(void* arg, const char* key, void* item)
 {
   player_t* player = item;
-  char* addition = player->pID;
+  char addition[2];
+  addition[0] = player->pID;
+  addition[1] = '\0';
   char num[4];
-  sprintf(num, "%5d ", player->purse);
+  sprintf(num, "%d", player->purse);
   strcat(addition, num);
   strcat(addition, player->name);
   strcat(addition, "\n");
@@ -346,11 +350,17 @@ set_t* player_locations(hashtable_t* allPlayers)
 
 /**************** location_Helper ****************/
 /* helps add the location of each player to the locationSet */
-static void location_helper(void* arg, char* key, void* item)
+static void location_helper(void* arg, const char* key, void* item)
 {
   set_t* locationSet = arg;
   player_t* player = item;
   if (player != NULL) {
-    set_insert(locationSet, player->currCoor, player->pID);
+    char* coorString = malloc(11);
+    sprintf(coorString, "%d", player->currCoor);
+    char pIDString[2];
+    pIDString[0] = player->pID;
+    pIDString[1] = '\0';
+    set_insert(locationSet, coorString, pIDString);
+    free(coorString);
   }
 }

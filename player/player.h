@@ -31,7 +31,7 @@ typedef struct player player_t;  // opaque to users of the module
  * Caller is responsible for:
  *   later calling player_delete();
  */
-player_t* player_new(char* name, grid_t* grid);
+player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold);
 
 /**************** player_updateCoordinate ****************/
 /* Update the coordinate of a player
@@ -64,7 +64,7 @@ bool player_updateCoordinate(player_t* player, int newCoor);
  *   true if success
  *   false if any error or move was invalid
  */
-bool player_moveRegular(player_t* player, char move, game_t* game);
+bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 
 /**************** player_moveCapital ****************/
 /* Allow player to move until possible once with uppercase key press
@@ -82,7 +82,7 @@ bool player_moveRegular(player_t* player, char move, game_t* game);
  *   true if success
  *   false if any error or move was invalid
  */
-bool player_moveCapital(player_t* player, char move, game_t* game);
+bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 
 /**************** player_collectGold ****************/
 /* Collect gold in new location of there is any

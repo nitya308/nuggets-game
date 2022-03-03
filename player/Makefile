@@ -2,7 +2,7 @@
 #
 # Nitya Agarwala, Feb 2022
 
-OBJS = playertest.o player.o ../lib/hashtable.o ../lib/file.o ../lib/mem.o ../set/set.o ../grid/grid.o
+OBJS = playertest.o player.o
 LIBS =
 
 # uncomment the following to turn on verbose memory logging
@@ -18,9 +18,7 @@ playertest: $(OBJS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 playertest.o: player.h
-player.o: player.h  ../lib/file.h ../lib/hashtable.h ../grid/grid.h
-../lib/file.o: ../lib/file.h
-../set/set.o: ../set/set.h
+player.o: player.h  ../libcs50/file.h ../libcs50/hashtable.h ../libcs50/counters.h ../libcs50/set.h ../grid/grid.h 
 
 .PHONY: test valgrind clean
 
