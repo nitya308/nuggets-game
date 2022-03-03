@@ -31,4 +31,4 @@ int grid_getNumberCols(grid_t* grid);
 
 int grid_getNumberRows(grid_t* grid);
 
-static void grid_delete(grid_t* grid);
+void grid_delete(grid_t* grid);
