@@ -70,7 +70,10 @@ int* grid_locationConvert(grid_t* grid, int loc)
     }
     mem_free(coordinates);
   }
-  mem_free(coordinates);
+  else{
+   mem_free(coordinates); 
+  }
+  
   return NULL;
 }
 
@@ -89,7 +92,6 @@ bool grid_isOpen(grid_t* grid, int loc)
       return true;
     }
   }
-  mem_free(coordinates);
   return false;
 }
 

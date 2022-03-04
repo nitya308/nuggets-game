@@ -22,7 +22,7 @@ int main(const int argc, char* argv[])
 
   //read a small grid file (valid, and assume right format) into a grid structure
   printf("Reading grid from visdemo.txt...\n");
-  grid = grid_read("small.txt");
+  grid = grid_read("visdemo.txt");
   if(grid == NULL){
     fprintf(stderr,"Error reading grid\n");
   }
