@@ -10,12 +10,12 @@ P = player
 G = grid
 SERVEROBJS = server.o
 CLIENTOBJS = client.o
-LLIBS = $S/support.a $L/libcs50-given.a $P/player.a $G/grid.a
+LLIBS = $S/support.a $P/player.a $G/grid.a $L/libcs50-given.a
 
 # uncomment the following to turn on file saving, finding logs.
 # TESTING=-DAPPTEST
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(TESTING) -I$L -I$S -I$P -I$G
+CFLAGS = -Wall -pedantic -std=c11 -ggdb $(TESTING) -I./$L -I./$S -I./$P -I./$G
 CC = gcc
 MAKE = make
 # for memory-leak tests
@@ -35,12 +35,12 @@ client.o: $S/message.h $S/log.h $L/mem.h
 # If libcs50 contains set.c, we build a fresh libcs50.a;
 # otherwise we use the pre-built library provided by instructor.
 all: 
-	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
+# (cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
 	make -C support
 	make -C grid
 	make -C player
-	server 
-	client
+	make server 
+	make client
 	
 ############### TAGS for emacs users ##########
 TAGS:  Makefile */Makefile */*.c */*.h */*.md */*.sh
