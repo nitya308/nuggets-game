@@ -22,7 +22,7 @@
 
 /**************** global types ****************/
 typedef struct player {
-  char pID;
+  char* pID;
   char* name;
   int purse;
   int recentGoldCollected;
@@ -53,7 +53,7 @@ void itemPrint2(FILE* fp, const char* key, void* item);
 
 // Getter method prototypes
 int player_getCurrCoor(player_t* player);
-char player_getID(player_t* player);
+char* player_getID(player_t* player);
 int player_getpurse(player_t* player);
 int player_getRecentGold(player_t* player);
 set_t* player_getSeenBefore(player_t* player);
@@ -79,7 +79,9 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
   }
   int intID = 65 + numPlayers;
   char ID = (char)intID;
-  player->pID = ID;
+  char* pID = malloc(2);
+  sprintf(pID, "%c", ID);
+  player->pID = pID;
   player->name = mem_malloc_assert(strlen(name) + 1, "null player");
   if (player->name == NULL) {
     // error allocating memory for name;
@@ -93,6 +95,7 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
   while (!grid_isOpen(grid, coor)) {
     coor = rand();
   }
+  player->purse = 0;
   player->currCoor = coor;
   player_collectGold(player, numGoldLeft, gold);
   player->recentGoldCollected = player->purse;
@@ -113,8 +116,9 @@ bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* 
   player->currCoor = newCoor;
   set_t* playerLocations = player_locations(allPlayers);
   set_t* newSeenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
+  set_delete(player->seenBefore, NULL);
   player->seenBefore = newSeenBefore;
-  set_delete(playerLocations, NULL);
+  set_delete(playerLocations, stringfree);
   return true;
 }
 
@@ -327,6 +331,7 @@ bool player_quit(char* address, hashtable_t* allPlayers)
 /* see player.h for description */
 void player_delete(player_t* player)
 {
+  mem_free(player->pID);
   mem_free(player->name);
   set_delete(player->seenBefore, NULL);
   mem_free(player);
@@ -348,8 +353,8 @@ static void summary_helper(void* arg, const char* key, void* item)
 {
   player_t* player = item;
   char* addition = malloc(15);
-  addition[0] = player->pID;
-  char* num = malloc(4);
+  strcpy(addition, player->pID);
+  char* num = malloc(15);
   sprintf(num, "%5d", player->purse);
   strcat(addition, num);
   strcat(addition, " ");
@@ -380,11 +385,10 @@ static void location_helper(void* arg, const char* key, void* item)
     char* coorString = malloc(11);
     sprintf(coorString, "%d", player->currCoor);
     char* pIDString = malloc(2);
-    pIDString[0] = player->pID;
-    pIDString[1] = '\0';
+    // so you need a way to store things
+    strcpy(pIDString, player->pID);
     set_insert(locationSet, coorString, pIDString);
     free(coorString);
-    free(pIDString);
   }
 }
 
@@ -397,7 +401,7 @@ int player_getCurrCoor(player_t* player)
   return player->currCoor;
 }
 
-char player_getID(player_t* player)
+char* player_getID(player_t* player)
 {
   if (player == NULL) {
     return '\0';
@@ -440,7 +444,7 @@ void player_print(player_t* player)
 {
   printf("Name: %s\n", player->name);
   printf("Coordinate: %d\n", player->currCoor);
-  printf("ID: %c\n", player->pID);
+  printf("ID: %s\n", player->pID);
   printf("Gold: %d\n", player->purse);
   printf("Recent gold: %d\n", player->recentGoldCollected);
 }
