@@ -336,13 +336,9 @@ void player_delete(player_t* player)
 /* see player.h for description */
 char* player_summary(hashtable_t* allPlayers)
 {
-  printf("%s", "in player summary");
-  fflush(stdout);
   char* summary = malloc(1000000);
   strcpy(summary, "");
   hashtable_iterate(allPlayers, &summary, summary_helper);
-  printf("%s\n", "in summary 6");
-  fflush(stdout);
   return summary;
 }
 
@@ -350,34 +346,19 @@ char* player_summary(hashtable_t* allPlayers)
 /* helps add the summary of each player */
 static void summary_helper(void* arg, const char* key, void* item)
 {
-  printf("%s\n", "in summary");
-  fflush(stdout);
   player_t* player = item;
-  char* addition[6];
-  printf("ADD: %s\n", addition);
-  fflush(stdout);
+  char* addition = malloc(15);
   addition[0] = player->pID;
-  printf("%s\n", addition);
-  fflush(stdout);
-  strcat(addition, "   ");
-  printf("%s\n", addition);
-  fflush(stdout);
-  char num = malloc(4);
-  sprintf(num, "%d", player->purse);
+  char* num = malloc(4);
+  sprintf(num, "%5d", player->purse);
   strcat(addition, num);
-
-  printf("%s\n", addition);
-  fflush(stdout);
-
-  strcat(addition, "   ");
+  strcat(addition, " ");
   strcat(addition, player->name);
   strcat(addition, "\n");
-  printf("%s\n", addition);
-  fflush(stdout);
   char** sum = arg;
   strcat(*sum, addition);
-  printf("SUMMARY: %s\n", *sum);
-  fflush(stdout);
+  free(addition);
+  free(num);
 }
 
 /**************** player_locations ****************/
@@ -403,6 +384,7 @@ static void location_helper(void* arg, const char* key, void* item)
     pIDString[1] = '\0';
     set_insert(locationSet, coorString, pIDString);
     free(coorString);
+    free(pIDString);
   }
 }
 
