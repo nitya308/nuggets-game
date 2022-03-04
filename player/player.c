@@ -38,7 +38,7 @@ typedef struct playerSwap {
 } player_swapstruct;
 
 // function prototypes
-player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold);
+player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers);
 bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor);
 bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
@@ -48,6 +48,7 @@ bool player_quit(char* address, hashtable_t* allPlayers);
 void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
 set_t* player_locations(hashtable_t* allPlayers);
+void player_print(player_t* player);
 
 // Getter method prototypes
 int player_getCurrCoor(player_t* player);
@@ -55,6 +56,7 @@ char player_getID(player_t* player);
 int player_getpurse(player_t* player);
 int player_getRecentGold(player_t* player);
 set_t* player_getSeenBefore(player_t* player);
+void player_setSeenBefore(player_t* player, set_t* set);
 
 /**************** local functions ****************/
 /* not visible outside this file */
@@ -65,14 +67,17 @@ static void stringfree(void* item);
 
 /**************** player_new ****************/
 /* see player.h for description */
-player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold)
+player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers)
 {
   mem_assert(name, "name provided was null");
+  mem_assert(grid, "grid provided was null");
+  mem_assert(gold, "gold provided was null");
   player_t* player = mem_malloc(sizeof(player_t));
   if (player == NULL) {
     return NULL;
   }
-  char ID = 'A';
+  int intID = 65 + numPlayers;
+  char ID = (char)intID;
   player->pID = ID;
   player->name = mem_malloc_assert(strlen(name) + 1, "null player");
   if (player->name == NULL) {
@@ -107,13 +112,14 @@ bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* 
   player->currCoor = newCoor;
   set_t* playerLocations = player_locations(allPlayers);
   set_t* newSeenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
-  set_delete(player->seenBefore, stringfree);
+  set_delete(player->seenBefore, NULL);
   player->seenBefore = newSeenBefore;
   set_delete(playerLocations, NULL);
   return true;
 }
 
-static void stringfree(void* item){
+static void stringfree(void* item)
+{
   free(item);
 }
 
@@ -419,4 +425,20 @@ set_t* player_getSeenBefore(player_t* player)
     return NULL;
   }
   return player->seenBefore;
+}
+
+void player_setSeenBefore(player_t* player, set_t* set)
+{
+  if (set != NULL) {
+    player->seenBefore = set;
+  }
+}
+
+void player_print(player_t* player)
+{
+  printf("Name: %s\n", player->name);
+  printf("Coordinate: %d\n", player->currCoor);
+  printf("ID: %c\n", player->pID);
+  printf("Gold: %d\n", player->purse);
+  printf("Recent gold: %d\n", player->recentGoldCollected);
 }
