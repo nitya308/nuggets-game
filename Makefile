@@ -35,9 +35,12 @@ client.o: $S/message.h $S/log.h $L/mem.h
 # If libcs50 contains set.c, we build a fresh libcs50.a;
 # otherwise we use the pre-built library provided by instructor.
 all: 
+	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
+	make -C support
+	make -C grid
+	make -C player
 	server 
 	client
-	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
 	
 ############### TAGS for emacs users ##########
 TAGS:  Makefile */Makefile */*.c */*.h */*.md */*.sh
@@ -55,3 +58,7 @@ clean:
 	rm -f TAGS
 	rm -f core
 	rm -f *~ ~.o
+#make -C support clean
+	make -C player clean
+	make -C grid clean
+

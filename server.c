@@ -110,11 +110,13 @@ initializeGame(char** argv)
   game->numGoldLeft = GoldTotal;
   game->allPlayers = hashtable_new(MaxPlayers);
   if (game->allPlayers == NULL) {
+    endGame();      // TODO: free the memory
     fprintf(stderr, "Failed to create allPlayers hashtable. Exiting...\n");
     exit(1);
   }
   game->gold = counters_new();
   if (game->gold == NULL) {
+    endGame();      // TODO: free the memory
     fprintf(stderr, "Failed to create gold counters. Exiting...\n");
     exit(1);
   }

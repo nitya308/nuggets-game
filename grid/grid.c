@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../libcs50/counters.h"
-#include "../libcs50/file.h"
-#include "../libcs50/mem.h"
-#include "../libcs50/set.h"
+#include "counters.h"
+#include "mem.h"
+#include "file.h"
+#include "set.h"
+#include "grid.h"
 
 #define PI 3.14159265
 

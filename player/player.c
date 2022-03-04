@@ -12,11 +12,11 @@
 #include <string.h>
 
 #include "../grid/grid.h"
-#include "../libcs50/counters.h"
-#include "../libcs50/file.h"
-#include "../libcs50/hashtable.h"
-#include "../libcs50/mem.h"
-#include "../libcs50/set.h"
+#include "counters.h"
+#include "file.h"
+#include "hashtable.h"
+#include "mem.h"
+#include "set.h"
 
 /**************** file-local global variables ****************/
 /* none */
