@@ -19,8 +19,8 @@ typedef struct grid {
 } grid_t;
 
 /******************local functions**************/
-static void insertPlayers(void* arg, const char* key, void* item);
-static void insertGold(void* arg, const char* key, void* item);
+// static void insertPlayers(void* arg, const char* key, void* item);
+// static void insertGold(void* arg, const char* key, void* item);
 static void mergeHelper(void* arg, const char* key, void* item);
 
 grid_t* grid_read(char* filename)
@@ -67,6 +67,7 @@ int* grid_locationConvert(grid_t* grid, int loc)
       coordinates[1] = loc % (grid->ncols);
       return coordinates;
     }
+    mem_free(coordinates);
   }
   mem_free(coordinates);
   return NULL;
@@ -79,12 +80,15 @@ bool grid_isOpen(grid_t* grid, int loc)
     char** carr = grid->map;
     if (carr[coordinates[0]][coordinates[1]] != '.' &&
         carr[coordinates[0]][coordinates[1]] != '#') {
+      mem_free(coordinates);
       return false;
     }
     else {
+      mem_free(coordinates);
       return true;
     }
   }
+  mem_free(coordinates);
   return false;
 }
 
@@ -96,8 +100,6 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
   // distinguish between a location being or not being in the set
 
   if (grid_isOpen(grid, loc)) {
-    int gridSize = (grid->ncols) * (grid->nrows);
-
     // insert the @ symbol into center of visible set
     set_t* visible = set_new();
     char* intToStr = mem_malloc(11);
@@ -147,7 +149,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
           // printf("row %f col %f\n", row, col);
 
           // if close to wall location, stop increasing radius, add to visible set
-          if (carr[(int)row][(int)col] == '|' || carr[(int)row][(int)col] == '-' || carr[(int)row][(int)col] == '#' | carr[(int)row][(int)col] == '+') {
+          if ((carr[(int)row][(int)col] == '|') || (carr[(int)row][(int)col] == '-') || (carr[(int)row][(int)col] == '#') || (carr[(int)row][(int)col] == '+')) {
             // printf("Close to wall\n");
             location = (int)row * (grid->ncols) + (int)col;
             sprintf(intToStr, "%d", location);
@@ -229,6 +231,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
       }
     }
     mem_free(intToStr);
+    mem_free(coordinates);
     return visible;
   }
   return NULL;
@@ -244,7 +247,7 @@ set_t* grid_updateView(grid_t* grid, int newloc,
   if (grid != NULL) {
     set_t* visible = grid_isVisible(grid, newloc, playerLocations, gold);
     if (visible != NULL) {
-      char* intToStr = mem_malloc(sizeof(char) * (int)log10(newloc));
+      char* intToStr = mem_malloc(11);
       sprintf(intToStr, "%d", newloc);
       mem_free(intToStr);
 
@@ -263,7 +266,7 @@ set_t* grid_updateView(grid_t* grid, int newloc,
   return NULL;
 }
 
-static void insertGold(void* arg, const char* key, void* item)
+/* static void insertGold(void* arg, const char* key, void* item)
 {
   counters_t* gold = arg;
   int location;
@@ -273,15 +276,15 @@ static void insertGold(void* arg, const char* key, void* item)
     item = mem_malloc(sizeof(char));
     sprintf(item, "*");
   }
-}
+} */
 
-static void insertPlayers(void* arg, const char* key, void* item)
+/* static void insertPlayers(void* arg, const char* key, void* item)
 {
   // if this location is in player location
   // insert player symbol as this item
   set_t* plocations = arg;
   item = set_find(plocations, key);
-}
+} */
 
 /****************grid_displaySpectator()*******************/
 /* returns set of all locations in the grid, with gold symbols and player symbol
@@ -335,8 +338,7 @@ char* grid_print(grid_t* grid, set_t* locations)
   if (grid != NULL && locations != NULL) {
     int gridSize = (grid->ncols) * (grid->nrows);
     char** carr = grid->map;
-    int* coordinates;
-    char* printString = mem_malloc((sizeof(char) * gridSize) + grid->nrows);
+    char* printString = mem_malloc((sizeof(char) * gridSize) + grid->nrows + 1);
     char* intToStr = mem_malloc(11);
     char* symbol;
     strcpy(printString, "");
