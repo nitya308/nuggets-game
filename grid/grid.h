@@ -1,4 +1,8 @@
 // Grid module for nuggets 2022
+
+#ifndef __GRID_H
+#define __GRID_H
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,3 +36,5 @@ int grid_getNumberCols(grid_t* grid);
 int grid_getNumberRows(grid_t* grid);
 
 void grid_delete(grid_t* grid);
+
+#endif // __GRID_H

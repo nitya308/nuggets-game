@@ -8,6 +8,8 @@
 #include "libcs50/mem.h"
 #include "player/player.h"
 #include "support/message.h"
+#include "support/log.h"
+#include <ctype.h>
 
 /**
  * crawler - explores a file starting from the given webpage, and at each page, the
@@ -25,20 +27,24 @@
 /* *********************************************************************** */
 /* Private function prototypes */
 static int parseArgs(const int argc, char* argv[]);
-static void handleInput(void* arg);
+static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static bool isReadable(char* pathName);
-static void playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers);
-static void spectatorJoin(addr_t* address);
-static void buildGrid(grid_t* grid, char* argv);
+static void playerJoin(const char* name, const addr_t* client);
+static void spectatorJoin(const addr_t* address);
+static void buildGrid(grid_t* grid, char** argv);
 static void endGame();
 static void deletePlayer(void* item);
-static void itemcount(void* arg, const char* key, void* item);
-static void stringDelete(void* item);
+// static void itemcount(void* arg, const char* key, void* item); 
+static void itemDelete(void* item);
+// static void addrWrapperDelete(void* item);
 static void sendDisplayMessage(void* arg, const char* addr, void* item);
 static void sendGoldMessage(void* arg, const char* addr, void* item);
 static void sendEndMessage(void* arg, const char* addr, void* item);
-static void initializeGame(char* argv);
+static void initializeGame(char** argv);
+static void initializeGoldPiles();
+static void generateRandomLocations(int numGoldPiles, int* arr);
+static void generateGoldDistribution(int numGoldPiles, int* arr);
 /**************** local types ****************/
 typedef struct game {
   hashtable_t* allPlayers;
@@ -50,8 +56,8 @@ typedef struct game {
   addr_t* spectatorAddress;
 } game_t;
 
+
 static game_t* game;                    // game struct storing the state of the game
-static const int MaxNameLength = 50;    // max number of chars in playerName
 static const int MaxPlayers = 26;       // maximum number of players
 static const int GoldTotal = 250;       // amount of gold in the game
 static const int GoldMinNumPiles = 10;  // minimum number of gold piles
@@ -60,6 +66,7 @@ static const int GoldMaxNumPiles = 30;  // maximum number of gold piles
 /* ***************** main ********************** */
 int main(const int argc, char* argv[])
 {
+  // log_init(stderr);
   int exitStatus = parseArgs(argc, argv);
   if (exitStatus == 1) {
     exit(1);
@@ -69,39 +76,47 @@ int main(const int argc, char* argv[])
   // play the game
   // initialize the message module (without logging)
   int port;
-  if (port = message_init(stderr) == 0) {
+  if ((port = message_init(stderr)) == 0) {
     fprintf(stderr, "Failed to initialize message module.\n");
     exit(2);  // failure to initialize message module
   }
   printf("Ready to play, waiting at port %d", port);
 
   // Loop, waiting for input or for messages; provide callback functions.
-  bool ok = message_loop(port, 0, NULL, handleInput, handleMessage);
+  bool ok = message_loop(&port, 0, NULL, handleInput, handleMessage);
 
   // shut down the message module
   message_done();
 
-  exit(0);  // successfully ran program
+  // todo: handle ok
+  if (ok) {
+    exit(0);  // successfully ran program
+  } else {
+    exit(1); // failed to run program, terminate with error code
+  }
+
 }
 
 /* ***************** initializeGame ********************** */
 static void
-initializeGame(char* argv)
+initializeGame(char** argv)
 {
   game = mem_malloc(sizeof(game_t));
   if (game == NULL) {
     fprintf(stderr, "Failed to create game. Exiting...\n");
     exit(1);
   }
-  buildGrid(game->grid, argv[2]);
+  buildGrid(game->grid, &argv[2]);
   game->numGoldLeft = GoldTotal;
   game->allPlayers = hashtable_new(MaxPlayers);
   if (game->allPlayers == NULL) {
+    endGame();      // TODO: free the memory
     fprintf(stderr, "Failed to create allPlayers hashtable. Exiting...\n");
     exit(1);
   }
   game->gold = counters_new();
   if (game->gold == NULL) {
+    endGame();      // TODO: free the memory
     fprintf(stderr, "Failed to create gold counters. Exiting...\n");
     exit(1);
   }
@@ -110,9 +125,10 @@ initializeGame(char* argv)
 
 /* ***************** buildGrid ********************** */
 static void
-buildGrid(grid_t* grid, char* argv)
+buildGrid(grid_t* grid, char** argv)
 {
-  game->grid = grid_read(argv[2]);  // build the grid
+  char* filename = argv[2];
+  game->grid = grid_read(filename);  // build the grid
   initializeGoldPiles();
 }
 
@@ -136,8 +152,8 @@ initializeGoldPiles()
 static void
 generateRandomLocations(int numGoldPiles, int* arr)
 {
-  int nRows = getNumberRows(game->grid);
-  int nCols = getNumberCols(game->grid);
+  int nRows = grid_getNumberRows(game->grid);
+  int nCols = grid_getNumberCols(game->grid);
   int i = 0;
   while (i < numGoldPiles) {
     int location = rand() % (nRows * nCols);          // get the index in the map
@@ -229,7 +245,7 @@ isReadable(char* pathName)
   return true;
 }
 
-/* ***************** handleMessages ********************** */
+/* ***************** handleMessage ********************** */
 /*
  * Handle all messages passed from the client to the server based on protocol
  * in requirements spec.
@@ -237,23 +253,17 @@ isReadable(char* pathName)
 static bool
 handleMessage(void* arg, const addr_t from, const char* message)
 {
-  if (&from == NULL) {
-    log_v("handleMessage called with arg=NULL");
-    return true;
-  }
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
-    playerJoin(realName, game->allPlayers, game->addresses, &from, game->grid, &game->numPlayers);
+    playerJoin(realName, &from);
     hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
     hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
-  }
-  else if (strncmp(message, "SPECTATE ", strlen("SPECTATE ")) == 0) {
+  } else if (strncmp(message, "SPECTATE ", strlen("SPECTATE ")) == 0) {
     spectatorJoin(&from);
-  }
-  else if (isalpha(message)) {  // if message is a character
+  } else if (isalpha(message)) {  // if message is a character
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
     if (islower(message)) {                                                                                        // lower character
-      if (!player_moveRegular(player, message, game->allPlayers, game->grid, game->gold, &(game->numGoldLeft))) {  // if not valid keystroke given
+      if (!player_moveRegular(player, *message, game->allPlayers, game->grid, game->gold, &(game->numGoldLeft))) {  // if not valid keystroke given
         fprintf(stderr, "Error. Invalid keystroke %s", message);                                                   // invalid input keystroke
         message_send(from, "ERROR. Invalid keystroke.\n");                                                         // invalid input keystroke
       }
@@ -267,14 +277,12 @@ handleMessage(void* arg, const addr_t from, const char* message)
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
         hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
       }
-    }
-    else {                   // if capital letter
-      if (message == 'Q') {  // if Q, tell client to QUIT and remove player from game
+    } else {                   // if capital letter
+      if (*message == 'Q') {  // if Q, tell client to QUIT and remove player from game
         message_send(from, "QUIT Thanks for playing!\n");
         player_quit(message_stringAddr(from), game->allPlayers);
-      }
-      else {
-        if (!player_moveCapital(player, message, game->allPlayers, game->grid, game->gold, &(game->numGoldLeft))) {
+      } else {
+        if (!player_moveCapital(player, *message, game->allPlayers, game->grid, game->gold, &(game->numGoldLeft))) {
           // if not valid keystroke given
           fprintf(stderr, "Error. Invalid keystroke %s", message);  // invalid input keystroke
           message_send(from, "ERROR. Invalid keystroke.\n");
@@ -296,8 +304,9 @@ handleMessage(void* arg, const addr_t from, const char* message)
     char* displayMessage = "DISPLAY\n";
     strcat(displayMessage, grid_print(game->grid, spectatorLocations));
     message_send(*game->spectatorAddress, displayMessage);  // send display message
-    set_delete(spectatorLocations, stringDelete);           // free spectatorLocations memory
+    set_delete(spectatorLocations, itemDelete);           // free spectatorLocations memory
   }
+  return false;
 }
 
 // end the game, sending quit messages to all connnected clients and freeing all game memory
@@ -318,7 +327,7 @@ endGame()
 
   // free all memory
   hashtable_delete(game->allPlayers, deletePlayer);  // delete every player in hashtable
-  hashtable_delete(game->addresses, NULL);
+  hashtable_delete(game->addresses, NULL);     // delete all the addresses, freeing the item 
   counters_delete(game->gold);
   grid_delete(game->grid);
   mem_free(game->spectatorAddress);
@@ -335,7 +344,7 @@ sendGoldMessage(void* arg, const char* addr, void* item)
     int buffer = 20;
     int goldLength = strlen("GOLD") + buffer;
     char goldMessage[goldLength];
-    snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD %d %d %d\n", player->recentGoldCollected, player->purse, game->numGoldLeft);
+    snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD %d %d %d\n", player_getRecentGold(player), player_getpurse(player), game->numGoldLeft);
     message_send(*addrCast, goldMessage);  // send gold message
   }
 }
@@ -348,7 +357,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
   player_t* player = item;
   addr_t* addrCast = hashtable_find(game->addresses, addr);  // convert string address to addr_t
   if (addrCast != NULL && player != NULL) {                  // if player address exists and player still in game
-    set_t* seenBefore = player->seenBefore;
+    set_t* seenBefore = player_getSeenBefore(player);
     char* displayMessage = "DISPLAY\n";
     strcat(displayMessage, grid_print(game->grid, seenBefore));  // send all locations that player can see and have seen
     message_send(*addrCast, displayMessage);                     // send display message
@@ -377,9 +386,24 @@ sendEndMessage(void* arg, const char* addr, void* item)
   }
 }
 
-static void
+// adapted from message.c
+static bool
 handleInput(void* arg)
 {
+  // allocate a buffer into which we can read a line of input
+  // (it can't be any bigger than a message)
+  char line[message_MaxBytes];
+
+  // read a line from stdin
+  if (fgets(line, message_MaxBytes, stdin) != NULL) {
+    const int len = strlen(line);
+    if (len > 0) {
+      line[len-1] = '\0'; // change newline to null
+    }
+    return false;
+  } else {
+    return true; // EOF
+  }
 }
 
 /* ***************** playerJoin ********************** */
@@ -388,38 +412,35 @@ handleInput(void* arg)
  * Note: Does not send GOLD & DISPLAY message to client here
  */
 static void
-playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers)
+playerJoin(const char* name, const addr_t* client)
 {
-  if (*numPlayers < MaxPlayers) {
-    player_t* newPlayer = player_new(name, grid, &(game->numGoldLeft), game->gold);
+  if (game->numPlayers < MaxPlayers) {
+    player_t* newPlayer = player_new((char*) name, game->grid, &(game->numGoldLeft), game->gold, game->numPlayers);
     if (game->numGoldLeft == 0) {  // if no more gold left
       endGame();
     }
-    set_t* playerLocations = player_locations(allPlayers);
-    player->seenBefore = grid_updateView(grid, player->currCoor, player->seenBefore, playerLocations, game->gold);
     int buffer = 20;
+
+    // OK message
+    int okLength = strlen("OK ") + buffer;
+    char okMessage[okLength];
+    snprintf(okMessage, okLength, "OK %c", player_getID(newPlayer));
 
     // grid message
     int gridLength = strlen("GRID") + buffer;
     char gridMessage[gridLength];
-    snprintf(gridMessage, strlen(gridMessage) + buffer, "GRID %d %d", grid_getNumberRows(game->grid), grid_getNumberCols(game->grid));
+    snprintf(gridMessage, gridLength, "GRID %d %d", grid_getNumberRows(game->grid), grid_getNumberCols(game->grid));
 
-    // gold message
-    // int goldLength = strlen("GOLD") + buffer;
-    // char goldMessage[goldLength];
-    // snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD %d %d %d", newPlayer->purse, newPlayer->purse, game->numGoldLeft);
+    hashtable_insert(game->allPlayers, message_stringAddr(*client), newPlayer);  // store new player in allPlayers
+    hashtable_insert(game->addresses, message_stringAddr(*client), (addr_t*) client);      // store new player's address
 
-    // char* displayMessage = "DISPLAY\n";
-    // strcat(displayMessage, grid_print(game->grid, newPlayer->seenBefore));
+    set_t* playerLocations = player_locations(game->allPlayers);
+    player_setSeenBefore(newPlayer, grid_updateView(game->grid, player_getCurrCoor(newPlayer), NULL, playerLocations, game->gold));
+    
+    message_send(*client, okMessage);                               // send the player message
+    message_send(*client, gridMessage);                             // send grid message
 
-    hashtable_insert(allPlayers, message_stringAddr(*client), newPlayer);  // store new player in allPlayers
-    hashtable_insert(addresses, message_stringAddr(*client), client);      // store new player's address
-    message_send(*client, gridMessage);                                    // send grid message
-    hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);            // send gold messages to all players
-    hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);         // send display messages to all players
-    // message_send(*client, goldMessage);     // send gold message
-    // message_send(*client, displayMessage);  // send display message
-    *numPlayers++;
+    game->numPlayers++;
   }
 }
 
@@ -428,15 +449,14 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
  * Adds a spectator to the server and sends GRID, GOLD, DISPLAY message to the spectator
  */
 static void
-spectatorJoin(addr_t* address)
+spectatorJoin(const addr_t* address)
 {
-  if (game->spectatorAddress == NULL) {  // if no spectator, set address
-    game->spectatorAddress = address;
-  }
-  else {
+  if (game->spectatorAddress != NULL) {  // if spectator exists, send quit message to spectator
     message_send(*game->spectatorAddress, "QUIT You have been replaced by a new spectator.\n");
-    game->spectatorAddress = address;  // update new address
   }
+  addr_t* tempAddr = (addr_t*) address;         // remove constant for storing
+  game->spectatorAddress = tempAddr;  // update new address
+
   int buffer = 10;
 
   // grid message
@@ -450,19 +470,19 @@ spectatorJoin(addr_t* address)
   snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD 0 0 %d", game->numGoldLeft);
 
   // display message
-  set_t* spectatorLocations = grid_displaySpectator(address, player_locations(game->allPlayers), game->gold);
+  set_t* spectatorLocations = grid_displaySpectator(game->grid, player_locations(game->allPlayers), game->gold);
   char* displayMessage = "DISPLAY\n";
   strcat(displayMessage, grid_print(game->grid, spectatorLocations));
 
   message_send(*game->spectatorAddress, gridMessage);     // send grid message
   message_send(*game->spectatorAddress, goldMessage);     // send gold message
   message_send(*game->spectatorAddress, displayMessage);  // send display message
-  set_delete(spectatorLocations, stringDelete);           // free spectatorLocations memory
+  set_delete(spectatorLocations, itemDelete);           // free spectatorLocations memory
 }
 
 // delete a name
 static void
-stringDelete(void* item)
+itemDelete(void* item)
 {
   if (item != NULL) {
     mem_free(item);

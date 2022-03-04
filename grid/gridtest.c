@@ -7,7 +7,6 @@
 #include <string.h>
 #include "grid.h"
 
-void deleteHelper(void* item){if (item!=NULL) mem_free(item);}
 
 int main(const int argc, char* argv[])
 {
@@ -42,7 +41,7 @@ int main(const int argc, char* argv[])
   printf("Printing the view to string...\n");
   char* printString = grid_print(grid, allLocations);
   printf("Spectator sees the following: \n%s\n",printString);
-  set_delete(allLocations,deleteHelper);
+  set_delete(allLocations,NULL);
   mem_free(printString);
 
   
@@ -100,9 +99,9 @@ int main(const int argc, char* argv[])
 
   set_t* playerLoc = set_new();
   set_insert(playerLoc,"42","A");
-  set_insert(playerLoc,"58", "B");
+  set_insert(playerLoc,"68", "B");
   set_insert(playerLoc,"181", "C");
-  set_insert(playerLoc, "193","D");
+  set_insert(playerLoc, "107","D");
 
   counters_t* gold = counters_new();
   counters_add(gold,30);
@@ -112,35 +111,35 @@ int main(const int argc, char* argv[])
   counters_add(gold,146);
 
   printf("Maxing set of locations, players and gold on grid...\n");
-  printf("\n");
   allLocations =  grid_displaySpectator(grid, playerLoc,gold);
 
   //print the set to a string
   printf("Printing the view to string...\n");
   printString = grid_print(grid, allLocations);
   printf("Spectator sees the following (should not see \"C\"): \n%s\n",printString);
-  //set_delete(allLocations,deleteHelper);
-  printf("deleted sets..\n");
-  mem_free(printString);
+  set_delete(allLocations,NULL);
+   mem_free(printString);
 
-  
 
   //testing the visiblity feature
 
-  set_t* visible = grid_isVisible(grid,208,playerLoc,gold);
+  set_t* visible = grid_isVisible(grid,107,playerLoc,gold);
   printf("Printing the view to string...\n");
   printString = grid_print(grid, visible);
   printf("Player D sees the following: \n%s\n",printString);
   mem_free(printString);
-
-  // visible = grid_updateView(grid,198,visible,playerLoc,gold);
-  // printString = grid_print(grid, visible);
-  // printf("Player D sees the following: \n%s\n",printString);
-  // mem_free(printString);
+  set_delete(visible,NULL);
 
 
+  visible = grid_isVisible(grid,68,playerLoc,gold);
+  printf("Printing the view to string...\n");
+  printString = grid_print(grid, visible);
+  printf("Player B sees the following: \n%s\n",printString);
+  mem_free(printString);
   set_delete(visible,NULL);
   set_delete(playerLoc,NULL);
+
+
   counters_delete(gold);
   grid_delete(grid);
   
@@ -151,4 +150,3 @@ int main(const int argc, char* argv[])
 
     return 0;
 }
-
