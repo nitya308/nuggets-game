@@ -124,16 +124,16 @@ int main(const int argc, char* argv[])
 
   //testing the visiblity feature
 
-  set_t* visible = grid_isVisible(grid,82,playerLoc,gold);
+  set_t* visible = grid_isVisible(grid,107,playerLoc,gold);
   printf("Printing the view to string...\n");
   printString = grid_print(grid, visible);
   printf("Player D sees the following: \n%s\n",printString);
   mem_free(printString);
 
-  visible = grid_updateView(grid,198,visible,playerLoc,gold);
-  printString = grid_print(grid, visible);
-  printf("Player D sees the following: \n%s\n",printString);
-  mem_free(printString);
+  // visible = grid_updateView(grid,198,visible,playerLoc,gold);
+  // printString = grid_print(grid, visible);
+  // printf("Player D sees the following: \n%s\n",printString);
+  // mem_free(printString);
 
 
   set_delete(visible,NULL);

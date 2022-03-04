@@ -101,32 +101,34 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* 
 
 
   if (grid_isOpen(grid,loc)){
+
     int gridSize = (grid->ncols) * (grid->nrows);
     
     //insert the @ symbol into center of visible set
     set_t* visible = set_new();
     char* intToStr = mem_malloc(sizeof(char)*(int)log10(gridSize));
     sprintf(intToStr, "%d", loc);
-    set_insert(visible,intToStr, "@");
-    
-            
+    set_insert(visible,intToStr, "@");    
 
     int location;
     char** carr = grid->map;
     int* coordinates = grid_locationConvert(grid, loc);
     
+    bool onPassageEnd = false;
+
     
 
     //for passageways, survey only adjacent points
     if (carr[coordinates[0]][coordinates[1]]=='#'){
-      printf("Passage\n");
       for(int i = coordinates[0] -1; i <= coordinates[0] + 1; i++){
         for(int j = coordinates[1] -1; j <= coordinates[1] + 1; j++){
           if (carr[coordinates[0]][coordinates[1]]!=' '){
             //convert location back to integer
             location = i*(grid->ncols) + j;
             sprintf(intToStr, "%d", location);
-
+            if (carr[i][j]=='.'){
+              onPassageEnd = true;
+            }
             if(counters_get(gold,location)>0&&counters_get(gold,location)!=251){
               set_insert(visible,intToStr, "*");
             }else if(set_find(playerLocations,intToStr)!=NULL){
@@ -139,8 +141,11 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* 
         }
       }
     }
-    else{
+
+    //at passage ends and room spots, scan room
+    if(carr[coordinates[0]][coordinates[1]]!='#' || onPassageEnd){
       //location is in room spot
+      printf("scanning\n");
       int maxr = (grid->ncols) + (grid->nrows);
       double row = 0;
       double col = 0;
@@ -160,16 +165,8 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* 
             sprintf(intToStr, "%d", location);
             //printf("%d\n", location);
 
-
-
-            if(counters_get(gold,location)>0&&counters_get(gold,location)!=251){
-              set_insert(visible,intToStr, "*");
-            }else if(set_find(playerLocations,intToStr)!=NULL){
-              set_insert(visible,intToStr, set_find(playerLocations,intToStr));
-            }
-            else{
-              set_insert(visible,intToStr, "g");
-            }
+            set_insert(visible,intToStr, "g");
+            
             //printf("%c\n",carr[(int)row][(int)col]);
             oncorner = false;
             //stop increasing radius
@@ -204,14 +201,8 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* 
               location = (int)row*(grid->ncols) + (int)col;
               sprintf(intToStr, "%d", location);
 
-              if(counters_get(gold,location)>0&&counters_get(gold,location)!=251){
-                set_insert(visible,intToStr, "*");
-              }else if(set_find(playerLocations,intToStr)!=NULL){
-                set_insert(visible,intToStr, set_find(playerLocations,intToStr));
-              }
-              else{
-                set_insert(visible,intToStr, "g");
-              }
+              set_insert(visible,intToStr, "g");
+              
 
             //  printf("%c\n",carr[(int)row][(int)col]);
               oncorner = true;
