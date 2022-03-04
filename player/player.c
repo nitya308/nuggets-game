@@ -87,9 +87,6 @@ player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* num
   sprintf(pID, "%c", ID);
   player->pID = pID;
 
-  printf("Allocated ID: %s", pID);
-  fflush(stdout);
-
   // truncate an over-length real name to MaxNameLength characters
   if (strlen(name) > MaxNameLength) {
     printf("String was long: %s", pID);
@@ -332,7 +329,10 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor)
 {
   struct playerSwap args = {currPlayer, newCoor, false};
-  hashtable_iterate(allPlayers, &args, swap_helper);
+  if (allPlayers!= NULL) {
+    hashtable_iterate(allPlayers, &args, swap_helper);
+  }
+
   return args.swapped;
 }
 

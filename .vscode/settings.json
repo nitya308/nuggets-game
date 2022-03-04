@@ -3,6 +3,7 @@
     "hashtable.h": "c",
     "mem.h": "c",
     "message.h": "c",
-    "map": "c"
+    "map": "c",
+    "player.h": "c"
   }
 }

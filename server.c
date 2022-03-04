@@ -49,7 +49,7 @@ static void generateGoldDistribution(int numGoldPiles, int* arr);
 typedef struct game {
   hashtable_t* allPlayers;
   hashtable_t* addresses;
-  int numGoldLeft;
+  int* numGoldLeft;
   int numPlayers;
   grid_t* grid;
   counters_t* gold;
@@ -106,7 +106,8 @@ initializeGame(char** argv)
     exit(1);
   }
   buildGrid(game->grid, argv);
-  game->numGoldLeft = GoldTotal;
+  game->numGoldLeft = mem_malloc(sizeof(int*));
+  *(game->numGoldLeft) = GoldTotal;
   game->allPlayers = hashtable_new(MaxPlayers);
   if (game->allPlayers == NULL) {
     endGame();  // TODO: free the memory
@@ -286,12 +287,14 @@ handleMessage(void* arg, const addr_t from, const char* message)
     printf("\n%s\n", "Player join has returned");
     fflush(stdout);
 
-    hashtable_print(game->allPlayers, stdout, NULL);
-
     hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);  // send gold messages to all players
-    hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);
+
+    printf("\n%s\n", "Finshed sending gold messages");
+    fflush(stdout);
+
+    hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
     printf("\n%s\n", "end");
-    fflush(stdout);  // update all player's displays
+    fflush(stdout);
   }
   else if (strncmp(message, "SPECTATE ", strlen("SPECTATE ")) == 0) {
     spectatorJoin(&from);
@@ -396,9 +399,17 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
   addr_t* addrCast = hashtable_find(game->addresses, addr);  // convert string address to addr_t
   if (addrCast != NULL && player != NULL) {                  // if player address exists and player still in game
     set_t* seenBefore = player_getSeenBefore(player);
-    char* displayMessage = "DISPLAY\n";
-    strcat(displayMessage, grid_print(game->grid, seenBefore));  // send all locations that player can see and have seen
-    message_send(*addrCast, displayMessage);                     // send display message
+    char* display = grid_print(game->grid, seenBefore);
+    printf("\n%s\n", display);
+    fflush(stdout);
+    printf("\n%s\n", "Got display");
+    fflush(stdout);
+    char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+    strcpy(displayMessage, "DISPLAY\n");
+    strcat(displayMessage, display);          // send all locations that player can see and have seen
+    printf("\n%s\n", "concated");
+    fflush(stdout);
+    message_send(*addrCast, displayMessage);  // send display message
   }
 }
 
@@ -453,31 +464,19 @@ handleInput(void* arg)
 static void
 playerJoin(char* name, const addr_t* client)
 {
-  printf("\n%s\n", "INSIDE player jpin");
-  fflush(stdout);
-  printf("\nName is %s\n", name);
-  fflush(stdout);
-
-  printf("\nNumplayers %d\n", game->numPlayers);
-  fflush(stdout);
-
   if (game->numPlayers < MaxPlayers) {
-    printf("\n%s\n", "we are inside if condition");
-    fflush(stdout);
     player_t* newPlayer = player_new(name, game->grid, game->allPlayers, &(game->numGoldLeft), game->gold, game->numPlayers);
+    player_print(newPlayer);
     if (game->numGoldLeft == 0) {  // if no more gold left
       printf("%s", "game ending");
       fflush(stdout);
       endGame();
     }
-
     int buffer = 20;
-
     // OK message
     int okLength = strlen("OK ") + buffer;
     char okMessage[okLength];
     snprintf(okMessage, okLength, "OK %s", player_getID(newPlayer));
-
     // grid message
     int gridLength = strlen("GRID") + buffer;
     char gridMessage[gridLength];
@@ -491,7 +490,6 @@ playerJoin(char* name, const addr_t* client)
 
     message_send(*client, okMessage);    // send the player message
     message_send(*client, gridMessage);  // send grid message
-
     (game->numPlayers)++;
   }
 }
