@@ -29,6 +29,10 @@ int main()
   counters_set(gold, 13, 5);
   counters_set(gold, 17, 5);
 
+  set_t* allLocations = grid_displaySpectator(grid, NULL, gold);
+  char* printString = grid_print(grid, allLocations);
+  printf("\n%s", printString);
+
   // Create a hashtable of players for testing
   hashtable_t* allPlayers = hashtable_new(10);
 
@@ -62,13 +66,27 @@ int main()
   player_print(p1);
 
   // Testing an invalid key
+  player_moveRegular(p1, 'x', allPlayers, grid, gold, &numGoldLeft);
+  printf("\n%s\n", "PLAYER 1 should not have changed:");
+  player_print(p1);
+
+  // Testing an invalid key
   player_moveCapital(p1, 'X', allPlayers, grid, gold, &numGoldLeft);
   printf("\n%s\n", "PLAYER 1 should not have changed:");
   player_print(p1);
 
-  set_t* allLocations = grid_displaySpectator(grid, NULL, gold);
-  char* printString = grid_print(grid, allLocations);
-  printf("%s", printString);
+  // Testing player_swapLocations
+  player_moveRegular(p2, 'k', allPlayers, grid, gold, &numGoldLeft);
+  printf("\n%s\n", "PLAYER 2 should have swapped with PLAYER 1:");
+  printf("%s\n", "PLAYER 1:");
+  player_print(p1);
+  printf("\n%s\n", "PLAYER 2:");
+  // Print player 2
+  player_print(p2);
+
+  allLocations = grid_displaySpectator(grid, NULL, gold);
+  printString = grid_print(grid, allLocations);
+  printf("\n%s", printString);
 
   /*   // printing grid with initial players and their locations
     set_print(player_locations(allPlayers), stdout, NULL);

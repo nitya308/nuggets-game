@@ -112,7 +112,6 @@ bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* 
   player->currCoor = newCoor;
   set_t* playerLocations = player_locations(allPlayers);
   set_t* newSeenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
-  set_delete(player->seenBefore, NULL);
   player->seenBefore = newSeenBefore;
   set_delete(playerLocations, NULL);
   return true;
@@ -202,74 +201,72 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
 /* see player.h for description */
 bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft)
 {
-  int newCoor;
-  int cols = grid_getNumberCols(grid);
-  switch (move) {
-    case 'K':
-      newCoor = player->currCoor - cols;
-      break;
-    case 'H':
-      if (player->currCoor % cols == 0) {
-        // cannot move in that direction
+  while (true) {
+    int newCoor;
+    int cols = grid_getNumberCols(grid);
+    switch (move) {
+      case 'K':
+        newCoor = player->currCoor - cols;
+        break;
+      case 'H':
+        if (player->currCoor % cols == 0) {
+          // cannot move in that direction
+          return false;
+        }
+        newCoor = player->currCoor - 1;
+        break;
+      case 'L':
+        if ((player->currCoor + 1) % cols == 0) {
+          // cannot move in that direction
+          return false;
+        }
+        newCoor = player->currCoor + 1;
+        break;
+      case 'J':
+        newCoor = player->currCoor + cols;
+        break;
+      case 'Y':
+        newCoor = player->currCoor - cols - 1;
+        if ((newCoor + 1) % cols == 0) {
+          // cannot move in that direction
+          return false;
+        }
+        break;
+      case 'U':
+        newCoor = player->currCoor - cols + 1;
+        if (newCoor % cols == 0) {
+          // cannot move in that direction
+          return false;
+        }
+        break;
+      case 'B':
+        newCoor = player->currCoor + cols - 1;
+        if ((newCoor + 1) % cols == 0) {
+          // cannot move in that direction
+          return false;
+        }
+        break;
+      case 'N':
+        newCoor = player->currCoor + cols + 1;
+        if (newCoor % cols == 0) {
+          // cannot move in that direction
+          return false;
+        }
+        break;
+      default:
         return false;
-      }
-      newCoor = player->currCoor - 1;
+    }
+    if (!grid_isOpen(grid, newCoor)) {
       break;
-    case 'L':
-      if ((player->currCoor + 1) % cols == 0) {
-        // cannot move in that direction
-        return false;
-      }
-      newCoor = player->currCoor + 1;
-      break;
-    case 'J':
-      newCoor = player->currCoor + cols;
-      break;
-    case 'Y':
-      newCoor = player->currCoor - cols - 1;
-      if ((newCoor + 1) % cols == 0) {
-        // cannot move in that direction
-        return false;
-      }
-      break;
-    case 'U':
-      newCoor = player->currCoor - cols + 1;
-      if (newCoor % cols == 0) {
-        // cannot move in that direction
-        return false;
-      }
-      break;
-    case 'B':
-      newCoor = player->currCoor + cols - 1;
-      if ((newCoor + 1) % cols == 0) {
-        // cannot move in that direction
-        return false;
-      }
-      break;
-    case 'N':
-      newCoor = player->currCoor + cols + 1;
-      if (newCoor % cols == 0) {
-        // cannot move in that direction
-        return false;
-      }
-      break;
-    default:
-      return false;
-  }
-  while (grid_isOpen(grid, newCoor)) {
+    }
     if (player_swapLocations(player, allPlayers, newCoor)) {
       return true;
     }
     else {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
         player_collectGold(player, numGoldLeft, gold);
-        return true;
-      }
-      else {
-        return false;
       }
     }
-    newCoor = newCoor + move;
   }
   return true;
 }
@@ -302,12 +299,12 @@ bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int new
 static void swap_helper(void* arg, const char* key, void* item)
 {
   struct playerSwap* args = (struct playerSwap*)arg;
+  player_t* currPlayer = args->player;
   int newCoor = args->newCoor;
   player_t* player = item;
   if (player->currCoor == newCoor) {
-    int temp = player->currCoor;
-    player->currCoor = newCoor;
-    args->player->currCoor = temp;
+    player->currCoor = currPlayer->currCoor;
+    currPlayer->currCoor = newCoor;
     args->swapped = true;
   }
 }
