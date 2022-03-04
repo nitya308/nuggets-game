@@ -335,7 +335,7 @@ sendGoldMessage(void* arg, const char* addr, void* item)
     int buffer = 20;
     int goldLength = strlen("GOLD") + buffer;
     char goldMessage[goldLength];
-    snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD %d %d %d\n", player->recentGoldCollected, player->purse, game->numGoldLeft);
+    snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD %d %d %d\n", player_getRecentGold(player), player_getpurse(player), game->numGoldLeft);
     message_send(*addrCast, goldMessage);  // send gold message
   }
 }
@@ -348,7 +348,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
   player_t* player = item;
   addr_t* addrCast = hashtable_find(game->addresses, addr);  // convert string address to addr_t
   if (addrCast != NULL && player != NULL) {                  // if player address exists and player still in game
-    set_t* seenBefore = player->seenBefore;
+    set_t* seenBefore = player_getSeenBefore(player);
     char* displayMessage = "DISPLAY\n";
     strcat(displayMessage, grid_print(game->grid, seenBefore));  // send all locations that player can see and have seen
     message_send(*addrCast, displayMessage);                     // send display message
@@ -391,12 +391,10 @@ static void
 playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers)
 {
   if (*numPlayers < MaxPlayers) {
-    player_t* newPlayer = player_new(name, grid, &(game->numGoldLeft), game->gold);
+    player_t* newPlayer = player_new(name, grid, &(game->numGoldLeft), game->gold, *numPlayers);
     if (game->numGoldLeft == 0) {  // if no more gold left
       endGame();
     }
-    set_t* playerLocations = player_locations(allPlayers);
-    player->seenBefore = grid_updateView(grid, player->currCoor, player->seenBefore, playerLocations, game->gold);
     int buffer = 20;
 
     // grid message
@@ -414,9 +412,13 @@ playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* 
 
     hashtable_insert(allPlayers, message_stringAddr(*client), newPlayer);  // store new player in allPlayers
     hashtable_insert(addresses, message_stringAddr(*client), client);      // store new player's address
-    message_send(*client, gridMessage);                                    // send grid message
-    hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);            // send gold messages to all players
-    hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);         // send display messages to all players
+
+    set_t* playerLocations = player_locations(allPlayers);
+    player_setSeenBefore(newPlayer, grid_updateView(grid, player_getCurrCoor(newPlayer), NULL, playerLocations, game->gold));
+
+    message_send(*client, gridMessage);                             // send grid message
+    hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
+    hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
     // message_send(*client, goldMessage);     // send gold message
     // message_send(*client, displayMessage);  // send display message
     *numPlayers++;
