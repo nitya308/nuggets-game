@@ -6,27 +6,19 @@ OBJS = player.o ../grid/grid.o
 TOBJS = playertest.o
 LIBS = -lm
 LLIBS = ../libcs50/libcs50-given.a 
-LIB = player.a
 
 # uncomment the following to turn on verbose memory logging
 #TESTING=-DMEMTEST
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(TESTING) -I../libcs50 -I../grid
+CFLAGS = -Wall -pedantic -std=c11 -ggdb $(TESTING) -I../lib
 CC = gcc
 MAKE = make
 # for memory-leak tests
 VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 
-# Build $(LIB) by archiving object files
-$(LIB): $(OBJS)
-	ar cr $(LIB) $(OBJS)
-
-
-# player.o: player.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/hashtable.h ../libcs50/file.h ../libcs50/mem.h ../grid/grid.h 
-player.o: player.h
-# playertest.o: player.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/hashtable.h ../libcs50/file.h ../libcs50/mem.h ../grid/grid.h
-# ../grid/grid.o: ../grid/grid.h
-playertest.o: player.h
+player.o: player.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/hashtable.h ../libcs50/file.h ../libcs50/mem.h ../grid/grid.h 
+playertest.o: player.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/hashtable.h ../libcs50/file.h ../libcs50/mem.h ../grid/grid.h
+../grid/grid.o: ../grid/grid.h
 
 playertest:  $(TOBJS) $(OBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $(TOBJS) $(OBJS) $(LLIBS) $(LIBS) -o $@
