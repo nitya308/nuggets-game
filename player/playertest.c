@@ -11,6 +11,8 @@
 #include "../libcs50/file.h"
 #include "player.h"
 
+void itemPrint(FILE* fp, const char* key, void* item);
+
 /* **************************************** */
 int main()
 {
@@ -43,8 +45,8 @@ int main()
   numPlayers++;
 
   // Add both players to the hashtable
-  hashtable_insert(allPlayers, " ", p1);
-  hashtable_insert(allPlayers, " ", p2);
+  hashtable_insert(allPlayers, "1", p1);
+  hashtable_insert(allPlayers, "2", p2);
 
   // Print player 1
   printf("%s\n", "PLAYER 1:");
@@ -81,9 +83,18 @@ int main()
   printf("%s\n", "PLAYER 1:");
   player_print(p1);
   printf("\n%s\n", "PLAYER 2:");
-  // Print player 2
   player_print(p2);
 
+  // Testing player_locations
+  set_t* locations = player_locations(allPlayers);
+  printf("%s\n", "LOCATIONS SET:");
+  set_print(locations, stdout, itemPrint);
+
+  // Testing player_summary
+  char* sum = player_summary(allPlayers);
+  fprintf("\n SUMMARY: \n%s\n", sum);
+
+  // printing the grid
   allLocations = grid_displaySpectator(grid, NULL, gold);
   printString = grid_print(grid, allLocations);
   printf("\n%s", printString);
@@ -107,7 +118,7 @@ int main()
     printString = grid_print(grid, allLocations);
     printf("%s\n", printString);
 
-    // deleting everything
+    // Testing player_delete
     set_delete(allLocations, NULL);
     counters_delete(gold);
     grid_delete(grid);
@@ -117,5 +128,5 @@ int main()
 
 void itemPrint(FILE* fp, const char* key, void* item)
 {
-  fprintf(fp, "%s ", (char*)item);
+  fprintf(fp, " location:%s player:%s ", key, (char*)item);
 }

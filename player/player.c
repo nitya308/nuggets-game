@@ -49,6 +49,7 @@ void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
 set_t* player_locations(hashtable_t* allPlayers);
 void player_print(player_t* player);
+void itemPrint2(FILE* fp, const char* key, void* item);
 
 // Getter method prototypes
 int player_getCurrCoor(player_t* player);
@@ -335,8 +336,13 @@ void player_delete(player_t* player)
 /* see player.h for description */
 char* player_summary(hashtable_t* allPlayers)
 {
-  char* summary;
+  printf("%s", "in player summary");
+  fflush(stdout);
+  char* summary = malloc(1000000);
+  strcpy(summary, "");
   hashtable_iterate(allPlayers, &summary, summary_helper);
+  printf("%s\n", "in summary 6");
+  fflush(stdout);
   return summary;
 }
 
@@ -344,17 +350,34 @@ char* player_summary(hashtable_t* allPlayers)
 /* helps add the summary of each player */
 static void summary_helper(void* arg, const char* key, void* item)
 {
+  printf("%s\n", "in summary");
+  fflush(stdout);
   player_t* player = item;
-  char addition[2];
+  char* addition[6];
+  printf("ADD: %s\n", addition);
+  fflush(stdout);
   addition[0] = player->pID;
-  addition[1] = '\0';
-  char num[4];
+  printf("%s\n", addition);
+  fflush(stdout);
+  strcat(addition, "   ");
+  printf("%s\n", addition);
+  fflush(stdout);
+  char num = malloc(4);
   sprintf(num, "%d", player->purse);
   strcat(addition, num);
+
+  printf("%s\n", addition);
+  fflush(stdout);
+
+  strcat(addition, "   ");
   strcat(addition, player->name);
   strcat(addition, "\n");
-  char** summary = arg;
-  strcat(*summary, addition);
+  printf("%s\n", addition);
+  fflush(stdout);
+  char** sum = arg;
+  strcat(*sum, addition);
+  printf("SUMMARY: %s\n", *sum);
+  fflush(stdout);
 }
 
 /**************** player_locations ****************/
@@ -375,7 +398,7 @@ static void location_helper(void* arg, const char* key, void* item)
   if (player != NULL) {
     char* coorString = malloc(11);
     sprintf(coorString, "%d", player->currCoor);
-    char pIDString[2];
+    char* pIDString = malloc(2);
     pIDString[0] = player->pID;
     pIDString[1] = '\0';
     set_insert(locationSet, coorString, pIDString);
