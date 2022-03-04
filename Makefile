@@ -10,12 +10,12 @@ P = player
 G = grid
 SERVEROBJS = server.c
 CLIENTOBJS = client.c 
-LLIBS = $S/support.a $L/libcs50-given.a
+LLIBS = $S/support.a $L/libcs50-given.a $P/player.a $G/grid.a
 
 # uncomment the following to turn on file saving, finding logs.
 # TESTING=-DAPPTEST
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(TESTING) -I/$L -I/$S -I/$P -I/$G
+CFLAGS = -Wall -pedantic -std=c11 -ggdb $(TESTING) -I$L -I$S -I$P -I$G
 CC = gcc
 MAKE = make
 # for memory-leak tests
@@ -25,17 +25,18 @@ VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 server.o: $S/message.h $S/log.h $L/mem.h $P/player.h $G/grid.h
 client.o: $S/message.h $S/log.h $L/mem.h
 
-server: $(SERVEROBJS) $(LIBS) $(LLIBS)
-	$(CC) $(CFLAGS) $^ $(LIBS) $(LLIBS) -o $@
+server: $(SERVEROBJS) $(LLIBS)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-client: $(CLIENTOBJS) $(LIBS) $(LLIBS)
-	$(CC) $(CFLAGS) $^ $(LIBS) $(LLIBS) -o $@
+client: $(CLIENTOBJS) $(LLIBS)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 ############## default: make all libs and programs ##########
 # If libcs50 contains set.c, we build a fresh libcs50.a;
 # otherwise we use the pre-built library provided by instructor.
 all: 
 	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
+#	(cd $S; make $S.a;)
 	make -C grid
 	make -C player
 	make -C support
