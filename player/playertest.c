@@ -12,6 +12,7 @@
 #include "player.h"
 
 void itemPrint(FILE* fp, const char* key, void* item);
+void freeString(void* item);
 
 /* **************************************** */
 int main()
@@ -87,46 +88,35 @@ int main()
 
   // Testing player_locations
   set_t* locations = player_locations(allPlayers);
-  printf("%s\n", "LOCATIONS SET:");
+  printf("\n%s\n", "LOCATIONS SET:");
   set_print(locations, stdout, itemPrint);
 
   // Testing player_summary
   char* sum = player_summary(allPlayers);
-  fprintf("\n SUMMARY: \n%s\n", sum);
+  printf("\n\nSUMMARY: \n%s\n", sum);
+  free(sum);
 
   // printing the grid
   allLocations = grid_displaySpectator(grid, NULL, gold);
   printString = grid_print(grid, allLocations);
   printf("\n%s", printString);
 
-  /*   // printing grid with initial players and their locations
-    set_print(player_locations(allPlayers), stdout, NULL);
-    allLocations = grid_displaySpectator(grid, player_locations(allPlayers), gold);
-    printString = grid_print(grid, allLocations);
-    printf("%s\n", printString);
-
-    // Testing player_updateCoordinate
-    int p1coor = player_getCurrCoor(p1);
-    printf("%d\n", p1coor);
-
-    player_updateCoordinate(p1, allPlayers, grid, gold, 6);
-
-    p1coor = player_getCurrCoor(p1);
-    printf("%d\n", p1coor);
-
-    allLocations = grid_displaySpectator(grid, NULL, gold);
-    printString = grid_print(grid, allLocations);
-    printf("%s\n", printString);
-
-    // Testing player_delete
-    set_delete(allLocations, NULL);
-    counters_delete(gold);
-    grid_delete(grid);
-    hashtable_delete(allPlayers, player_delete); */
+  // Testing player_delete
+  set_delete(locations, NULL);
+  set_delete(allLocations, NULL);
+  counters_delete(gold);
+  grid_delete(grid);
+  hashtable_delete(allPlayers, player_delete);
   exit(0);
 }
 
 void itemPrint(FILE* fp, const char* key, void* item)
 {
   fprintf(fp, " location:%s player:%s ", key, (char*)item);
+}
+
+void freeString(void* item){
+  if (item!=NULL) {
+    free(item);
+  }
 }
