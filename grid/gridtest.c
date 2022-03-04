@@ -36,14 +36,14 @@ int main(const int argc, char* argv[])
   //(do not pass in gold or other player symbols for now)
 
   printf("Maxing set of locations...\n");
-  set_t* allLocations = set_new();
-  allLocations = grid_displaySpectator(grid, NULL,NULL);
+  set_t* allLocations = grid_displaySpectator(grid, NULL,NULL);
 
   //print the set to a string
   printf("Printing the view to string...\n");
   char* printString = grid_print(grid, allLocations);
   printf("Spectator sees the following: \n%s\n",printString);
   set_delete(allLocations,NULL);
+  mem_free(printString);
 
   
   //now test if locations are open or not
@@ -63,23 +63,33 @@ int main(const int argc, char* argv[])
 
   //location conversion also gives error on these invalid locations
   printf("Testing location convert on invalid locations. Should give errors...\n");
-  if (grid_locationConvert(grid, -14)==NULL){
+  int* coordinates = grid_locationConvert(grid, -14);
+  if (coordinates==NULL){
     fprintf(stderr,"-14 is invalid location.\n");
   }
-  if (grid_locationConvert(grid,grid_getNumberCols(grid)*grid_getNumberRows(grid))==NULL){
+  else{
+    mem_free(coordinates);
+  }
+
+  coordinates = grid_locationConvert(grid,grid_getNumberCols(grid)*grid_getNumberRows(grid));
+  if (coordinates==NULL){
     fprintf(stderr,"%d is invalid location.\n", grid_getNumberCols(grid)*grid_getNumberRows(grid));
+  }
+  else{
+    mem_free(coordinates);
   }
   
   //Test with valid locations
   printf("Testing with valid locations from 0 to grid size...\n");
   for(int i =0; i< grid_getNumberCols(grid)*grid_getNumberRows(grid); i++){
-    int* coordinates = grid_locationConvert(grid,i);
+    coordinates = grid_locationConvert(grid,i);
     if(grid_isOpen(grid, i)){
       printf("The point at row %d , col %d is open\n", coordinates[0], coordinates[1]);
     }
     else{
       printf("The point at row %d , col %d is not open\n", coordinates[0], coordinates[1]);
     }
+    mem_free(coordinates);
   }
   
 
@@ -102,33 +112,42 @@ int main(const int argc, char* argv[])
   counters_add(gold,146);
 
   printf("Maxing set of locations, players and gold on grid...\n");
-  allLocations = set_new();
-  allLocations = grid_displaySpectator(grid, playerLoc,gold);
+  allLocations =  grid_displaySpectator(grid, playerLoc,gold);
 
   //print the set to a string
   printf("Printing the view to string...\n");
   printString = grid_print(grid, allLocations);
   printf("Spectator sees the following (should not see \"C\"): \n%s\n",printString);
   set_delete(allLocations,NULL);
+   mem_free(printString);
 
 
   //testing the visiblity feature
 
-  set_t* visible = set_new();
-  visible = grid_isVisible(grid,82,playerLoc,gold);
+  set_t* visible = grid_isVisible(grid,82,playerLoc,gold);
   printf("Printing the view to string...\n");
   printString = grid_print(grid, visible);
   printf("Player D sees the following: \n%s\n",printString);
+  mem_free(printString);
+
   visible = grid_updateView(grid,198,visible,playerLoc,gold);
   printString = grid_print(grid, visible);
   printf("Player D sees the following: \n%s\n",printString);
+  mem_free(printString);
 
+
+  set_delete(visible,NULL);
+  set_delete(playerLoc,NULL);
+  counters_delete(gold);
+  grid_delete(grid);
   
   
   // char* printstring = grid_print(grid, visible);
   // printf("%s", printstring);
   // set_delete(visible, NULL);
-  // mem_free(printstring);
+
+
+
   
     return 0;
 }

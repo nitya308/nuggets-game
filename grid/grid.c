@@ -46,6 +46,7 @@ grid_t* grid_read(char* filename)
     grid->map = carr;
     grid->ncols = numcols;
     grid->nrows = numrows;
+    fclose(file);
     return grid;
   }
   else {
@@ -56,9 +57,9 @@ grid_t* grid_read(char* filename)
 
 int* grid_locationConvert(grid_t* grid, int loc)
 {
-  int* coordinates = mem_malloc(2 * sizeof(int));
   if (grid != NULL) {
     if (loc >= 0 && loc < (grid->ncols) * (grid->nrows)) {
+      int* coordinates = mem_malloc(2*sizeof(int));
       coordinates[0] = loc / (grid->ncols);
       coordinates[1] = loc % (grid->ncols);
       return coordinates;
@@ -67,16 +68,20 @@ int* grid_locationConvert(grid_t* grid, int loc)
   return NULL;
 }
 
+
 bool grid_isOpen(grid_t* grid, int loc)
 {
+  
   int* coordinates = grid_locationConvert(grid, loc);
   if (coordinates != NULL) {
     char** carr = grid->map;
-    if (carr[coordinates[0]][coordinates[1]] != '.' &&
-        carr[coordinates[0]][coordinates[1]] != '#') {
+    if (carr[coordinates[0]][coordinates[1]]!= '.' && 
+      carr[coordinates[0]][coordinates[1]]!= '#'){
+      mem_free(coordinates);
       return false;
     }
     else {
+      mem_free(coordinates);
       return true;
     }
   }
@@ -97,8 +102,9 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
     set_t* visible = set_new();
     char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
     sprintf(intToStr, "%d", loc);
-
-    set_insert(visible, intToStr, "@");
+    set_insert(visible,intToStr, "@");
+    
+            
 
     int location;
     char** carr = grid->map;
@@ -114,8 +120,10 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
             location = i * (grid->ncols) + j;
             sprintf(intToStr, "%d", location);
 
-            if (counters_get(gold, location) > 0) {
-              set_insert(visible, intToStr, "*");
+            if(counters_get(gold,location)>0&&counters_get(gold,location)!=251){
+              set_insert(visible,intToStr, "*");
+            }else if(set_find(playerLocations,intToStr)!=NULL){
+              set_insert(visible,intToStr, set_find(playerLocations,intToStr));
             }
             else if (set_find(playerLocations, intToStr) != NULL) {
               set_insert(visible, intToStr, set_find(playerLocations, intToStr));
@@ -148,8 +156,10 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
             sprintf(intToStr, "%d", location);
             // printf("%d\n", location);
 
-            if (counters_get(gold, location) > 0) {
-              set_insert(visible, intToStr, "*");
+            if(counters_get(gold,location)>0&&counters_get(gold,location)!=251){
+              set_insert(visible,intToStr, "*");
+            }else if(set_find(playerLocations,intToStr)!=NULL){
+              set_insert(visible,intToStr, set_find(playerLocations,intToStr));
             }
             else if (set_find(playerLocations, intToStr) != NULL) {
               set_insert(visible, intToStr, set_find(playerLocations, intToStr));
@@ -172,8 +182,10 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
               location = (int)row * (grid->ncols) + (int)col;
               sprintf(intToStr, "%d", location);
 
-              if (counters_get(gold, location) > 0) {
-                set_insert(visible, intToStr, "*");
+              if(counters_get(gold,location)>0&&counters_get(gold,location)!=251){
+                set_insert(visible,intToStr, "*");
+              }else if(set_find(playerLocations,intToStr)!=NULL){
+                set_insert(visible,intToStr, set_find(playerLocations,intToStr));
               }
               else if (set_find(playerLocations, intToStr) != NULL) {
                 set_insert(visible, intToStr, set_find(playerLocations, intToStr));
@@ -191,8 +203,10 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
               location = (int)row * (grid->ncols) + (int)col;
               sprintf(intToStr, "%d", location);
 
-              if (counters_get(gold, location) > 0) {
-                set_insert(visible, intToStr, "*");
+              if(counters_get(gold,location)>0&&counters_get(gold,location)!=251){
+                set_insert(visible,intToStr, "*");
+              }else if(set_find(playerLocations,intToStr)!=NULL){
+                set_insert(visible,intToStr, set_find(playerLocations,intToStr));
               }
               else if (set_find(playerLocations, intToStr) != NULL) {
                 set_insert(visible, intToStr, set_find(playerLocations, intToStr));
@@ -224,7 +238,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
       }
     }
     mem_free(intToStr);
-
+    mem_free(coordinates);
     return visible;
   }
   return NULL;
@@ -242,7 +256,9 @@ set_t* grid_updateView(grid_t* grid, int newloc,
     if (visible != NULL) {
       char* intToStr = mem_malloc(sizeof(char) * (int)log10(newloc));
       sprintf(intToStr, "%d", newloc);
-      set_iterate(seenBefore, visible, mergeHelper);
+      set_iterate(seenBefore, visible, mergeHelper); 
+      set_delete(seenBefore,NULL);
+      mem_free(intToStr);    
       return visible;
     }
   }
@@ -267,8 +283,8 @@ set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* g
       if (!grid_isOpen(grid, i)) {
         set_insert(allLocations, intToStr, "g");
       }
-      else {
-        if (counters_get(gold, i) > 0) {
+      else{
+        if (counters_get(gold, i) > 0 && counters_get(gold,i)!=251) {
           set_insert(allLocations, intToStr, "*");
         }
         else {
@@ -351,6 +367,10 @@ int grid_getNumberRows(grid_t* grid)
 
 void grid_delete(grid_t* grid)
 {
-  mem_free(grid->map);
+  char** map = grid->map;
+  for(int i =0; i< grid_getNumberRows(grid); i++){
+    mem_free(map[i]);
+  }
+  mem_free(map);
   mem_free(grid);
 }
