@@ -16,13 +16,19 @@ int main()
 {
   player_t* p1 = NULL;
   player_t* p2 = NULL;
+
+  // creating a simple grid for testing
   grid_t* grid = grid_read("testmap.txt");
+
+  // creating a simple gold counter for testing
   int numGoldLeft = 20;
   counters_t* gold = counters_new();
-  counters_set(gold, 2, 5);
-  counters_set(gold, 4, 5);
   counters_set(gold, 6, 5);
   counters_set(gold, 8, 5);
+  counters_set(gold, 13, 5);
+  counters_set(gold, 17, 5);
+
+  // create a hashtable of players for testing
   hashtable_t* allPlayers = hashtable_new(10);
 
   // Testing player_new

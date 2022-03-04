@@ -109,7 +109,7 @@ bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* 
   set_t* newSeenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
   set_delete(player->seenBefore, stringfree);
   player->seenBefore = newSeenBefore;
-  set_delete(playerLocations, stringfree);
+  set_delete(playerLocations, NULL);
   return true;
 }
 
