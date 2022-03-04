@@ -205,7 +205,7 @@ static int
 parseArgs(const int argc, char* argv[])
 {
   if (argc == 2 || argc == 3) {
-    if (argc == 2) {  // if map.txt and seed provided
+    if (argc == 3) {  // if map.txt and seed provided
       printf("%s", "here 2");
       fflush(stdout);
       if (atoi(argv[2]) <= 0) {  // if seed provided but 0 or negative value,
@@ -264,22 +264,24 @@ handleMessage(void* arg, const addr_t from, const char* message)
   printf("%s", "here in handle");
   fflush(stdout);
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
-    printf("%s", "here in play");
+    printf("\n%s\n", "Just entered PLAY in handle message");
     fflush(stdout);
 
     char* realName = (char*)message + strlen("PLAY ");  // get the real name after PLAY
 
-    printf("\nNAME: %s\n", realName);
+    printf("\n The real NAME is: %s\n", realName);
     fflush(stdout);
 
     playerJoin(realName, &from);
 
-    printf("%s\n\n", "here in play join past");
+    printf("\n%s\n", "Player join has returned");
     fflush(stdout);
+
     hashtable_print(game->allPlayers, stdout, NULL);
+
     hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);  // send gold messages to all players
     hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);
-    printf("%s", "here in play end");
+    printf("\n%s\n", "end");
     fflush(stdout);  // update all player's displays
   }
   else if (strncmp(message, "SPECTATE ", strlen("SPECTATE ")) == 0) {
@@ -442,13 +444,21 @@ handleInput(void* arg)
 static void
 playerJoin(char* name, const addr_t* client)
 {
+  printf("\n%s\n", "INSIDE player jpin");
+  fflush(stdout);
+  printf("\nName is %s\n", name);
+  fflush(stdout);
+
+  printf("\nNumplayers %d\n", game->numPlayers);
+  fflush(stdout);
+
   if (game->numPlayers < MaxPlayers) {
+    printf("\n%s\n", "we are inside if condition");
+    fflush(stdout);
     player_t* newPlayer = player_new(name, game->grid, &(game->numGoldLeft), game->gold, game->numPlayers);
     if (game->numGoldLeft == 0) {  // if no more gold left
       endGame();
     }
-
-
 
     int buffer = 20;
 

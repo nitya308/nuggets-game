@@ -72,6 +72,8 @@ static void stringfree(void* item);
 /* see player.h for description */
 player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers)
 {
+  printf("\n%s\n", "INSIDE player_new");
+  fflush(stdout);
   mem_assert(name, "name provided was null");
   mem_assert(grid, "grid provided was null");
   mem_assert(gold, "gold provided was null");
@@ -92,7 +94,7 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
 
   // replacing with an underscore _ any character for which both isgraph() and isblank() are false
   int i = 0;
-  while(name[i]!='\0') {
+  while (name[i] != '\0') {
     if (!isgraph(name[i]) && !isblank(name[i])) {
       name[i] = '_';
     }
@@ -107,6 +109,7 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
     return NULL;
   }
   strcpy(player->name, name);
+
   // set to random coordinate within grid!!!
   int coor = rand() % (grid_getNumberRows(grid) * grid_getNumberRows(grid));
   while (!grid_isOpen(grid, coor)) {

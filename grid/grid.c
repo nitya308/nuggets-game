@@ -68,10 +68,10 @@ int* grid_locationConvert(grid_t* grid, int loc)
       coordinates[1] = loc % (grid->ncols);
       return coordinates;
     }
-    mem_free(coordinates);
+    // mem_free(coordinates);
   }
   else{
-   mem_free(coordinates); 
+   // mem_free(coordinates); 
   }
   
   return NULL;
@@ -84,11 +84,11 @@ bool grid_isOpen(grid_t* grid, int loc)
     char** carr = grid->map;
     if (carr[coordinates[0]][coordinates[1]] != '.' &&
         carr[coordinates[0]][coordinates[1]] != '#') {
-      mem_free(coordinates);
+      // mem_free(coordinates);
       return false;
     }
     else {
-      mem_free(coordinates);
+      // mem_free(coordinates);
       return true;
     }
   }
