@@ -116,7 +116,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
             location = i * (grid->ncols) + j;
             sprintf(intToStr, "%d", location);
 
-            if (counters_get(gold, location) > 0) {
+            if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {
               set_insert(visible, intToStr, "*");
             }
             else if (set_find(playerLocations, intToStr) != NULL) {
@@ -193,7 +193,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
               location = (int)row * (grid->ncols) + (int)col;
               sprintf(intToStr, "%d", location);
 
-              if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {
+              if (counters_get(gold, location) > 0 && (counters_get(gold, location) != 251)) {
                 set_insert(visible, intToStr, "*");
               }
               else if (set_find(playerLocations, intToStr) != NULL) {
@@ -262,7 +262,7 @@ static void insertGold(void* arg, const char* key, void* item)
   counters_t* gold = arg;
   int location;
   sscanf(key, "%d", &location);
-  if (counters_get(gold, location) > 0) {  // if this location is in gold locations
+  if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {  // if this location is in gold locations
                                            // insert gold symbol as this item
     item = mem_malloc(sizeof(char));
     sprintf(item, "*");
@@ -296,7 +296,7 @@ set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* g
         set_insert(allLocations, intToStr, "g");
       }
       else {
-        if (counters_get(gold, i) > 0) {
+        if (counters_get(gold, i) > 0 && counters_get(gold, i) != 251) {
           set_insert(allLocations, intToStr, "*");
         }
         else {
