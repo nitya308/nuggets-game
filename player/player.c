@@ -6,6 +6,7 @@
  * Nitya Agarwala, Feb 2022
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +20,7 @@
 
 /**************** file-local global variables ****************/
 /* none */
+static const int MaxNameLength = 50;
 
 /**************** global types ****************/
 typedef struct player {
@@ -38,13 +40,13 @@ typedef struct playerSwap {
 } player_swapstruct;
 
 // function prototypes
-player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers);
+player_t* player_new(const char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers);
 bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor);
 bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
-bool player_quit(char* address, hashtable_t* allPlayers);
+bool player_quit(const char* address, hashtable_t* allPlayers);
 void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
 set_t* player_locations(hashtable_t* allPlayers);
@@ -68,7 +70,7 @@ static void stringfree(void* item);
 
 /**************** player_new ****************/
 /* see player.h for description */
-player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers)
+player_t* player_new(const char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers)
 {
   mem_assert(name, "name provided was null");
   mem_assert(grid, "grid provided was null");
@@ -82,6 +84,19 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
   char* pID = malloc(2);
   sprintf(pID, "%c", ID);
   player->pID = pID;
+
+  // truncate an over-length real name to MaxNameLength characters
+  if (strlen(name) > MaxNameLength) {
+    name[MaxNameLength] = '\0';
+  }
+
+  // replacing with an underscore _ any character for which both isgraph() and isblank() are false
+  for (int i = 0; i < sizeof(name); i++) {
+    if (!isgraph(name[i]) && !isblank(name[i])) {
+      name[i] = '_';
+    }
+  }
+
   player->name = mem_malloc_assert(strlen(name) + 1, "null player");
   if (player->name == NULL) {
     // error allocating memory for name;
@@ -316,7 +331,7 @@ static void swap_helper(void* arg, const char* key, void* item)
 
 /**************** player_quit ****************/
 /* see player.h for description */
-bool player_quit(char* address, hashtable_t* allPlayers)
+bool player_quit(const char* address, hashtable_t* allPlayers)
 {
   player_t* player = hashtable_find(allPlayers, address);
   if (player == NULL) {
