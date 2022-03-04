@@ -176,7 +176,7 @@ void player_delete(player_t* player);
 
 // Getter method prototypes
 int player_getCurrCoor(player_t* player);
-char player_getID(player_t* player);
+char* player_getID(player_t* player);
 int player_getpurse(player_t* player);
 int player_getRecentGold(player_t* player);
 set_t* player_getSeenBefore(player_t* player);
