@@ -81,8 +81,14 @@ int main()
   printf("%s\n", "PLAYER 1:");
   player_print(p1);
   printf("\n%s\n", "PLAYER 2:");
-  // Print player 2
   player_print(p2);
+
+  
+
+  // Testing player_summary
+
+  // Testing player_summary
+
 
   allLocations = grid_displaySpectator(grid, NULL, gold);
   printString = grid_print(grid, allLocations);
@@ -107,7 +113,7 @@ int main()
     printString = grid_print(grid, allLocations);
     printf("%s\n", printString);
 
-    // deleting everything
+    // Testing player_delete
     set_delete(allLocations, NULL);
     counters_delete(gold);
     grid_delete(grid);
