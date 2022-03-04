@@ -120,6 +120,7 @@ initializeGame(char** argv)
     exit(1);
   }
   game->spectatorAddress = NULL;
+  game->numPlayers = 0;
 }
 
 /* ***************** buildGrid ********************** */
@@ -267,12 +268,14 @@ handleMessage(void* arg, const addr_t from, const char* message)
     printf("%s", "here in play");
     fflush(stdout);
 
-    char* realName = (char*)message + strlen("PLAY ");  // get the real name after PLAY
+    const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
 
     printf("\nNAME: %s\n", realName);
     fflush(stdout);
 
-    playerJoin(realName, &from);
+    char* name = malloc(strlen(realName) + 1);
+    strcpy(name, realName);
+    playerJoin(name, &from);
 
     printf("%s\n\n", "here in play join past");
     fflush(stdout);
@@ -442,13 +445,19 @@ handleInput(void* arg)
 static void
 playerJoin(char* name, const addr_t* client)
 {
+  printf("%s", "in p join");
+  fflush(stdout);
   if (game->numPlayers < MaxPlayers) {
-    player_t* newPlayer = player_new(name, game->grid, &(game->numGoldLeft), game->gold, game->numPlayers);
+    printf(" %s", "inside if condition");
+    fflush(stdout);
+    player_t* newPlayer = player_new(name, game->grid, game->allPlayers, &(game->numGoldLeft), game->gold, game->numPlayers);
     if (game->numGoldLeft == 0) {  // if no more gold left
+      printf("%s", "game ending");
+      fflush(stdout);
       endGame();
     }
-
-
+    printf("%s", "made new");
+    fflush(stdout);
 
     int buffer = 20;
 
@@ -471,7 +480,7 @@ playerJoin(char* name, const addr_t* client)
     message_send(*client, okMessage);    // send the player message
     message_send(*client, gridMessage);  // send grid message
 
-    game->numPlayers++;
+    (game->numPlayers)++;
   }
 }
 
