@@ -25,10 +25,10 @@
 /* *********************************************************************** */
 /* Private function prototypes */
 static int parseArgs(const int argc, char* argv[]);
-static void handleInput(void* arg);
+static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static bool isReadable(char* pathName);
-static void playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers);
+static void playerJoin(const char* name, hashtable_t* allPlayers, hashtable_t* addresses, const addr_t* client, grid_t* grid, int* numPlayers);
 static void spectatorJoin(addr_t* address);
 static void buildGrid(grid_t* grid, char* argv);
 static void endGame();
@@ -38,7 +38,10 @@ static void stringDelete(void* item);
 static void sendDisplayMessage(void* arg, const char* addr, void* item);
 static void sendGoldMessage(void* arg, const char* addr, void* item);
 static void sendEndMessage(void* arg, const char* addr, void* item);
-static void initializeGame(char* argv);
+static void initializeGame(char** argv);
+static void initializeGoldPiles();
+static void generateRandomLocations(int numGoldPiles, int* arr);
+static void generateGoldDistribution(int numGoldPiles, int* arr);
 /**************** local types ****************/
 typedef struct game {
   hashtable_t* allPlayers;
@@ -60,6 +63,7 @@ static const int GoldMaxNumPiles = 30;  // maximum number of gold piles
 /* ***************** main ********************** */
 int main(const int argc, char* argv[])
 {
+  log_init(stderr);
   int exitStatus = parseArgs(argc, argv);
   if (exitStatus == 1) {
     exit(1);
@@ -69,24 +73,30 @@ int main(const int argc, char* argv[])
   // play the game
   // initialize the message module (without logging)
   int port;
-  if (port = message_init(stderr) == 0) {
+  if ((port = message_init(stderr)) == 0) {
     fprintf(stderr, "Failed to initialize message module.\n");
     exit(2);  // failure to initialize message module
   }
   printf("Ready to play, waiting at port %d", port);
 
   // Loop, waiting for input or for messages; provide callback functions.
-  bool ok = message_loop(port, 0, NULL, handleInput, handleMessage);
+  bool ok = message_loop(&port, 0, NULL, handleInput, handleMessage);
 
   // shut down the message module
   message_done();
 
-  exit(0);  // successfully ran program
+  // todo: handle ok
+  if (ok) {
+    exit(0);  // successfully ran program
+  } else {
+    exit(1); // failed to run program, terminate with error code
+  }
+
 }
 
 /* ***************** initializeGame ********************** */
 static void
-initializeGame(char* argv)
+initializeGame(char** argv)
 {
   game = mem_malloc(sizeof(game_t));
   if (game == NULL) {
@@ -112,7 +122,8 @@ initializeGame(char* argv)
 static void
 buildGrid(grid_t* grid, char* argv)
 {
-  game->grid = grid_read(argv[2]);  // build the grid
+  char* filename = argv[2];
+  game->grid = grid_read(filename);  // build the grid
   initializeGoldPiles();
 }
 
@@ -136,8 +147,8 @@ initializeGoldPiles()
 static void
 generateRandomLocations(int numGoldPiles, int* arr)
 {
-  int nRows = getNumberRows(game->grid);
-  int nCols = getNumberCols(game->grid);
+  int nRows = grid_getNumberRows(game->grid);
+  int nCols = grid_getNumberCols(game->grid);
   int i = 0;
   while (i < numGoldPiles) {
     int location = rand() % (nRows * nCols);          // get the index in the map
@@ -237,10 +248,6 @@ isReadable(char* pathName)
 static bool
 handleMessage(void* arg, const addr_t from, const char* message)
 {
-  if (&from == NULL) {
-    log_v("handleMessage called with arg=NULL");
-    return true;
-  }
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
     playerJoin(realName, game->allPlayers, game->addresses, &from, game->grid, &game->numPlayers);
@@ -377,7 +384,7 @@ sendEndMessage(void* arg, const char* addr, void* item)
   }
 }
 
-static void
+static bool
 handleInput(void* arg)
 {
 }
@@ -388,7 +395,7 @@ handleInput(void* arg)
  * Note: Does not send GOLD & DISPLAY message to client here
  */
 static void
-playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers)
+playerJoin(const char* name, hashtable_t* allPlayers, hashtable_t* addresses, const addr_t* client, grid_t* grid, int* numPlayers)
 {
   if (*numPlayers < MaxPlayers) {
     player_t* newPlayer = player_new(name, grid, &(game->numGoldLeft), game->gold, *numPlayers);
