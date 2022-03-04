@@ -40,7 +40,7 @@ typedef struct playerSwap {
 } player_swapstruct;
 
 // function prototypes
-player_t* player_new(const char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers);
+player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers);
 bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor);
 bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
@@ -70,7 +70,7 @@ static void stringfree(void* item);
 
 /**************** player_new ****************/
 /* see player.h for description */
-player_t* player_new(const char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers)
+player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers)
 {
   mem_assert(name, "name provided was null");
   mem_assert(grid, "grid provided was null");
