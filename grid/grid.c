@@ -1,3 +1,4 @@
+//Matthew Timofeev
 // Grid module for nuggets 2022
 #include <math.h>
 #include <stdio.h>
@@ -20,10 +21,11 @@ typedef struct grid {
 } grid_t;
 
 /******************local functions**************/
-// static void insertPlayers(void* arg, const char* key, void* item);
-// static void insertGold(void* arg, const char* key, void* item);
+
 static void mergeHelper(void* arg, const char* key, void* item);
 
+
+/******************functions**************/
 grid_t* grid_read(char* filename)
 {
   FILE* file = fopen(filename, "r");
@@ -264,11 +266,7 @@ set_t* grid_updateView(grid_t* grid, int newloc,
       sprintf(intToStr, "%d", newloc);
       mem_free(intToStr);
 
-      // insert gold symbols into visible portion
-      // set_iterate(visible, gold, insertGold);
-      // insert players symbols into visible portion
-      // set_iterate(visible, playerLocations, insertPlayers);
-      // extend visible using seenbefore locations
+      
       set_iterate(seenBefore, visible, mergeHelper);
       return visible;
     }
@@ -289,14 +287,6 @@ set_t* grid_updateView(grid_t* grid, int newloc,
     item = mem_malloc(sizeof(char));
     sprintf(item, "*");
   }
-} */
-
-/* static void insertPlayers(void* arg, const char* key, void* item)
-{
-  // if this location is in player location
-  // insert player symbol as this item
-  set_t* plocations = arg;
-  item = set_find(plocations, key);
 } */
 
 /****************grid_displaySpectator()*******************/
@@ -389,20 +379,28 @@ char* grid_print(grid_t* grid, set_t* locations)
 
 int grid_getNumberCols(grid_t* grid)
 {
-  return grid->ncols;
+  if (grid!=NULL){
+    return grid->ncols;
+  }
+  return 0;
 }
 
 int grid_getNumberRows(grid_t* grid)
 {
-  return grid->nrows;
+  if (grid!=NULL){
+    return grid->nrows;
+  }
+  return 0;
 }
 
 void grid_delete(grid_t* grid)
 {
-  char** map = grid->map;
-  for (int i = 0; i < grid_getNumberRows(grid); i++) {
-    mem_free(map[i]);
+  if (grid!=NULL){
+    char** map = grid->map;
+    for (int i = 0; i < grid_getNumberRows(grid); i++) {
+      mem_free(map[i]);
+    }
+    mem_free(grid->map);
+    mem_free(grid);
   }
-  mem_free(grid->map);
-  mem_free(grid);
 }

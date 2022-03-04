@@ -8,7 +8,6 @@
 #include "grid.h"
 
 
-
 int main(const int argc, char* argv[])
 {
   grid_t* grid;
@@ -149,8 +148,5 @@ int main(const int argc, char* argv[])
   // printf("%s", printstring);
   // set_delete(visible, NULL);
 
-
-
-  
     return 0;
 }
