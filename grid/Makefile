@@ -13,7 +13,7 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb $(LOGGING) -I../lib
 CC = gcc
 MAKE = make
 # for memory-leak tests
-VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
+VALGRIND = valgrind -v --leak-check=full --show-leak-kinds=all
 
 
 grid.o: grid.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/file.h ../libcs50/mem.h
@@ -34,7 +34,7 @@ test: gridtest
 	./gridtest
 
 
-valgrind: grid
+valgrind: gridtest
 	$(VALGRIND) ./gridtest
 
 clean:
