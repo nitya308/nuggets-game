@@ -2,8 +2,8 @@
 #
 # Ashna Kumar   3/2/22
 
-S = ./support
-L = ./libcs50
+S = ../support
+L = ../libcs50
 LIBS = -lncurses
 LLIBS = $S/support.a $L/libcs50-given.a
 
