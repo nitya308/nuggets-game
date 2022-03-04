@@ -113,6 +113,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
     int location;
     char** carr = grid->map;
     int* coordinates = grid_locationConvert(grid, loc);
+    bool onPassageEnd = false;
 
     // for passageways, survey only adjacent points
     if (carr[coordinates[0]][coordinates[1]] == '#') {
@@ -123,6 +124,9 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
             // convert location back to integer
             location = i * (grid->ncols) + j;
             sprintf(intToStr, "%d", location);
+            if(carr[i][j]=='.'){
+              onPassageEnd = true;
+            }
 
             if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {
               set_insert(visible, intToStr, "*");
@@ -137,7 +141,8 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
         }
       }
     }
-    else {
+    if(carr[coordinates[0]][coordinates[1]]!='#' || onPassageEnd){
+      printf("scanning\n");
       // location is in room spot
       int maxr = (grid->ncols) + (grid->nrows);
       double row = 0;
@@ -145,14 +150,19 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
       bool oncorner = false;
       double tolerance = 0.1;
       //"look" in all directions
-      for (double theta = 0; theta < 2 * PI; theta += PI / 3600) {
-        for (double radius = 0; radius < maxr; radius += 0.1) {
+      for (double theta = 0; theta < 2 * PI; theta += PI / 360) {
+        for (double radius = 1; radius < maxr; radius += 0.1) {
           row = coordinates[0] + radius * sin(theta);
           col = coordinates[1] + radius * cos(theta);
-          // printf("row %f col %f\n", row, col);
+
+          //prevent array-out-of-bounds errors
+          if((int)row >= grid->nrows || (int)col >= grid->ncols){
+            break;
+          }
+          
 
           // if close to wall location, stop increasing radius, add to visible set
-          if ((carr[(int)row][(int)col] == '|') || (carr[(int)row][(int)col] == '-') || (carr[(int)row][(int)col] == '#') || (carr[(int)row][(int)col] == '+')) {
+          if ((carr[(int)row][(int)col] == '|') || (carr[(int)row][(int)col] == '-') || (carr[(int)row][(int)col] == '#') ) {
             // printf("Close to wall\n");
             location = (int)row * (grid->ncols) + (int)col;
             sprintf(intToStr, "%d", location);
@@ -175,7 +185,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
           // if exactly on some location
           else if (((int)col - col) * ((int)col - col) + ((int)row - row) * ((int)row - row) < tolerance) {
             // if exactly on room location
-            // printf("Exactly on: ");
+             //printf("Exactly on: %d %d %c\n",(int)row, (int)col, carr[(int)row][(int)col]);
             if (carr[(int)row][(int)col] == '.') {
               // printf("room\n");
               // add the location, dummy character

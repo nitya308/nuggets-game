@@ -100,9 +100,9 @@ int main(const int argc, char* argv[])
 
   set_t* playerLoc = set_new();
   set_insert(playerLoc,"42","A");
-  set_insert(playerLoc,"58", "B");
+  set_insert(playerLoc,"68", "B");
   set_insert(playerLoc,"181", "C");
-  set_insert(playerLoc, "193","D");
+  set_insert(playerLoc, "107","D");
 
   counters_t* gold = counters_new();
   counters_add(gold,30);
@@ -129,15 +129,18 @@ int main(const int argc, char* argv[])
   printString = grid_print(grid, visible);
   printf("Player D sees the following: \n%s\n",printString);
   mem_free(printString);
-
-  // visible = grid_updateView(grid,198,visible,playerLoc,gold);
-  // printString = grid_print(grid, visible);
-  // printf("Player D sees the following: \n%s\n",printString);
-  // mem_free(printString);
+  set_delete(visible,NULL);
 
 
+  visible = grid_isVisible(grid,68,playerLoc,gold);
+  printf("Printing the view to string...\n");
+  printString = grid_print(grid, visible);
+  printf("Player B sees the following: \n%s\n",printString);
+  mem_free(printString);
   set_delete(visible,NULL);
   set_delete(playerLoc,NULL);
+
+
   counters_delete(gold);
   grid_delete(grid);
   
