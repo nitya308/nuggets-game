@@ -91,10 +91,12 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
   }
 
   // replacing with an underscore _ any character for which both isgraph() and isblank() are false
-  for (int i = 0; i < sizeof(name); i++) {
+  int i = 0;
+  while(name[i]!='\0') {
     if (!isgraph(name[i]) && !isblank(name[i])) {
       name[i] = '_';
     }
+    i++;
   }
 
   player->name = mem_malloc_assert(strlen(name) + 1, "null player");

@@ -3,13 +3,13 @@
 # Vico Lee - 3 March 2022
 
 L = libcs50
-LIBS = -lncurses
+LIBS = -lncurses -lm
 S = support
 L = libcs50
 P = player
 G = grid
-SERVEROBJS = server.c
-CLIENTOBJS = client.c 
+SERVEROBJS = server.o
+CLIENTOBJS = client.o
 LLIBS = $S/support.a $L/libcs50-given.a $P/player.a $G/grid.a
 
 # uncomment the following to turn on file saving, finding logs.
@@ -22,27 +22,23 @@ MAKE = make
 VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 .PHONY: all clean
 
-server.o: $S/message.h $S/log.h $L/mem.h $P/player.h $G/grid.h
-client.o: $S/message.h $S/log.h $L/mem.h
-
 server: $(SERVEROBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 client: $(CLIENTOBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
+server.o: $S/message.h $S/log.h $L/mem.h $L/file.h $P/player.h $G/grid.h
+client.o: $S/message.h $S/log.h $L/mem.h
+
 ############## default: make all libs and programs ##########
 # If libcs50 contains set.c, we build a fresh libcs50.a;
 # otherwise we use the pre-built library provided by instructor.
 all: 
-	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
-#	(cd $S; make $S.a;)
-	make -C grid
-	make -C player
-	make -C support
 	server 
 	client
-
+	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
+	
 ############### TAGS for emacs users ##########
 TAGS:  Makefile */Makefile */*.c */*.h */*.md */*.sh
 	etags $^
@@ -59,8 +55,3 @@ clean:
 	rm -f TAGS
 	rm -f core
 	rm -f *~ ~.o
-	make -C libcs50 clean
-	make -C support clean
-	make -C grid clean
-	make -C player clean
-

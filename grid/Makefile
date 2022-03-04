@@ -15,8 +15,8 @@ MAKE = make
 # for memory-leak tests
 VALGRIND = valgrind -v --leak-check=full --show-leak-kinds=all
 
-grid.o: grid.h 
-gridtest.o: grid.h
+grid.o: ../libcs50/set.h ../libcs50/counters.h ../libcs50/hashtable.h grid.h ../libcs50/file.h ../libcs50/mem.h 
+gridtest.o: grid.h ../libcs50/set.h ../libcs50/counters.h ../libcs50/hashtable.h ../libcs50/file.h ../libcs50/mem.h
 
 gridtest:  $(TOBJS) $(OBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $(TOBJS) $(OBJS) $(LLIBS) $(LIBS) -o $@
@@ -25,7 +25,7 @@ gridtest:  $(TOBJS) $(OBJS) $(LLIBS)
 $(LIB): $(OBJS)
 	ar cr $(LIB) $(OBJS)
 
-all: grid
+all: gridtest
 
 .PHONY: test valgrind clean
 
