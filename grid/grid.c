@@ -157,7 +157,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
 
           //prevent array-out-of-bounds errors
           if((int)row >= grid->nrows || (int)col >= grid->ncols){
-            break;
+            break; 
           }
           
 
