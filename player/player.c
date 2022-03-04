@@ -40,7 +40,7 @@ typedef struct playerSwap {
 } player_swapstruct;
 
 // function prototypes
-player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers);
+player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* numGoldLeft, counters_t* gold, int numPlayers);
 bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor);
 bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
@@ -70,7 +70,7 @@ static void stringfree(void* item);
 
 /**************** player_new ****************/
 /* see player.h for description */
-player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers)
+player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* numGoldLeft, counters_t* gold, int numPlayers)
 {
   printf("\n%s\n", "INSIDE player_new");
   fflush(stdout);
@@ -87,8 +87,13 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
   sprintf(pID, "%c", ID);
   player->pID = pID;
 
+  printf("Allocated ID: %s", pID);
+  fflush(stdout);
+
   // truncate an over-length real name to MaxNameLength characters
   if (strlen(name) > MaxNameLength) {
+    printf("String was long: %s", pID);
+    fflush(stdout);
     name[MaxNameLength] = '\0';
   }
 
@@ -101,8 +106,10 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
     i++;
   }
 
-  player->name = mem_malloc_assert(strlen(name) + 1, "null player");
+  player->name = mem_malloc(strlen(name) + 1);
   if (player->name == NULL) {
+    printf("%s", "player name null");
+    fflush(stdout);
     // error allocating memory for name;
     // cleanup and return error
     mem_free(player);
@@ -113,14 +120,24 @@ player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gol
   // set to random coordinate within grid!!!
   int coor = rand() % (grid_getNumberRows(grid) * grid_getNumberRows(grid));
   while (!grid_isOpen(grid, coor)) {
-    coor = rand();
+    coor = rand() % (grid_getNumberRows(grid) * grid_getNumberRows(grid));
   }
   player->purse = 0;
-  player->currCoor = coor;
-  player_collectGold(player, numGoldLeft, gold);
-  player->recentGoldCollected = player->purse;
+
+  if (!player_swapLocations(player, allPlayers, coor)) {
+    player->currCoor = coor;
+    player_collectGold(player, numGoldLeft, gold);
+    player->recentGoldCollected = player->purse;
+  }
+
+  printf("PLayer: %s", player->name);
+  player_print(player);
+  fflush(stdout);
+
   player->seenBefore = set_new();
   if (player->seenBefore == NULL) {
+    printf("%s", "seen before null");
+    fflush(stdout);
     // error allocating memory for name;
     // cleanup and return error
     mem_free(player);

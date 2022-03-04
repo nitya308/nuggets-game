@@ -113,6 +113,12 @@ initializeGame(char** argv)
     fprintf(stderr, "Failed to create allPlayers hashtable. Exiting...\n");
     exit(1);
   }
+  game->addresses = hashtable_new(MaxPlayers);
+  if (game->addresses == NULL) {
+    endGame();  // TODO: free the memory
+    fprintf(stderr, "Failed to create addresses hashtable. Exiting...\n");
+    exit(1);
+  }
   game->gold = counters_new();
   if (game->gold == NULL) {
     endGame();  // TODO: free the memory
@@ -120,6 +126,7 @@ initializeGame(char** argv)
     exit(1);
   }
   game->spectatorAddress = NULL;
+  game->numPlayers = 0;
 }
 
 /* ***************** buildGrid ********************** */
@@ -267,12 +274,14 @@ handleMessage(void* arg, const addr_t from, const char* message)
     printf("\n%s\n", "Just entered PLAY in handle message");
     fflush(stdout);
 
-    char* realName = (char*)message + strlen("PLAY ");  // get the real name after PLAY
+    const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
 
     printf("\n The real NAME is: %s\n", realName);
     fflush(stdout);
 
-    playerJoin(realName, &from);
+    char* name = malloc(strlen(realName) + 1);
+    strcpy(name, realName);
+    playerJoin(name, &from);
 
     printf("\n%s\n", "Player join has returned");
     fflush(stdout);
@@ -455,8 +464,10 @@ playerJoin(char* name, const addr_t* client)
   if (game->numPlayers < MaxPlayers) {
     printf("\n%s\n", "we are inside if condition");
     fflush(stdout);
-    player_t* newPlayer = player_new(name, game->grid, &(game->numGoldLeft), game->gold, game->numPlayers);
+    player_t* newPlayer = player_new(name, game->grid, game->allPlayers, &(game->numGoldLeft), game->gold, game->numPlayers);
     if (game->numGoldLeft == 0) {  // if no more gold left
+      printf("%s", "game ending");
+      fflush(stdout);
       endGame();
     }
 
@@ -481,7 +492,7 @@ playerJoin(char* name, const addr_t* client)
     message_send(*client, okMessage);    // send the player message
     message_send(*client, gridMessage);  // send grid message
 
-    game->numPlayers++;
+    (game->numPlayers)++;
   }
 }
 
