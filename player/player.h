@@ -134,7 +134,7 @@ bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int new
  *  true if player was found an deleted
  *  false if player was not found
  */
-bool player_quit(char* address, hashtable_t* allPlayers);
+bool player_quit(const char* address, hashtable_t* allPlayers);
 
 
 /**************** player_locations ****************/

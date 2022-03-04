@@ -35,6 +35,8 @@ int main()
   set_t* allLocations = grid_displaySpectator(grid, NULL, gold);
   char* printString = grid_print(grid, allLocations);
   printf("\n%s", printString);
+  set_delete(allLocations, NULL);
+  mem_free(printString);
 
   // Create a hashtable of players for testing
   hashtable_t* allPlayers = hashtable_new(10);
@@ -102,7 +104,8 @@ int main()
   printf("\n%s", printString);
 
   // Testing player_delete
-  set_delete(locations, NULL);
+  mem_free(printString);
+  set_delete(locations, freeString);
   set_delete(allLocations, NULL);
   counters_delete(gold);
   grid_delete(grid);

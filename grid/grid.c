@@ -19,8 +19,8 @@ typedef struct grid {
 } grid_t;
 
 /******************local functions**************/
-static void insertPlayers(void* arg, const char* key, void* item);
-static void insertGold(void* arg, const char* key, void* item);
+// static void insertPlayers(void* arg, const char* key, void* item);
+// static void insertGold(void* arg, const char* key, void* item);
 static void mergeHelper(void* arg, const char* key, void* item);
 
 grid_t* grid_read(char* filename)
@@ -45,9 +45,11 @@ grid_t* grid_read(char* filename)
     for (int i = 0; i < numrows; i++) {
       carr[i] = file_readLine(file);
     }
+
     grid->map = carr;
     grid->ncols = numcols;
     grid->nrows = numrows;
+    fclose(file);
     return grid;
   }
   else {
@@ -65,7 +67,9 @@ int* grid_locationConvert(grid_t* grid, int loc)
       coordinates[1] = loc % (grid->ncols);
       return coordinates;
     }
+    mem_free(coordinates);
   }
+  mem_free(coordinates);
   return NULL;
 }
 
@@ -76,12 +80,15 @@ bool grid_isOpen(grid_t* grid, int loc)
     char** carr = grid->map;
     if (carr[coordinates[0]][coordinates[1]] != '.' &&
         carr[coordinates[0]][coordinates[1]] != '#') {
+      mem_free(coordinates);
       return false;
     }
     else {
+      mem_free(coordinates);
       return true;
     }
   }
+  mem_free(coordinates);
   return false;
 }
 
@@ -93,11 +100,9 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
   // distinguish between a location being or not being in the set
 
   if (grid_isOpen(grid, loc)) {
-    int gridSize = (grid->ncols) * (grid->nrows);
-
     // insert the @ symbol into center of visible set
     set_t* visible = set_new();
-    char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
+    char* intToStr = mem_malloc(11);
     sprintf(intToStr, "%d", loc);
 
     set_insert(visible, intToStr, "@");
@@ -144,7 +149,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
           // printf("row %f col %f\n", row, col);
 
           // if close to wall location, stop increasing radius, add to visible set
-          if (carr[(int)row][(int)col] == '|' || carr[(int)row][(int)col] == '-' || carr[(int)row][(int)col] == '#' | carr[(int)row][(int)col] == '+') {
+          if ((carr[(int)row][(int)col] == '|') || (carr[(int)row][(int)col] == '-') || (carr[(int)row][(int)col] == '#') || (carr[(int)row][(int)col] == '+')) {
             // printf("Close to wall\n");
             location = (int)row * (grid->ncols) + (int)col;
             sprintf(intToStr, "%d", location);
@@ -226,7 +231,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
       }
     }
     mem_free(intToStr);
-
+    mem_free(coordinates);
     return visible;
   }
   return NULL;
@@ -242,8 +247,9 @@ set_t* grid_updateView(grid_t* grid, int newloc,
   if (grid != NULL) {
     set_t* visible = grid_isVisible(grid, newloc, playerLocations, gold);
     if (visible != NULL) {
-      char* intToStr = mem_malloc(sizeof(char) * (int)log10(newloc));
+      char* intToStr = mem_malloc(11);
       sprintf(intToStr, "%d", newloc);
+      mem_free(intToStr);
 
       // insert gold symbols into visible portion
       // set_iterate(visible, gold, insertGold);
@@ -253,29 +259,32 @@ set_t* grid_updateView(grid_t* grid, int newloc,
       set_iterate(seenBefore, visible, mergeHelper);
       return visible;
     }
+    else {
+      set_delete(visible, NULL);
+    }
   }
   return NULL;
 }
 
-static void insertGold(void* arg, const char* key, void* item)
+/* static void insertGold(void* arg, const char* key, void* item)
 {
   counters_t* gold = arg;
   int location;
   sscanf(key, "%d", &location);
   if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {  // if this location is in gold locations
-                                           // insert gold symbol as this item
+                                                                                  // insert gold symbol as this item
     item = mem_malloc(sizeof(char));
     sprintf(item, "*");
   }
-}
+} */
 
-static void insertPlayers(void* arg, const char* key, void* item)
+/* static void insertPlayers(void* arg, const char* key, void* item)
 {
   // if this location is in player location
   // insert player symbol as this item
   set_t* plocations = arg;
   item = set_find(plocations, key);
-}
+} */
 
 /****************grid_displaySpectator()*******************/
 /* returns set of all locations in the grid, with gold symbols and player symbol
@@ -288,7 +297,7 @@ set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* g
     int gridSize = (grid->ncols) * (grid->nrows);
     // get size of grid
     // convert the int location to string literal, to insert into set
-    char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
+    char* intToStr = malloc(11);
     char* symbol;
     for (int i = 0; i < gridSize; i++) {
       sprintf(intToStr, "%d", i);
@@ -310,7 +319,7 @@ set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* g
         }
       }
     }
-    mem_free(intToStr);
+    free(intToStr);
     return allLocations;
   }
   return NULL;
@@ -320,7 +329,7 @@ static void mergeHelper(void* arg, const char* key, void* item)
 {
   set_t* newlyVisible = arg;
   if (set_find(newlyVisible, key) == NULL) {
-    set_insert(newlyVisible, key, "g");
+    set_insert(newlyVisible, key, NULL);
   }
 }
 
@@ -329,16 +338,14 @@ char* grid_print(grid_t* grid, set_t* locations)
   if (grid != NULL && locations != NULL) {
     int gridSize = (grid->ncols) * (grid->nrows);
     char** carr = grid->map;
-    int* coordinates;
-    char* printString = mem_malloc(sizeof(char) * gridSize);
-
-    char* intToStr = mem_malloc(sizeof(char) * (int)log10(gridSize));
+    char* printString = mem_malloc((sizeof(char) * gridSize) + grid->nrows + 1);
+    char* intToStr = mem_malloc(11);
     char* symbol;
+    strcpy(printString, "");
 
     // run through all grid locations
     for (int i = 0; i < grid->nrows; i++) {
       strcat(printString, "\n");
-
       for (int j = 0; j < grid->ncols; j++) {
         sprintf(intToStr, "%d", i * (grid->ncols) + j);
 
@@ -379,6 +386,10 @@ int grid_getNumberRows(grid_t* grid)
 
 void grid_delete(grid_t* grid)
 {
+  char** map = grid->map;
+  for (int i = 0; i < grid_getNumberRows(grid); i++) {
+    mem_free(map[i]);
+  }
   mem_free(grid->map);
   mem_free(grid);
 }
