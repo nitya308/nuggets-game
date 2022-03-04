@@ -58,6 +58,8 @@ clean:
 	rm -f TAGS
 	rm -f core
 	rm -f *~ ~.o
+	rm -f server
+	rm -f client
 #make -C support clean
 	make -C player clean
 	make -C grid clean
