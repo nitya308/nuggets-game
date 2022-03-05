@@ -20,6 +20,8 @@ a.out
 # binary files
 server
 client
+playertest
+gridtest
 
 # Emacs backup and scratch files
 *~
