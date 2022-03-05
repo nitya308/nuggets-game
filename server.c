@@ -334,7 +334,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
         hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
       }
     }
-    else {                    // if capital letter
+    else { // if capital letter
       if (move == 'Q') {  // if Q, tell client to QUIT and remove player from game
         message_send(from, "QUIT Thanks for playing!\n");
         player_quit(message_stringAddr(from), game->allPlayers);
@@ -364,7 +364,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
     message_send(*game->spectatorAddress, displayMessage);  // send display message
     set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
   }
-  return false;
+  return false; //TODO: should we print an error???
 }
 
 // end the game, sending quit messages to all connnected clients and freeing all game memory
