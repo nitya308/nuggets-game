@@ -41,6 +41,7 @@ static void itemDelete(void* item);
 static void sendDisplayMessage(void* arg, const char* addr, void* item);
 static void sendGoldMessage(void* arg, const char* addr, void* item);
 static void sendEndMessage(void* arg, const char* addr, void* item);
+static void updateSpectatorDisplay();
 static void initializeGame(char** argv);
 static void initializeGoldPiles();
 static void generateRandomLocations(int numGoldPiles, int* arr);
@@ -297,16 +298,17 @@ handleMessage(void* arg, const addr_t from, const char* message)
     fflush(stdout);
 
     hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
+    updateSpectatorDisplay();
     printf("\n%s\n", "end");
     fflush(stdout);
   }
-  
-  else if (strncmp(message, "SPECTATE ", strlen("SPECTATE ")) == 0) {
+
+  else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
     spectatorJoin(&from);
   }
 
-  else {  
-    if (strlen(message)!=1) {
+  else {
+    if (strlen(message) != 1) {
       return false;
     }
     char move = message[0];
@@ -318,10 +320,10 @@ handleMessage(void* arg, const addr_t from, const char* message)
     fflush(stdout);
     if (islower(move)) {
       printf("%s", "is lower");
-      fflush(stdout);                                                                                            // lower character
+      fflush(stdout);                                                                                        // lower character
       if (!player_moveRegular(player, move, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {  // if not valid keystroke given
-        fprintf(stderr, "Error. Invalid keystroke %s", message);                                                 // invalid input keystroke
-        message_send(from, "ERROR. Invalid keystroke.\n");                                                       // invalid input keystroke
+        fprintf(stderr, "Error. Invalid keystroke %s", message);                                             // invalid input keystroke
+        message_send(from, "ERROR. Invalid keystroke.\n");                                                   // invalid input keystroke
       }
       else {
         // player was successfully moved
@@ -332,9 +334,10 @@ handleMessage(void* arg, const addr_t from, const char* message)
         // update gold and play displays whenever a keystroke is pressed
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
         hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+        updateSpectatorDisplay();
       }
     }
-    else { // if capital letter
+    else {                // if capital letter
       if (move == 'Q') {  // if Q, tell client to QUIT and remove player from game
         message_send(from, "QUIT Thanks for playing!\n");
         player_quit(message_stringAddr(from), game->allPlayers);
@@ -353,18 +356,26 @@ handleMessage(void* arg, const addr_t from, const char* message)
           // update gold and play displays whenever a keystroke is pressed
           hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
           hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+          updateSpectatorDisplay();
         }
       }
     }
   }
+  return false;  // TODO: should we print an error???
+}
+
+static void updateSpectatorDisplay()
+{
   if (game->spectatorAddress != NULL) {  // if spectator is connected, update spectator's display
-    set_t* spectatorLocations = grid_displaySpectator(game->grid, player_locations(game->allPlayers), game->gold);
-    char* displayMessage = "DISPLAY\n";
-    strcat(displayMessage, grid_print(game->grid, spectatorLocations));
+    set_t* playerLoc = player_locations(game->allPlayers);
+    set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
+    char* display = grid_print(game->grid, spectatorLocations);
+    char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+    strcpy(displayMessage, "DISPLAY\n");
+    strcat(displayMessage, display);
     message_send(*game->spectatorAddress, displayMessage);  // send display message
-    set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
+    // set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
   }
-  return false; //TODO: should we print an error???
 }
 
 // end the game, sending quit messages to all connnected clients and freeing all game memory
@@ -524,9 +535,8 @@ spectatorJoin(const addr_t* address)
   addr_t* tempAddr = (addr_t*)address;  // remove constant for storing
   game->spectatorAddress = tempAddr;    // update new address
 
-  int buffer = 10;
-
   // grid message
+  int buffer = 20;
   int gridLength = strlen("GRID") + buffer;
   char gridMessage[gridLength];
   snprintf(gridMessage, strlen(gridMessage) + buffer, "GRID %d %d", grid_getNumberRows(game->grid), grid_getNumberCols(game->grid));
@@ -537,7 +547,8 @@ spectatorJoin(const addr_t* address)
   snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD 0 0 %d", *(game->numGoldLeft));
 
   // display message
-  set_t* spectatorLocations = grid_displaySpectator(game->grid, player_locations(game->allPlayers), game->gold);
+  set_t* playerLoc = player_locations(game->allPlayers);
+  set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
   char* display = grid_print(game->grid, spectatorLocations);
   char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
   strcpy(displayMessage, "DISPLAY\n");
@@ -545,7 +556,11 @@ spectatorJoin(const addr_t* address)
   message_send(*game->spectatorAddress, gridMessage);     // send grid message
   message_send(*game->spectatorAddress, goldMessage);     // send gold message
   message_send(*game->spectatorAddress, displayMessage);  // send display message
-  set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
+  printf("\n%s\n", "sent messages");
+
+  /*   set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
+    set_delete(spectatorLocations, NULL);      */
+  // free spectatorLocations memory
 }
 
 // delete a name
