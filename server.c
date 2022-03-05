@@ -70,28 +70,7 @@ int main(const int argc, char* argv[])
   if (exitStatus == 1) {
     exit(1);
   }
-  initializeGame(argv);  // initialize the game with the map
-
-  set_t* allLocations = grid_displaySpectator(game->grid, NULL, game->gold);
-  char* printString = grid_print(game->grid, allLocations);
-  printf("\n%s", printString);
-
-  player_t* p1 = player_new("Alice", game->grid, game->allPlayers, &game->numGoldLeft, game->gold, game->numPlayers);
-  game->numPlayers++;
-  player_t* p2 = player_new("Bob", game->grid, game->allPlayers, &game->numGoldLeft, game->gold, game->numPlayers);
-  game->numPlayers++;
-
-  // Add both players to the hashtable
-  hashtable_insert(game->allPlayers, "1", p1);
-  hashtable_insert(game->allPlayers, "2", p2);
-
-  // Print player 1
-  printf("%s\n", "PLAYER 1:");
-  player_print(p1);
-  printf("\n%s\n", "PLAYER 2:");
-  // Print player 2
-  player_print(p2);
-
+  initializeGame(argv);  // initialize the game with the map 
   // play the game
   // initialize the message module (without logging)
   int port;
@@ -164,8 +143,11 @@ buildGrid(grid_t* grid, char** argv)
 static void
 initializeGoldPiles()
 {
-  int numGoldPiles = (rand() % (GoldMaxNumPiles - GoldMinNumPiles + 1)) + GoldMinNumPiles;  // generate a value between min and max range of gold piles
-  printf("NUM GOLD PILES: %d", numGoldPiles);
+  int cols = grid_getNumberCols(game->grid);
+  int rows= grid_getNumberRows(game->grid);
+  int maxAvailableSpots = (rows*cols) - (rows*2) - (cols*2);
+  int max = (GoldMaxNumPiles > maxAvailableSpots) ? maxAvailableSpots : GoldMaxNumPiles;
+  int numGoldPiles = (rand() % (max - GoldMinNumPiles + 1)) + GoldMinNumPiles;  // generate a value between min and max range of gold piles
   int goldDistributionArray[numGoldPiles];
   int randomLocations[numGoldPiles];
   generateRandomLocations(numGoldPiles, randomLocations);         // generate an array of random valid locations on the grid
@@ -183,19 +165,18 @@ generateRandomLocations(int numGoldPiles, int* arr)
 {
   int nRows = grid_getNumberRows(game->grid);
   int nCols = grid_getNumberCols(game->grid);
-  printf("rows: %d + cols: %d \n\n", nRows, nCols);
   int i = 0;
+  counters_print(game->gold, stdout);
   while (i < numGoldPiles) {
-    int location = rand() % (nRows * nCols);          // get the index in the map
-    printf("\nloc: %d \n\n", location);
+    int location = rand() % (nRows * nCols);  // get the index in the map
     if (grid_isOpen(game->grid, location)) {          // if it is an available space
       if (counters_get(game->gold, location) != 0) {  // if it is an existing gold pile
         continue;                                     // do not store as valid location
       }
       else {  // if location not occupied by gold
         arr[i] = location;
+        i++;
         counters_set(game->gold, location, 1);
-        numGoldPiles--;
       }
     }
   }
@@ -209,12 +190,12 @@ generateGoldDistribution(int numGoldPiles, int* arr)
   int i = numGoldPiles - 1;
   while (i > 0) {
     int x = 0;
-    if (goldRemaining != 0) {
+    if (goldRemaining > 0) {
       x = (rand() % goldRemaining);
     }
-    int gold = x + 1;
-    arr[i] = gold;
-    goldRemaining -= gold;
+    int gold = x;
+    arr[i] = gold + 1;
+    goldRemaining -= gold ;
     i--;
   }
   arr[0] = goldRemaining + 1;
@@ -239,11 +220,8 @@ parseArgs(const int argc, char* argv[])
 {
   if (argc == 2 || argc == 3) {
     if (argc == 3) {  // if map.txt and seed provided
-      printf("%s", "here 2");
       fflush(stdout);
       if (atoi(argv[2]) <= 0) {  // if seed provided but 0 or negative value,
-        printf("%s", "here 3");
-        fflush(stdout);
         fprintf(stderr, "Seed provided must be a positive integer.\n");
         return 1;
       }
@@ -327,7 +305,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
   else if (isalpha(message)) {  // if message is a character
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
     if (islower(message)) {                                                                                         // lower character
-      if (!player_moveRegular(player, *message, game->allPlayers, game->grid, game->gold, &(game->numGoldLeft))) {  // if not valid keystroke given
+      if (!player_moveRegular(player, *message, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {  // if not valid keystroke given
         fprintf(stderr, "Error. Invalid keystroke %s", message);                                                    // invalid input keystroke
         message_send(from, "ERROR. Invalid keystroke.\n");                                                          // invalid input keystroke
       }
@@ -348,7 +326,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
         player_quit(message_stringAddr(from), game->allPlayers);
       }
       else {
-        if (!player_moveCapital(player, *message, game->allPlayers, game->grid, game->gold, &(game->numGoldLeft))) {
+        if (!player_moveCapital(player, *message, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {
           // if not valid keystroke given
           fprintf(stderr, "Error. Invalid keystroke %s", message);  // invalid input keystroke
           message_send(from, "ERROR. Invalid keystroke.\n");
@@ -491,7 +469,7 @@ static void
 playerJoin(char* name, const addr_t* client)
 {
   if (game->numPlayers < MaxPlayers) {
-    player_t* newPlayer = player_new(name, game->grid, game->allPlayers, &(game->numGoldLeft), game->gold, game->numPlayers);
+    player_t* newPlayer = player_new(name, game->grid, game->allPlayers, game->numGoldLeft, game->gold, game->numPlayers);
     player_print(newPlayer);
     if (game->numGoldLeft == 0) {  // if no more gold left
       printf("%s", "game ending");
@@ -547,9 +525,10 @@ spectatorJoin(const addr_t* address)
 
   // display message
   set_t* spectatorLocations = grid_displaySpectator(game->grid, player_locations(game->allPlayers), game->gold);
-  char* displayMessage = "DISPLAY\n";
-  strcat(displayMessage, grid_print(game->grid, spectatorLocations));
-
+  char* display = grid_print(game->grid, spectatorLocations);
+  char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+  strcpy(displayMessage, "DISPLAY\n");
+  strcat(displayMessage, display);
   message_send(*game->spectatorAddress, gridMessage);     // send grid message
   message_send(*game->spectatorAddress, goldMessage);     // send gold message
   message_send(*game->spectatorAddress, displayMessage);  // send display message
