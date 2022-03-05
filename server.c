@@ -71,6 +71,7 @@ int main(const int argc, char* argv[])
     exit(1);
   }
   initializeGame(argv);  // initialize the game with the map
+
   // play the game
   // initialize the message module (without logging)
   int port;
@@ -299,13 +300,26 @@ handleMessage(void* arg, const addr_t from, const char* message)
     printf("\n%s\n", "end");
     fflush(stdout);
   }
+  
   else if (strncmp(message, "SPECTATE ", strlen("SPECTATE ")) == 0) {
     spectatorJoin(&from);
   }
-  else if (isalpha(message)) {  // if message is a character
+
+  else {  
+    if (strlen(message)!=1) {
+      return false;
+    }
+    char move = message[0];
+    // if message is a character
+    printf("%s", "in alpha");
+    fflush(stdout);
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
-    if (islower(message)) {                                                                                      // lower character
-      if (!player_moveRegular(player, *message, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {  // if not valid keystroke given
+    printf("%s", "hash found");
+    fflush(stdout);
+    if (islower(move)) {
+      printf("%s", "is lower");
+      fflush(stdout);                                                                                            // lower character
+      if (!player_moveRegular(player, move, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {  // if not valid keystroke given
         fprintf(stderr, "Error. Invalid keystroke %s", message);                                                 // invalid input keystroke
         message_send(from, "ERROR. Invalid keystroke.\n");                                                       // invalid input keystroke
       }
@@ -321,12 +335,12 @@ handleMessage(void* arg, const addr_t from, const char* message)
       }
     }
     else {                    // if capital letter
-      if (*message == 'Q') {  // if Q, tell client to QUIT and remove player from game
+      if (move == 'Q') {  // if Q, tell client to QUIT and remove player from game
         message_send(from, "QUIT Thanks for playing!\n");
         player_quit(message_stringAddr(from), game->allPlayers);
       }
       else {
-        if (!player_moveCapital(player, *message, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {
+        if (!player_moveCapital(player, move, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {
           // if not valid keystroke given
           fprintf(stderr, "Error. Invalid keystroke %s", message);  // invalid input keystroke
           message_send(from, "ERROR. Invalid keystroke.\n");
