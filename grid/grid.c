@@ -326,7 +326,6 @@ char* grid_print(grid_t* grid, set_t* locations)
           symbol = set_find(locations, intToStr);
           if (strcmp(symbol, "g") != 0) {
             sprintf(printString + i * ((grid->ncols) + 1) + j + 1, "%s", symbol);
-            printf("Added a symbol %s\n", symbol);
           }
           else {
             // print the grid character corresponding to the location
@@ -368,6 +367,7 @@ void grid_delete(grid_t* grid)
     for (int i = 0; i < grid_getNumberRows(grid); i++) {
       mem_free(map[i]);
     }
+    
     mem_free(grid->map);
     mem_free(grid);
   }
