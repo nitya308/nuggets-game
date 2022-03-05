@@ -21,9 +21,30 @@ typedef struct grid {
 } grid_t;
 
 /******************local functions**************/
-// static void insertPlayers(void* arg, const char* key, void* item);
-// static void insertGold(void* arg, const char* key, void* item);
+/**************mergeHelper************************/
+/* Merge the set this is iterated through into the argument set
+ * Does:
+ *  Takes set input as void* arg, converts back to set.
+ *  As the functions is iterated through a seen-before locations
+ *  set by grid_updateView, if a seen-before location does not
+ *  appear in newly-visible locations set, inserts the location
+ *  key with dummy item "g" into the newly-visible set.
+ */
 static void mergeHelper(void* arg, const char* key, void* item);
+
+/**************isBlocked************************/
+/* Verify whether a point is visible from a vantage point in grid
+ * Does:
+ *  Takes input vantage point, and point to be observed, both
+ *  as two int coordinates. Calculates a line through the points
+ *  and if any walls or corners fall on that line in the grid
+ *  between vantage point and observation point, returns true
+ *  (meaning point is blocked by a wall somewhere)
+ *  if line is clear, then returns false. grid_visible calls this
+ *  on each point in the grid, to determine whether to add to visible
+ *  set.
+ */
+static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int colp);
 
 grid_t* grid_read(char* filename)
 {

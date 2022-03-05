@@ -33,6 +33,11 @@ all:
 server: server.o $(LLIBS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
+########### client ##################
+
+client: client.o $(LLIBS)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+
 ########### miniclient ##################
 
 miniclient: miniclient.o message.o log.o
