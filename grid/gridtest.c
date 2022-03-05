@@ -21,7 +21,7 @@ int main(const int argc, char* argv[])
 
   //read a small grid file (valid, and assume right format) into a grid structure
   printf("Reading grid from visdemo.txt...\n");
-  grid = grid_read("visdemo.txt");
+  grid = grid_read("hole.txt");
   if(grid == NULL){
     fprintf(stderr,"Error reading grid\n");
   }
@@ -99,7 +99,7 @@ int main(const int argc, char* argv[])
 
   set_t* playerLoc = set_new();
   set_insert(playerLoc,"42","A");
-  set_insert(playerLoc,"68", "B");
+  set_insert(playerLoc,"147", "B");
   set_insert(playerLoc,"181", "C");
   set_insert(playerLoc, "107","D");
 
@@ -115,28 +115,36 @@ int main(const int argc, char* argv[])
 
   //print the set to a string
   printf("Printing the view to string...\n");
+  
+
+
+  //testing the visiblity feature
+
+  printf("calculating player B's view\n");
+
+  for(int i =0; i< grid_getNumberCols(grid)*grid_getNumberRows(grid); i+=5){
+    set_t* visible = grid_visible(grid,i,playerLoc,gold);
+    printf("Printing the view to string...\n");
+    printString = grid_print(grid, visible);
+    printf("Player Bsees the following: \n%s\n",printString);
+    mem_free(printString);
+    set_delete(visible,NULL);
+  }
+ 
+
+
   printString = grid_print(grid, allLocations);
   printf("Spectator sees the following (should not see \"C\"): \n%s\n",printString);
   set_delete(allLocations,NULL);
    mem_free(printString);
 
+  // visible = grid_visible(grid,68,playerLoc,gold);
+  // printf("Printing the view to string...\n");
+  // printString = grid_print(grid, visible);
+  // printf("Player B sees the following: \n%s\n",printString);
+  // mem_free(printString);
+  // set_delete(visible,NULL);
 
-  //testing the visiblity feature
-
-  set_t* visible = grid_isVisible(grid,107,playerLoc,gold);
-  printf("Printing the view to string...\n");
-  printString = grid_print(grid, visible);
-  printf("Player D sees the following: \n%s\n",printString);
-  mem_free(printString);
-  set_delete(visible,NULL);
-
-
-  visible = grid_isVisible(grid,68,playerLoc,gold);
-  printf("Printing the view to string...\n");
-  printString = grid_print(grid, visible);
-  printf("Player B sees the following: \n%s\n",printString);
-  mem_free(printString);
-  set_delete(visible,NULL);
   set_delete(playerLoc,NULL);
 
 

@@ -8,11 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../libcs50/counters.h"
-#include "../libcs50/file.h"
-#include "../libcs50/hashtable.h"
-#include "../libcs50/mem.h"
-#include "../libcs50/set.h"
+#include "counters.h"
+#include "file.h"
+#include "hashtable.h"
+#include "mem.h"
+#include "set.h"
 
 
 /**************** global types ****************/
@@ -79,7 +79,7 @@ int* grid_locationConvert(grid_t* grid, int loc);
 bool grid_isOpen(grid_t* grid, int loc);
 
 
-/**************** grid_isVisible ****************/
+/**************** grid_visible ****************/
 /* Give set of visible locations, gold, players, from a 
  *  vantage point in grid.
  * 
@@ -112,7 +112,7 @@ bool grid_isOpen(grid_t* grid, int loc);
  *  is followed: i.e. only adjacent points visible in passages,
  *  all direct line of sight points visible in rooms.
  */
-set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* gold);
+set_t* grid_visible(grid_t* grid, int loc, set_t*playerLocations, counters_t* gold);
 
 
 /**************** grid_updateView ****************/
@@ -136,7 +136,7 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t*playerLocations, counters_t* 
  *  NULL if grid or location in grid are invalid
  * 
  * We do:
- *  call grid_isVisible on the given grid, location, players set and 
+ *  call grid_visible on the given grid, location, players set and 
  *  gold counters to make a visible set. call set_iterate on the 
  *  seenBefore set, and for location keys in there but not in visible,
  *  insert them into visible with dummy item "g", thus erasing
