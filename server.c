@@ -70,7 +70,7 @@ int main(const int argc, char* argv[])
   if (exitStatus == 1) {
     exit(1);
   }
-  initializeGame(argv);  // initialize the game with the map 
+  initializeGame(argv);  // initialize the game with the map
   // play the game
   // initialize the message module (without logging)
   int port;
@@ -144,8 +144,8 @@ static void
 initializeGoldPiles()
 {
   int cols = grid_getNumberCols(game->grid);
-  int rows= grid_getNumberRows(game->grid);
-  int maxAvailableSpots = (rows*cols) - (rows*2) - (cols*2);
+  int rows = grid_getNumberRows(game->grid);
+  int maxAvailableSpots = (rows * cols) - (rows * 2) - (cols * 2);
   int max = (GoldMaxNumPiles > maxAvailableSpots) ? maxAvailableSpots : GoldMaxNumPiles;
   int numGoldPiles = (rand() % (max - GoldMinNumPiles + 1)) + GoldMinNumPiles;  // generate a value between min and max range of gold piles
   int goldDistributionArray[numGoldPiles];
@@ -168,7 +168,7 @@ generateRandomLocations(int numGoldPiles, int* arr)
   int i = 0;
   counters_print(game->gold, stdout);
   while (i < numGoldPiles) {
-    int location = rand() % (nRows * nCols);  // get the index in the map
+    int location = rand() % (nRows * nCols);          // get the index in the map
     if (grid_isOpen(game->grid, location)) {          // if it is an available space
       if (counters_get(game->gold, location) != 0) {  // if it is an existing gold pile
         continue;                                     // do not store as valid location
@@ -195,7 +195,7 @@ generateGoldDistribution(int numGoldPiles, int* arr)
     }
     int gold = x;
     arr[i] = gold + 1;
-    goldRemaining -= gold ;
+    goldRemaining -= gold;
     i--;
   }
   arr[0] = goldRemaining + 1;
@@ -304,10 +304,10 @@ handleMessage(void* arg, const addr_t from, const char* message)
   }
   else if (isalpha(message)) {  // if message is a character
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
-    if (islower(message)) {                                                                                         // lower character
+    if (islower(message)) {                                                                                      // lower character
       if (!player_moveRegular(player, *message, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {  // if not valid keystroke given
-        fprintf(stderr, "Error. Invalid keystroke %s", message);                                                    // invalid input keystroke
-        message_send(from, "ERROR. Invalid keystroke.\n");                                                          // invalid input keystroke
+        fprintf(stderr, "Error. Invalid keystroke %s", message);                                                 // invalid input keystroke
+        message_send(from, "ERROR. Invalid keystroke.\n");                                                       // invalid input keystroke
       }
       else {
         // player was successfully moved
@@ -401,8 +401,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
   player_t* player = item;
   addr_t* addrCast = hashtable_find(game->addresses, addr);  // convert string address to addr_t
   if (addrCast != NULL && player != NULL) {                  // if player address exists and player still in game
-    set_t* playerLoc = player_locations(game->allPlayers);
-    set_t* allLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
+    set_t* allLocations = player_getSeenBefore(player);
     char* display = grid_print(game->grid, allLocations);
     printf("\n%s\n", display);
     fflush(stdout);
