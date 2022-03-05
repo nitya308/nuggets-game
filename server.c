@@ -332,8 +332,10 @@ handleMessage(void* arg, const addr_t from, const char* message)
           return true;
         }
         // update gold and play displays whenever a keystroke is pressed
+        printf("\n UPDATING EVERYONE %s", "");
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
         hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+        printf("\n SPECTATOR DISPLAY WAS UPDATED %s", "");
         updateSpectatorDisplay();
       }
     }
@@ -354,8 +356,10 @@ handleMessage(void* arg, const addr_t from, const char* message)
             return true;
           }
           // update gold and play displays whenever a keystroke is pressed
+          printf("\n UPDATING EVERYONE %s", "");
           hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
           hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+          printf("\n SPECTATOR DISPLAY WAS UPDATED %s", "");
           updateSpectatorDisplay();
         }
       }
