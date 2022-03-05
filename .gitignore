@@ -17,6 +17,10 @@ core
 *.a
 a.out
 
+# binary files
+server
+client
+
 # Emacs backup and scratch files
 *~
 \#*\#
@@ -27,6 +31,9 @@ a.out
 
 # log files
 *.log
+
+# valgrind files
+vgcore*
 
 # MacOS stuff
 .DS_Store

@@ -40,3 +40,4 @@ clean:
 	rm -f *.log
 	rm -f $(LIB)
 	rm -f $(TESTS)
+	

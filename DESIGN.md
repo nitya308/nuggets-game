@@ -8,7 +8,7 @@ We describe each program and module separately.
 We do not describe the `support` library nor the modules that enable features that go beyond the spec.
 We avoid repeating information that is provided in the requirements spec.
 
-## Player
+## Client
 
 The *client* acts in one of two modes:
 
@@ -299,8 +299,8 @@ Handles all functionality to do with the grid and calculates visibility
 1. grid_read: initializes the grid from file name
 2. grid_isOpen: verifies whether given location is wall or not
 3. grid_isVisible: gives set of visible locations from viewpoint
-4. grid_updateView: gives visible set from new location + known set, 				with gold and players symbols in visible part only
-5. grid_displaySpectator: gives set of all locations, with gold and 				players symbols as chars
+4. grid_updateView: gives visible set from new location + known set, with gold and players symbols in visible part only
+5. grid_displaySpectator: gives set of all locations, with gold and players symbols as chars
 5. grid_print: turns set of locations into formatted string 
 6. grid_locationConvert: converts integer into 2-d coordinates
 7. grid_getNumberRows: gives number of rows in grid

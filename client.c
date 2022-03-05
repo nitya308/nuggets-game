@@ -1,5 +1,9 @@
 /**
  * client.c -- the client program for our Nuggets game
+ * This program contains a main function to handle program flow,
+ * a function to parse command-line args, a function to handle
+ * client input, a function to handle server output, and a function
+ * to make the display sufficiently large.
  */
 
 #include <stdlib.h>
@@ -50,8 +54,6 @@ static void checkDisplay(int nrow, int ncol);
  */
 int main(const int argc, char* argv[])
 {
-  
-  //playerAttributes = mem_malloc_assert(sizeof(playerAttributes_t), "Out of memory\n");
 
   // Validate argv[1] and argv[2] from command-line args first
   parseArgs(argc, argv);
@@ -64,11 +66,6 @@ int main(const int argc, char* argv[])
   }
 
   addr_t server;
-
-  // char hostname[30];
-  // char port[30];
-  // strcpy(hostname, argv[1]);
-  // strcpy(port, argv[2]);
 
   // Check if address can be formed
   if (!message_setAddr(argv[1], argv[2], &server)) {
