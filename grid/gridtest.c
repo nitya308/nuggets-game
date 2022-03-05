@@ -174,10 +174,6 @@ int main(const int argc, char* argv[])
      printf("New player's cumulative view: \n%s\n",printString);
      mem_free(printString);
    }
- 
-
-
- 
   set_delete(seenbefore,NULL);
   set_delete(playerLoc,NULL);
   counters_delete(gold);
