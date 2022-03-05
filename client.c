@@ -1,5 +1,9 @@
 /**
  * client.c -- the client program for our Nuggets game
+ * This program contains a main function to handle program flow,
+ * a function to parse command-line args, a function to handle
+ * client input, a function to handle server output, and a function
+ * to make the display sufficiently large.
  */
 
 #include <stdlib.h>
@@ -19,9 +23,11 @@ typedef struct playerAttributes {
   bool isPlayer;
   int numGoldLeft;
   int goldCollected;
-  const char* display;
+  char* display;
 } playerAttributes_t;
 
+// Global game variable (while it is not the 'game' struct seen in server, it is the global game variable for client-side use)
+playerAttributes_t playerAttributes;
 
 // Function prototypes
 static void parseArgs(const int argc, char* argv[]);
@@ -29,41 +35,61 @@ static bool handleInput(void* arg);
 static bool receiveMessage(void* arg, const addr_t from, const char* message);
 static void checkDisplay(int nrow, int ncol);
 
-// Global game variable (while it is not the 'game' struct seen in server, it is the global game variable for client-side use)
-playerAttributes_t* playerAttributes;
 
-
+/**************** main **********************/
 /**
- * main
+ * Main function that handles flow of program,
+ * calls other functions, and initializes other
+ * modules.
+ * 
+ * Caller provides:
+ *   Command-line arguments
+ * We guarantee:
+ *   Calling functions, initializing modules,
+ *   Ensuring address can be created
+ *   Exiting upon fatal error
+ * We return:
+ *   true if successful
+ *   false if unsuccessful
  */
 int main(const int argc, char* argv[])
 {
+  
+  //playerAttributes = mem_malloc_assert(sizeof(playerAttributes_t), "Out of memory\n");
+
   // Validate argv[1] and argv[2] from command-line args first
   parseArgs(argc, argv);
   
 
   // Check if message module can be initialized
   if (message_init(NULL) == 0) {
+    fprintf(stderr, "Unable to initialize message module\n");
     exit(3);
   }
 
   addr_t server;
 
+  // char hostname[30];
+  // char port[30];
+  // strcpy(hostname, argv[1]);
+  // strcpy(port, argv[2]);
+
   // Check if address can be formed
-  if (message_setAddr(argv[1], argv[2], &server) == false) {
+  if (!message_setAddr(argv[1], argv[2], &server)) {
       fprintf(stderr, "Unable to form address from %s %s\n", argv[1], argv[2]);
       exit(4);
   }
   
   // Check if client is player or spectator
   if (argc == 4 && argv[3] != NULL) {
-    playerAttributes->isPlayer = true;
-    char* message = strcat("PLAY ", argv[3]);
+    playerAttributes.isPlayer = true;
+    char message[56] = "PLAY "; // Long enough to fit play and maxNameLength
+    strcat(message, argv[3]);
     message_send(server, message);
   }
 
   else {
-    playerAttributes->isPlayer = false;
+    playerAttributes.isPlayer = false;
     message_send(server, "SPECTATE");
   }
 
@@ -72,18 +98,27 @@ int main(const int argc, char* argv[])
   message_done();
   endwin();
 
-  mem_free((char*)(playerAttributes->display));
+  mem_free(playerAttributes.display);
 
-  return loopResult? 0 : 1; // if successful
+  return loopResult? 0 : 1; // true if success, false if fail
 }
 
+/**************** parseArgs **********************/
 /**
+ * Parses and verifies server hostname and port
  * 
+ * Caller provides:
+ *   command-line arguments
+ * We guarantee:
+ *   Exiting upon fatal error
+ * We return:
+ *   Nothing
  */
 static void parseArgs(const int argc, char* argv[])
 {
+  printf("%d", argc);
   // Check that command-line usage is correct
-  if (argc < 3 || argc > 4) {
+  if (argc != 3 && argc != 4) {
     fprintf(stderr, "There are an invalid number of arguments.\n");
     exit(1);
   }
@@ -95,8 +130,19 @@ static void parseArgs(const int argc, char* argv[])
   }
 }
 
+/**************** handleInput **********************/
 /**
+ * Verifies server addr pointer and handles input from
+ * client keystrokes.
  * 
+ * Caller provides:
+ *   pointer to void
+ * We guarantee:
+ *   Checking if server address pointer is null or invalid
+ *   Sending quit message to server
+ *   Sending keystroke message to server
+ * We return:
+ *   True upon error
  */
 static bool handleInput(void* arg)
 {
@@ -117,8 +163,7 @@ static bool handleInput(void* arg)
 
   // Read client keystroke
   char c = getch();
-  char str[2] = {c, '\0'};
-  if (c == 'Q') {
+  if (c == 'Q' || c == EOF) {
     // EOF/EOT case: stop looping
     message_send(*serverp, "KEY Q");
     return true;
@@ -126,14 +171,26 @@ static bool handleInput(void* arg)
   
   else {
     // send as message to server
-    char* message = strcat("KEY", str);
+    char str[2] = {c, '\0'};
+    char message[6] = "KEY ";
+    strcat(message, str);
     message_send(*serverp, message);
   }
   return false;
 }
 
+/**************** receiveMessage **********************/
 /**
+ * Processes each message correctly and carries out the
+ * appropriate logic to go with it.
  * 
+ * Caller provides:
+ *   arg param, server address, message from server
+ * We guarantee:
+ *   each possible type of message from the server is handles
+ * We return:
+ *   True if game is quit
+ *   False otherwise
  */
 static bool receiveMessage(void* arg, const addr_t from, const char* message)
 {
@@ -143,52 +200,58 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     return true;
   }
 
-  if (strncmp(message, "GOLD", strlen("GOLD")) == 0) {
+  else if (strncmp(message, "GOLD", strlen("GOLD")) == 0) {
     int n, p, r;
     sscanf(message, "GOLD %d %d %d", &n, &p, &r);
-    playerAttributes->goldCollected = n;
-    playerAttributes->purse = p;
-    playerAttributes->numGoldLeft = r;
+    playerAttributes.goldCollected = n;
+    playerAttributes.purse = p;
+    playerAttributes.numGoldLeft = r;
   }
 
-  if (strncmp(message, "GRID", strlen("GRID")) == 0) {
+  else if (strncmp(message, "GRID", strlen("GRID")) == 0) {
     int nrows;
     int ncols;
     sscanf(message, "GRID %d %d", &nrows, &ncols);
     checkDisplay(nrows, ncols);
   }
 
-  if (strncmp(message, "OK", strlen("OK")) == 0) {
-    const char* id = message + strlen("OK");
-    playerAttributes->playerID = *id;
+  else if (strncmp(message, "OK", strlen("OK")) == 0) {
+    const char* id = message + strlen("OK ");
+    playerAttributes.playerID = *id;
   }
 
-  if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
-    playerAttributes->display = message;
+  else if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
+    const char* displayContent = message + strlen("DISPLAY") + 1;
+    if (playerAttributes.display != NULL) {
+      strcpy(playerAttributes.display, displayContent);
+    }
     clear();
-    if (playerAttributes->isPlayer) {
-      if (playerAttributes->goldCollected == 0) {
-        printf("Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft, playerAttributes->goldCollected);
+    if (playerAttributes.isPlayer) {
+      if (playerAttributes.goldCollected == 0) {
+        printw("Player %c has %d nuggets (%d nuggets unclaimed).\n", 
+          playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
       }
       else {
-          printf("Player %c has %d nuggets (%d nuggets unclaimed).\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft);
+        printw("Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", 
+          playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft, playerAttributes.goldCollected);
       }
     }
     else {
-      printf("Spectator: %d nuggets unclaimed.\n", playerAttributes->numGoldLeft);
+      printw("Spectator: %d nuggets unclaimed.\n", playerAttributes.numGoldLeft);
     }
     
-    printf("%s", playerAttributes->display);
+    printw(displayContent);
     refresh();
   }
 
-  if (strncmp(message, "ERROR", strlen("ERROR")) == 0) {
+  else if (strncmp(message, "ERROR", strlen("ERROR")) == 0) {
     fprintf(stderr, "Error message received from server.\n");
     clear();
-    if (playerAttributes->isPlayer) {
-      printf("Player %c has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n", playerAttributes->playerID, playerAttributes->purse, playerAttributes->numGoldLeft);
+    if (playerAttributes.isPlayer) {
+      printw("Player %c has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n", 
+        playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
     }
-    printf("%s", playerAttributes->display);
+    printw("%s", playerAttributes.display);
     refresh();
   }
 
@@ -198,8 +261,17 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   return false;
 }
 
+/**************** checkDisplay **********************/
 /**
+ * Ensures client's display size is large enough to fit grid.
  * 
+ * Caller provides:
+ *   Number of rows and columns in grid
+ * We guarantee:
+ *   That the game will not prcoeed until the clien't display
+ *   size is sufficiently large
+ * We return:
+ *   Nothing
  */
 static void checkDisplay(int nrow, int ncol)
 {
@@ -208,17 +280,18 @@ static void checkDisplay(int nrow, int ncol)
   cbreak();
   noecho();
 
-  // Set uo row and column variables
+  // Set up row and column variables
   int row;
   int col;
 
-  playerAttributes->display = mem_malloc_assert(65507, "Out of memory\n");
+  playerAttributes.display = mem_malloc_assert(65507, "Out of memory\n");
   getmaxyx(stdscr, row, col);
 
   while (row < nrow + 1 || col < ncol + 1) {
     printw("Please increase the size of your display window and click enter\n");
-    if (getch() == '\n') {
-      getmaxyx(stdscr, row, col);
+    while (getch() != '\n') {
+      continue;
     }
+    getmaxyx(stdscr, row, col);
   }
 }

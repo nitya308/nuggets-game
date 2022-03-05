@@ -25,6 +25,9 @@ a.out
 # debugger symbols
 *.dSYM
 
+# log files
+*.log
+
 # MacOS stuff
 .DS_Store
 .AppleDouble
