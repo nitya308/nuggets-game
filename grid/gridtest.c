@@ -10,7 +10,15 @@
 
 int main(const int argc, char* argv[])
 {
-  grid_t* grid;
+  grid_t* grid = NULL;
+  char* printString = NULL;
+  set_t* allLocations = NULL;
+  set_t* visible = NULL;
+  set_t* playerLoc = NULL;
+  counters_t* gold = NULL;
+  set_t* seenbefore = NULL;
+
+
   //test reading grid from invalid file (does not exist)
   //gives error
   printf("Reading grid from cats.txt (nonexistent)...\n");
@@ -35,11 +43,11 @@ int main(const int argc, char* argv[])
   //(do not pass in gold or other player symbols for now)
 
   printf("Maxing set of locations...\n");
-  set_t* allLocations = grid_displaySpectator(grid, NULL,NULL);
+  allLocations = grid_displaySpectator(grid, NULL,NULL);
 
   //print the set to a string
   printf("Printing the view to string...\n");
-  char* printString = grid_print(grid, allLocations);
+  printString = grid_print(grid, allLocations);
   printf("Spectator sees the following: \n%s\n",printString);
   set_delete(allLocations,NULL);
   mem_free(printString);
@@ -97,64 +105,82 @@ int main(const int argc, char* argv[])
   //Will not display symbols in not-open locations
   //Should not see player "C"
 
-  set_t* playerLoc = set_new();
-  set_insert(playerLoc,"42","A");
-  set_insert(playerLoc,"147", "B");
-  set_insert(playerLoc,"181", "C");
-  set_insert(playerLoc, "107","D");
+  playerLoc = set_new();
+  set_insert(playerLoc, "1507","A");
+  set_insert(playerLoc, "1538","B");
+  set_insert(playerLoc, "1056","C");
+  set_insert(playerLoc, "1084","D");
 
-  counters_t* gold = counters_new();
-  counters_add(gold,30);
-  counters_add(gold,75);
-  counters_add(gold,100);
-  counters_add(gold,206);
-  counters_add(gold,146);
+  gold = counters_new();
+  for(int i =0; i< grid_getNumberCols(grid)*grid_getNumberRows(grid); i+=17){
+    counters_add(gold,i);
+  }
+
+  //display spectator's view
 
   printf("Maxing set of locations, players and gold on grid...\n");
   allLocations =  grid_displaySpectator(grid, playerLoc,gold);
-
+  printString = grid_print(grid, allLocations);
   //print the set to a string
   printf("Printing the view to string...\n");
-  
+  printf("Specator sees the populated grid: \n%s\n", printString);
+  set_delete(allLocations,NULL);
+  mem_free(printString);
 
 
   //testing the visiblity feature
 
-  printf("calculating player B's view\n");
+  printf("calculating player A's view\n");
+  visible = grid_visible(grid,1507,playerLoc,gold);
+  printString = grid_print(grid, visible);
+  printf("Player A sees the following: \n%s\n",printString);
+  mem_free(printString);
+  set_delete(visible,NULL);
 
-  for(int i =0; i< grid_getNumberCols(grid)*grid_getNumberRows(grid); i+=5){
-    set_t* visible = grid_visible(grid,i,playerLoc,gold);
-    printf("Printing the view to string...\n");
-    printString = grid_print(grid, visible);
-    printf("Player Bsees the following: \n%s\n",printString);
-    mem_free(printString);
-    set_delete(visible,NULL);
-  }
+  printf("calculating player B's view\n");
+  visible = grid_visible(grid,1538,playerLoc,gold);
+  printString = grid_print(grid, visible);
+  printf("Player B sees the following: \n%s\n",printString);
+  mem_free(printString);
+  set_delete(visible,NULL);
+
+  printf("calculating player C's view\n");
+  visible = grid_visible(grid,1056,playerLoc,gold);
+  printString = grid_print(grid, visible);
+  printf("Player C sees the following: \n%s\n",printString);
+  mem_free(printString);
+  set_delete(visible,NULL);
+
+  printf("calculating player D's view\n");
+  visible = grid_visible(grid,1084,playerLoc,gold);
+  printString = grid_print(grid, visible);
+  printf("Player D sees the following: \n%s\n",printString);
+  mem_free(printString);
+  set_delete(visible,NULL);
+
+
+  //now, iterate player s location through the whole map,
+  //updating its view each time (expanding their seen-before set).
+  //print the growing set each time.
+  //they will not see gold/players in rooms they have left
+
+  //by this testing loop setup, player  will pass through
+  //invalid locations, but its view will not be updated for those
+
+  seenbefore = grid_visible(grid, 1507, playerLoc, gold);
+  for(int i =1507; i >= 0; i--){
+     seenbefore = grid_updateView(grid,i,seenbefore,playerLoc,gold);
+     printString = grid_print(grid, seenbefore);
+     printf("New player's cumulative view: \n%s\n",printString);
+     mem_free(printString);
+   }
  
 
 
-  printString = grid_print(grid, allLocations);
-  printf("Spectator sees the following (should not see \"C\"): \n%s\n",printString);
-  set_delete(allLocations,NULL);
-   mem_free(printString);
-
-  // visible = grid_visible(grid,68,playerLoc,gold);
-  // printf("Printing the view to string...\n");
-  // printString = grid_print(grid, visible);
-  // printf("Player B sees the following: \n%s\n",printString);
-  // mem_free(printString);
-  // set_delete(visible,NULL);
-
+ 
+  set_delete(seenbefore,NULL);
   set_delete(playerLoc,NULL);
-
-
   counters_delete(gold);
   grid_delete(grid);
-  
-  
-  // char* printstring = grid_print(grid, visible);
-  // printf("%s", printstring);
-  // set_delete(visible, NULL);
-
-    return 0;
+  return 0;
 }

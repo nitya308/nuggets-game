@@ -10,7 +10,6 @@
 
 #include "counters.h"
 #include "file.h"
-#include "hashtable.h"
 #include "mem.h"
 #include "set.h"
 

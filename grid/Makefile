@@ -8,6 +8,7 @@ TOBJS = gridtest.o
 LIBS = -lm
 LLIBS = ../libcs50/libcs50-given.a 
 LIB = grid.a
+L = ../libcs50
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb $(LOGGING) -I../libcs50
 CC = gcc
@@ -15,8 +16,11 @@ MAKE = make
 # for memory-leak tests
 VALGRIND = valgrind -v --leak-check=full --show-leak-kinds=all
 
-grid.o: grid.h
+grid.o: grid.h $(L)/set.h $(L)/counters.h $(L)/file.h $(L)/mem.h
 gridtest.o: grid.h
+
+grid: $(OBJS) $(LLIBS)
+	$(CC) $(CFLAGS) $(OBJS) $(LLIBS) $(LIBS) -o $@
 
 gridtest:  $(TOBJS) $(OBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $(TOBJS) $(OBJS) $(LLIBS) $(LIBS) -o $@
