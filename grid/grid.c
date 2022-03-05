@@ -1,14 +1,15 @@
 // Grid module for nuggets 2022
+#include "grid.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "counters.h"
-#include "mem.h"
 #include "file.h"
+#include "mem.h"
 #include "set.h"
-#include "grid.h"
 
 #define PI 3.14159265
 
@@ -68,12 +69,12 @@ int* grid_locationConvert(grid_t* grid, int loc)
       coordinates[1] = loc % (grid->ncols);
       return coordinates;
     }
-    // mem_free(coordinates);
+    mem_free(coordinates);
   }
-  else{
-   // mem_free(coordinates); 
+  else {
+    mem_free(coordinates);
   }
-  
+
   return NULL;
 }
 
@@ -84,14 +85,15 @@ bool grid_isOpen(grid_t* grid, int loc)
     char** carr = grid->map;
     if (carr[coordinates[0]][coordinates[1]] != '.' &&
         carr[coordinates[0]][coordinates[1]] != '#') {
-      // mem_free(coordinates);
+      mem_free(coordinates);
       return false;
     }
     else {
-      // mem_free(coordinates);
+      mem_free(coordinates);
       return true;
     }
   }
+  mem_free(coordinates);
   return false;
 }
 
