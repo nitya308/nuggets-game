@@ -192,7 +192,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
 {
   if (strncmp(message, "QUIT", strlen("QUIT")) == 0) {
     endwin();
-    // print explanation? does server do this??
+    printw(message);
     return true;
   }
 
