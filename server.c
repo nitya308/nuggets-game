@@ -56,7 +56,7 @@ typedef struct game {
   counters_t* gold;
   addr_t* spectatorAddress;
 } game_t;
-
+//0x7ffffffed4a0
 static game_t* game;                    // game struct storing the state of the game
 static const int MaxPlayers = 26;       // maximum number of players
 static const int GoldTotal = 250;       // amount of gold in the game
@@ -221,8 +221,7 @@ static int
 parseArgs(const int argc, char* argv[])
 {
   if (argc == 2 || argc == 3) {
-    if (argc == 3) {  // if map.txt and seed provided
-      fflush(stdout);
+    if (argc == 3) {             // if map.txt and seed provided
       if (atoi(argv[2]) <= 0) {  // if seed provided but 0 or negative value,
         fprintf(stderr, "Seed provided must be a positive integer.\n");
         return 1;
@@ -277,33 +276,20 @@ handleMessage(void* arg, const addr_t from, const char* message)
   printf("%s", "here in handle");
   fflush(stdout);
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
-    printf("\n%s\n", "Just entered PLAY in handle message");
-    fflush(stdout);
-
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
-
-    printf("\n The real NAME is: %s\n", realName);
-    fflush(stdout);
-
     char* name = malloc(strlen(realName) + 1);
     strcpy(name, realName);
     playerJoin(name, &from);
-
-    printf("\n%s\n", "Player join has returned");
+    printf("%s", "updating everyone");
     fflush(stdout);
-
-    hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);  // send gold messages to all players
-
-    printf("\n%s\n", "Finshed sending gold messages");
-    fflush(stdout);
-
+    hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
     hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
     updateSpectatorDisplay();
-    printf("\n%s\n", "end");
-    fflush(stdout);
   }
 
   else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
+    printf("\n%s", "CALLING SPECTATOR JOIN!!");
+    fflush(stdout);
     spectatorJoin(&from);
   }
 
@@ -326,6 +312,8 @@ handleMessage(void* arg, const addr_t from, const char* message)
         message_send(from, "ERROR. Invalid keystroke.\n");                                                   // invalid input keystroke
       }
       else {
+        printf("\n%s\n", "in else condition");
+        fflush(stdout);
         // player was successfully moved
         if (game->numGoldLeft == 0) {  // if no more gold left
           endGame();                   // end game, send summary to all players, delete players
@@ -366,14 +354,18 @@ handleMessage(void* arg, const addr_t from, const char* message)
 
 static void updateSpectatorDisplay()
 {
+  printf("\n%s\n", "here updating spec");
+  fflush(stdout);
   if (game->spectatorAddress != NULL) {  // if spectator is connected, update spectator's display
+    printf("\n%s\n", "here spectator is not NULL");
+    fflush(stdout);
     set_t* playerLoc = player_locations(game->allPlayers);
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
     char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
     strcpy(displayMessage, "DISPLAY\n");
     strcat(displayMessage, display);
-    message_send(*game->spectatorAddress, displayMessage);  // send display message
+    message_send(*game->spectatorAddress, displayMessage);     // send display message
     // set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
   }
 }
@@ -428,15 +420,9 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
   if (addrCast != NULL && player != NULL) {                  // if player address exists and player still in game
     set_t* allLocations = player_getSeenBefore(player);
     char* display = grid_print(game->grid, allLocations);
-    printf("\n%s\n", display);
-    fflush(stdout);
-    printf("\n%s\n", "Got display");
-    fflush(stdout);
     char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
     strcpy(displayMessage, "DISPLAY\n");
-    strcat(displayMessage, display);  // send all locations that player can see and have seen
-    printf("\n%s\n", "concated");
-    fflush(stdout);
+    strcat(displayMessage, display);          // send all locations that player can see and have seen
     message_send(*addrCast, displayMessage);  // send display message
   }
 }
@@ -532,8 +518,9 @@ spectatorJoin(const addr_t* address)
   if (game->spectatorAddress != NULL) {  // if spectator exists, send quit message to spectator
     message_send(*game->spectatorAddress, "QUIT You have been replaced by a new spectator.\n");
   }
-  addr_t* tempAddr = (addr_t*)address;  // remove constant for storing
-  game->spectatorAddress = tempAddr;    // update new address
+
+  addr_t add = *address;
+  game->spectatorAddress = &add;    // update new address
 
   // grid message
   int buffer = 20;
