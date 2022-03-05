@@ -42,9 +42,9 @@ int main()
   hashtable_t* allPlayers = hashtable_new(10);
 
   // Testing player_new
-  p1 = player_new("Alice", grid, &numGoldLeft, gold, numPlayers);
+  p1 = player_new("Alice", grid, allPlayers, &numGoldLeft, gold, numPlayers);
   numPlayers++;
-  p2 = player_new("Bob", grid, &numGoldLeft, gold, numPlayers);
+  p2 = player_new("Bob", grid, allPlayers, &numGoldLeft, gold, numPlayers);
   numPlayers++;
 
   // Add both players to the hashtable

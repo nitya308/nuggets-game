@@ -34,7 +34,7 @@ typedef struct player player_t;  // opaque to users of the module
  * Caller is responsible for:
  *   later calling player_delete();
  */
-player_t* player_new(char* name, grid_t* grid, int* numGoldLeft, counters_t* gold, int numPlayers);
+player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* numGoldLeft, counters_t* gold, int numPlayers);
 
 /**************** player_updateCoordinate ****************/
 /* Update the coordinate of a player
