@@ -57,6 +57,8 @@ TAGS:  Makefile */Makefile */*.c */*.h */*.md */*.sh
 clean:
 	rm -f *~
 	rm -f TAGS
+	rm -f server
+	rm -f client
 	make -C support clean
 	make -C grid clean
 	make -C player clean
