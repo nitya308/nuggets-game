@@ -230,6 +230,7 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
 /* see player.h for description */
 bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft)
 {
+  int recentGold = 0;  // counts all the gold collected across multiple moves here
   while (true) {
     int newCoor;
     int cols = grid_getNumberCols(grid);
@@ -290,12 +291,12 @@ bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, gr
     }
     if (!player_swapLocations(player, allPlayers, newCoor)) {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
-        if (!player_collectGold(player, numGoldLeft, gold)) {
-          player->recentGoldCollected = 0;
-        }
+        player_collectGold(player, numGoldLeft, gold);
+        recentGold += player->recentGoldCollected;
       }
     }
   }
+  player->recentGoldCollected = recentGold;
   return true;
 }
 
@@ -308,8 +309,10 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
     player->purse = player->purse + newGold;
     *numGoldLeft -= newGold;
     player->recentGoldCollected = newGold;
-    return counters_set(gold, player->currCoor, 251);
+    counters_set(gold, player->currCoor, 251);
+    return true;
   }
+  player->recentGoldCollected = 0;
   return false;
 }
 
