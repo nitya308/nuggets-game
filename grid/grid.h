@@ -83,7 +83,7 @@ bool grid_isOpen(grid_t* grid, int loc);
  * Caller provides:
  *  pointer to grid_t struct and an integer location
  * We return:
- *  true if location points to  passage spot '#' on grid
+ *  true if location points to room spot '.' on grid
  *  false if points to anything else
  *  false if location or grid invalid
  * We do:

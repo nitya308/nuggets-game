@@ -179,7 +179,7 @@ generateRandomLocations(int numGoldPiles, int* arr)
   // counters_print(game->gold, stdout);
   while (i < numGoldPiles) {
     int location = rand() % (nRows * nCols);          // get the index in the map
-    if (grid_isOpen(game->grid, location)) {          // if it is an available space
+    if (grid_isRoom(game->grid, location)) {          // if it is an available space
       if (counters_get(game->gold, location) != 0) {  // if it is an existing gold pile
         continue;                                     // do not store as valid location
       }

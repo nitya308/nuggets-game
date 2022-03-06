@@ -350,7 +350,11 @@ bool player_quit(const char* address, hashtable_t* allPlayers, counters_t* gold,
   if (player == NULL) {
     return false;
   }
-  counters_set(gold, player->currCoor, counters_get(gold, player->currCoor) + player->purse);
+  int goldOnLocation = counters_get(gold, player->currCoor);
+  if (goldOnLocation ==251){
+    goldOnLocation = 0;
+  }
+  counters_set(gold, player->currCoor, goldOnLocation + player->purse);
   *numGoldLeft += player->purse;
   player->currCoor = -1;  // removes player from everyone's map
   return true;
