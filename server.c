@@ -135,7 +135,7 @@ initializeGame(char** argv)
   }
   initializeGoldPiles();
   // counters_print(game->gold, stdout);
-  game->addresses = mem_malloc((MaxPlayers+1) * sizeof(addr_t));
+  game->addresses = mem_malloc((MaxPlayers + 1) * sizeof(addr_t));
   game->spectatorAddressID = 0;  // no spectator initially. set to MaxPlayers if spectator connected
   game->numPlayers = 0;
   game->tempCount = 0;
@@ -454,12 +454,10 @@ sendGoldMessage(void* arg, const char* addr, void* item)
   int* id = NULL;
   id = hashtable_find(game->addrID, addr);
   if (id != NULL && player != NULL) {  // if address exists and player still in game
-    int buffer = 20;
-    int goldLength = strlen("GOLD") + buffer;
-    char goldMessage[goldLength];
+    char goldM[50];
+    sprintf(goldM, "GOLD %d %d %d\n", player_getRecentGold(player), player_getpurse(player), *(game->numGoldLeft));
     addr_t actualAddr = game->addresses[*id];  // get the address of player
-    snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD %d %d %d\n", player_getRecentGold(player), player_getpurse(player), *(game->numGoldLeft));
-    message_send(actualAddr, goldMessage);  // send gold message
+    message_send(actualAddr, goldM);  // send gold message
   }
 }
 
@@ -478,7 +476,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
     printf("\n%s", "HERE");
 
     set_t* newSeenBefore = grid_updateView(game->grid, player_getCurrCoor(player), player_getSeenBefore(player), playerLocations, game->gold);
-   // set_print(newSeenBefore, stdout, setitemprint);
+    // set_print(newSeenBefore, stdout, setitemprint);
 
     char* display = grid_print(game->grid, newSeenBefore);
     char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
@@ -613,8 +611,8 @@ playerJoin(char* name, const addr_t client)
     set_delete(currSeenBfr, NULL);
     player_setSeenBefore(newPlayer, grid_updateView(game->grid, player_getCurrCoor(newPlayer), NULL, playerLocations, game->gold));
 
-    message_send(client, okMessage);                   // send the player message
-    message_send(client, gridMessage);                 // send grid message
+    message_send(client, okMessage);    // send the player message
+    message_send(client, gridMessage);  // send grid message
     // hashtable_print(game->addrID, stdout, itemprint);  // debug
     (game->numPlayers)++;
 
