@@ -326,7 +326,6 @@ handleMessage(void* arg, const addr_t from, const char* message)
     else {                // if capital letter
       if (move == 'Q') {  // if Q, tell client to QUIT and remove player from game
         if (hashtable_find(game->addrID, message_stringAddr(from)) != NULL) {
-          printf("\n%s", "made it in here");
           // if move is from a current player, quit the player
           player_quit(message_stringAddr(from), game->allPlayers, game->gold, game->numGoldLeft);
           int* id = hashtable_find(game->addrID, message_stringAddr(from));
@@ -335,7 +334,6 @@ handleMessage(void* arg, const addr_t from, const char* message)
         else {  // if it is a spectator
           game->spectatorAddressID = 0;
         }
-        hashtable_print(game->allPlayers, stdout, playeritemprint);
         message_send(from, "QUIT Thanks for playing!\n");
         // update gold and play displays whenever a keystroke is pressed
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
@@ -374,8 +372,7 @@ static void updateSpectatorDisplay()
 
     // creating display message
     set_t* playerLoc = player_locations(game->allPlayers);
-
-    printf("\n %s", "FAILED HERE");
+    
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
     char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
@@ -436,7 +433,6 @@ endGame()
 static void
 sendGoldMessage(void* arg, const char* addr, void* item)
 {
-  hashtable_print(game->allPlayers, stdout, playeritemprint);
   player_t* player = item;
   int* id = NULL;
   id = hashtable_find(game->addrID, addr);
@@ -453,7 +449,6 @@ sendGoldMessage(void* arg, const char* addr, void* item)
 static void
 sendDisplayMessage(void* arg, const char* addr, void* item)
 {
-  hashtable_print(game->allPlayers, stdout, playeritemprint);
   // display message
   player_t* player = item;
   int* addrID = hashtable_find(game->addrID, addr);
@@ -462,7 +457,6 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
     // hashtable_print(game->allPlayers, stdout, playeritemprint);
 
     set_t* playerLocations = player_locations(game->allPlayers);
-    printf("\n%s", "HERE");
 
     set_t* newSeenBefore = grid_updateView(game->grid, player_getCurrCoor(player), player_getSeenBefore(player), playerLocations, game->gold);
     // set_print(newSeenBefore, stdout, setitemprint);

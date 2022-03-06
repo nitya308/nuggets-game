@@ -353,6 +353,7 @@ bool player_quit(const char* address, hashtable_t* allPlayers, counters_t* gold,
   counters_set(gold, player->currCoor, counters_get(gold, player->currCoor) + player->purse);
   *numGoldLeft += player->purse;
   player->currCoor = -1;  // removes player from everyone's map
+  return true;
 }
 
 /**************** player_delete ****************/
