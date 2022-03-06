@@ -385,10 +385,11 @@ static void updateSpectatorDisplay()
     printf("\n%s\n", "here spectator is not NULL");
     fflush(stdout);
 
-    int buf = 20;
-    int goldLen = strlen("GOLD") + buf;
-    char goldMsg[goldLen];
-    snprintf(goldMsg, strlen(goldMsg) + buf, "GOLD 0 0 %d\n", *(game->numGoldLeft));
+    // creating gold message
+    char goldMsg[50];
+    sprintf(goldMsg, "GOLD 0 0 %d\n", *(game->numGoldLeft));
+
+    // creating display message
     set_t* playerLoc = player_locations(game->allPlayers);
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
@@ -457,7 +458,7 @@ sendGoldMessage(void* arg, const char* addr, void* item)
     char goldM[50];
     sprintf(goldM, "GOLD %d %d %d\n", player_getRecentGold(player), player_getpurse(player), *(game->numGoldLeft));
     addr_t actualAddr = game->addresses[*id];  // get the address of player
-    message_send(actualAddr, goldM);  // send gold message
+    message_send(actualAddr, goldM);           // send gold message
   }
 }
 
@@ -644,15 +645,12 @@ spectatorJoin(const addr_t* address)
   // hashtable_insert(game->addresses, message_stringAddr(*address), &address);
 
   // grid message
-  int buffer = 20;
-  int gridLength = strlen("GRID") + buffer;
-  char gridMessage[gridLength];
-  snprintf(gridMessage, strlen(gridMessage) + buffer, "GRID %d %d", grid_getNumberRows(game->grid), grid_getNumberCols(game->grid));
+  char gridMessage[30];
+  sprintf(gridMessage, "GRID %d %d", grid_getNumberRows(game->grid), grid_getNumberCols(game->grid));
 
   // gold message
-  int goldLength = strlen("GOLD 0 0") + buffer;
-  char goldMessage[goldLength];
-  snprintf(goldMessage, strlen(goldMessage) + buffer, "GOLD 0 0 %d", *(game->numGoldLeft));
+  char goldMessage[50];
+  sprintf(goldMessage, "GOLD 0 0 %d\n", *(game->numGoldLeft));
 
   // display message
   set_t* playerLoc = player_locations(game->allPlayers);
