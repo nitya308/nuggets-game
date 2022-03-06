@@ -99,7 +99,8 @@ bool grid_isOpen(grid_t* grid, int loc);
  *  Call grid_locationConvert on location and grid
  *  loop through all other locations in the grid
  *  if line of sight to the location is not blocked by
- *  wall or corner, print the integer location to a string
+ *  wall or corner, and location is less than defined radius
+ *  away from the observer, print the integer location to a string
  *  literal, and add it to the set.
  *  For the item, insert "*" if counters_find on the gold
  *  counter returns > 0 for that location, or insert a 

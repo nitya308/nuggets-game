@@ -129,7 +129,7 @@ int main(const int argc, char* argv[])
 
 
   //testing the visiblity feature
-
+  printf("Testing visibility (radius defined 5)\n");
   printf("calculating player A's view\n");
   visible = grid_isVisible(grid,1507,playerLoc,gold);
   printString = grid_print(grid, visible);

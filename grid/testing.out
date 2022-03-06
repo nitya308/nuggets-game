@@ -1,3 +1,4 @@
+gcc -Wall -pedantic -std=c11 -ggdb  -I../libcs50   -c -o gridtest.o gridtest.c
 gcc -Wall -pedantic -std=c11 -ggdb  -I../libcs50   -c -o grid.o grid.c
 gcc -Wall -pedantic -std=c11 -ggdb  -I../libcs50 gridtest.o grid.o ../libcs50/libcs50-given.a  -lm -o gridtest
 ./gridtest
@@ -1723,6 +1724,7 @@ Specator sees the populated grid:
      |*.....+---------------+..........|                                       
      |A.....*................*.......B.|                                       
      +---------------------------------+                                       
+Testing visibility (radius defined 5)
 calculating player A's view
 Player A sees the following: 
 

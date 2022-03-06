@@ -328,7 +328,8 @@ Handles all functionality to do with the grid and calculates visibility
 	initializes set of locations
 	for every point in the grid
 		if the point is not blocked by a wall/corner between it and player's vantage point
-		insert the location into set, with player or gold symbol if player or gold is in the location
+		if point is less than a defined radius away
+			insert the location into set, with player or gold symbol if player or gold is in the location
 	returns this set
 
 #### grid_updateView
@@ -474,3 +475,8 @@ Takes the address of a player
 ### Major data structures
 
 It uses the player data structure defined above in server. It also uses the Game data structure from the server. 
+
+
+---
+## Extra credit
+Grid implements a radius of visibility (defined as constant 5 )

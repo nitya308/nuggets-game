@@ -603,13 +603,14 @@ static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int 
 		grid_locationConvert on the int to get observer row, column number
 		for every row, col coordinate in grid
 			if not isBlocked on that coordinate from observer location
-				print that location to string key
-				if counters_get on gold counter for that location is >0
-					insert gold symbol for this string key into set
-				else if set_find on playerLocations set for that location is not NULL
-					insert that player's symbol this string key into set
-				else
-					insert dummy symbol "g" for this location key into the set
+				if location is less than radius away from observer
+					print that location to string key
+					if counters_get on gold counter for that location is >0
+						insert gold symbol for this string key into set
+					else if set_find on playerLocations set for that location is not NULL
+						insert that player's symbol this string key into set
+					else
+						insert dummy symbol "g" for this location key into the set
 
 		return the locations set
 	else
@@ -752,3 +753,7 @@ trying to have more than maxPlayers number of player join
 ## Limitations
 
 > None forseen at this point in development.
+
+
+## Extra credit
+Grid implements a radius of visibility (defined as constant 5 ). Checks this when iterating through all points in the grid to determine if radius from them to player location is <= 5 (pythagorean theorem)
