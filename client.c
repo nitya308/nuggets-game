@@ -194,8 +194,8 @@ static bool handleInput(void* arg)
 static bool receiveMessage(void* arg, const addr_t from, const char* message)
 {
   if (strncmp(message, "QUIT", strlen("QUIT")) == 0) {
-    endwin();
     printw(message);
+    endwin();
     return true;
   }
 
