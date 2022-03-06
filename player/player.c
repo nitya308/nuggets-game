@@ -350,9 +350,7 @@ bool player_quit(const char* address, hashtable_t* allPlayers)
   if (player == NULL) {
     return false;
   }
-  player_delete(player);
-  player = NULL;
-  return true;
+  player->currCoor = -1; // removes player from everyone's map
 }
 
 /**************** player_delete ****************/
@@ -380,18 +378,20 @@ char* player_summary(hashtable_t* allPlayers)
 static void summary_helper(void* arg, const char* key, void* item)
 {
   player_t* player = item;
-  char* addition = malloc(15);
-  strcpy(addition, player->pID);
-  char* num = malloc(15);
-  sprintf(num, "%5d", player->purse);
-  strcat(addition, num);
-  strcat(addition, " ");
-  strcat(addition, player->name);
-  strcat(addition, "\n");
-  char** sum = arg;
-  strcat(*sum, addition);
-  free(addition);
-  free(num);
+  if (player != NULL) {
+    char* addition = malloc(15);
+    strcpy(addition, player->pID);
+    char* num = malloc(15);
+    sprintf(num, "%5d", player->purse);
+    strcat(addition, num);
+    strcat(addition, " ");
+    strcat(addition, player->name);
+    strcat(addition, "\n");
+    char** sum = arg;
+    strcat(*sum, addition);
+    free(addition);
+    free(num);
+  }
 }
 
 /**************** player_locations ****************/

@@ -323,14 +323,19 @@ handleMessage(void* arg, const addr_t from, const char* message)
         updateSpectatorDisplay();
       }
     }
-    else {                                                                     // if capital letter
-      if (move == 'Q') {                                                       // if Q, tell client to QUIT and remove player from game
-        if (hashtable_find(game->addrID, message_stringAddr(from)) != NULL) {  // if move is from a current player, quit the player
+    else {                // if capital letter
+      if (move == 'Q') {  // if Q, tell client to QUIT and remove player from game
+        if (hashtable_find(game->addrID, message_stringAddr(from)) != NULL) {
+          printf("\n%s", "made it in here");
+          // if move is from a current player, quit the player
           player_quit(message_stringAddr(from), game->allPlayers);
+          int* id = hashtable_find(game->addrID, message_stringAddr(from));
+          *id = -1;
         }
         else {  // if it is a spectator
           game->spectatorAddressID = 0;
         }
+        hashtable_print(game->allPlayers, stdout, playeritemprint);
         message_send(from, "QUIT Thanks for playing!\n");
         // update gold and play displays whenever a keystroke is pressed
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
@@ -369,6 +374,8 @@ static void updateSpectatorDisplay()
 
     // creating display message
     set_t* playerLoc = player_locations(game->allPlayers);
+
+    printf("\n %s", "FAILED HERE");
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
     char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
@@ -429,10 +436,12 @@ endGame()
 static void
 sendGoldMessage(void* arg, const char* addr, void* item)
 {
+  hashtable_print(game->allPlayers, stdout, playeritemprint);
   player_t* player = item;
   int* id = NULL;
   id = hashtable_find(game->addrID, addr);
-  if (id != NULL && player != NULL) {  // if address exists and player still in game
+  if (id != NULL && *id != -1 && player != NULL) {  // if address exists and player still in game
+    printf("\n%s", "DOESN'T ENTER IF CONDITION");
     char goldM[50];
     sprintf(goldM, "GOLD %d %d %d\n", player_getRecentGold(player), player_getpurse(player), *(game->numGoldLeft));
     addr_t actualAddr = game->addresses[*id];  // get the address of player
@@ -444,11 +453,12 @@ sendGoldMessage(void* arg, const char* addr, void* item)
 static void
 sendDisplayMessage(void* arg, const char* addr, void* item)
 {
+  hashtable_print(game->allPlayers, stdout, playeritemprint);
   // display message
   player_t* player = item;
   int* addrID = hashtable_find(game->addrID, addr);
-  if (addrID != NULL && player != NULL) {          // if player address exists and player still in game
-    addr_t actualAddr = game->addresses[*addrID];  // get player's address
+  if (addrID != NULL && *addrID != -1 && player != NULL) {  // if player address exists and player still in game
+    addr_t actualAddr = game->addresses[*addrID];           // get player's address
     // hashtable_print(game->allPlayers, stdout, playeritemprint);
 
     set_t* playerLocations = player_locations(game->allPlayers);
@@ -489,7 +499,7 @@ sendEndMessage(void* arg, const char* addr, void* item)
   strcpy(message, "QUIT GAME OVER:\n");
   strcat(message, summary);
   int* id = hashtable_find(game->addrID, addr);
-  if (id != NULL && item != NULL) {  // if player still connected, tell client to quit
+  if (id != NULL && *id != -1 && item != NULL) {  // if player still connected, tell client to quit
     addr_t actualAddr = game->addresses[*id];
     message_send(actualAddr, message);
   }
