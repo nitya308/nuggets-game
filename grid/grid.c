@@ -11,7 +11,7 @@
 #include "mem.h"
 #include "set.h"
 
-#define RADIUS 5
+#define RADIUS 1000
 
 /**************** local types ****************/
 typedef struct grid {

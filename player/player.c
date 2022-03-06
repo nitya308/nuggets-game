@@ -46,7 +46,7 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
 bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
-bool player_quit(const char* address, hashtable_t* allPlayers);
+bool player_quit(const char* address, hashtable_t* allPlayers, counters_t* gold, int* numGoldLeft);
 void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
 set_t* player_locations(hashtable_t* allPlayers);
@@ -344,13 +344,15 @@ static void swap_helper(void* arg, const char* key, void* item)
 
 /**************** player_quit ****************/
 /* see player.h for description */
-bool player_quit(const char* address, hashtable_t* allPlayers)
+bool player_quit(const char* address, hashtable_t* allPlayers, counters_t* gold, int* numGoldLeft)
 {
   player_t* player = hashtable_find(allPlayers, address);
   if (player == NULL) {
     return false;
   }
-  player->currCoor = -1; // removes player from everyone's map
+  counters_set(gold, player->currCoor, counters_get(gold, player->currCoor) + player->purse);
+  *numGoldLeft += player->purse;
+  player->currCoor = -1;  // removes player from everyone's map
 }
 
 /**************** player_delete ****************/

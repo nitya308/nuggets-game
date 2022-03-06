@@ -328,7 +328,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
         if (hashtable_find(game->addrID, message_stringAddr(from)) != NULL) {
           printf("\n%s", "made it in here");
           // if move is from a current player, quit the player
-          player_quit(message_stringAddr(from), game->allPlayers);
+          player_quit(message_stringAddr(from), game->allPlayers, game->gold, game->numGoldLeft);
           int* id = hashtable_find(game->addrID, message_stringAddr(from));
           *id = -1;
         }
