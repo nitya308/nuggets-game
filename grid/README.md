@@ -17,3 +17,6 @@ Results of running `make test`, which calls gridtest.c, are printed to testing.o
 
 ## Assumptions
 Assumes that map files are in valid format.
+
+## Extra credit
+Implements radius of visibility = 5
