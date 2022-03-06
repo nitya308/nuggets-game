@@ -418,7 +418,8 @@ endGame()
 
   // send quit message with summary to spectator
   if (game->spectatorAddressID != 0) {
-    char* quitSpectatorMessage = "QUIT GAME OVER:\n";
+    char* quitSpectatorMessage = malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
+    strcpy(quitSpectatorMessage, "QUIT GAME OVER:\n");
     strcat(quitSpectatorMessage, summary);
     // int* addrID = hashtable_find(game->addrID, game->spectatorAddress);
     addr_t specAddr = game->addresses[game->spectatorAddressID];
