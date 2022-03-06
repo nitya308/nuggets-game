@@ -324,7 +324,7 @@ Handles all functionality to do with the grid and calculates visibility
 	return true if this is passage or room
 	else return false
 
-#### grid_isOpen
+#### grid_isRoom
 	Takes int location input
 	extracts grid from Game data structure
 	finds the location in the grid

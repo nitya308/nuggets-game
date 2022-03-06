@@ -91,7 +91,12 @@ int main(const int argc, char* argv[])
   for(int i =0; i< grid_getNumberCols(grid)*grid_getNumberRows(grid); i++){
     coordinates = grid_locationConvert(grid,i);
     if(grid_isOpen(grid, i)){
-      printf("The point at row %d , col %d is open\n", coordinates[0], coordinates[1]);
+      if(grid_isRoom(grid,i)){
+        printf("The point at row %d , col %d is room spot\n", coordinates[0], coordinates[1]);
+      }
+      else{
+        printf("The point at row %d , col %d is passage spot\n", coordinates[0], coordinates[1]);
+      }
     }
     else{
       printf("The point at row %d , col %d is not open\n", coordinates[0], coordinates[1]);

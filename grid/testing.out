@@ -1,6 +1,3 @@
-gcc -Wall -pedantic -std=c11 -ggdb  -I../libcs50   -c -o gridtest.o gridtest.c
-gcc -Wall -pedantic -std=c11 -ggdb  -I../libcs50   -c -o grid.o grid.c
-gcc -Wall -pedantic -std=c11 -ggdb  -I../libcs50 gridtest.o grid.o ../libcs50/libcs50-given.a  -lm -o gridtest
 ./gridtest
 Invalid file for reading grid
 Error reading grid
@@ -122,16 +119,16 @@ The point at row 0 , col 78 is not open
 The point at row 1 , col 0 is not open
 The point at row 1 , col 1 is not open
 The point at row 1 , col 2 is not open
-The point at row 1 , col 3 is open
-The point at row 1 , col 4 is open
-The point at row 1 , col 5 is open
-The point at row 1 , col 6 is open
-The point at row 1 , col 7 is open
-The point at row 1 , col 8 is open
-The point at row 1 , col 9 is open
-The point at row 1 , col 10 is open
-The point at row 1 , col 11 is open
-The point at row 1 , col 12 is open
+The point at row 1 , col 3 is passage spot
+The point at row 1 , col 4 is passage spot
+The point at row 1 , col 5 is passage spot
+The point at row 1 , col 6 is passage spot
+The point at row 1 , col 7 is passage spot
+The point at row 1 , col 8 is passage spot
+The point at row 1 , col 9 is passage spot
+The point at row 1 , col 10 is passage spot
+The point at row 1 , col 11 is passage spot
+The point at row 1 , col 12 is passage spot
 The point at row 1 , col 13 is not open
 The point at row 1 , col 14 is not open
 The point at row 1 , col 15 is not open
@@ -201,20 +198,20 @@ The point at row 1 , col 78 is not open
 The point at row 2 , col 0 is not open
 The point at row 2 , col 1 is not open
 The point at row 2 , col 2 is not open
-The point at row 2 , col 3 is open
-The point at row 2 , col 4 is open
-The point at row 2 , col 5 is open
-The point at row 2 , col 6 is open
-The point at row 2 , col 7 is open
-The point at row 2 , col 8 is open
-The point at row 2 , col 9 is open
-The point at row 2 , col 10 is open
-The point at row 2 , col 11 is open
-The point at row 2 , col 12 is open
-The point at row 2 , col 13 is open
-The point at row 2 , col 14 is open
-The point at row 2 , col 15 is open
-The point at row 2 , col 16 is open
+The point at row 2 , col 3 is passage spot
+The point at row 2 , col 4 is passage spot
+The point at row 2 , col 5 is passage spot
+The point at row 2 , col 6 is passage spot
+The point at row 2 , col 7 is passage spot
+The point at row 2 , col 8 is passage spot
+The point at row 2 , col 9 is passage spot
+The point at row 2 , col 10 is passage spot
+The point at row 2 , col 11 is passage spot
+The point at row 2 , col 12 is passage spot
+The point at row 2 , col 13 is room spot
+The point at row 2 , col 14 is room spot
+The point at row 2 , col 15 is room spot
+The point at row 2 , col 16 is room spot
 The point at row 2 , col 17 is not open
 The point at row 2 , col 18 is not open
 The point at row 2 , col 19 is not open
@@ -230,15 +227,15 @@ The point at row 2 , col 28 is not open
 The point at row 2 , col 29 is not open
 The point at row 2 , col 30 is not open
 The point at row 2 , col 31 is not open
-The point at row 2 , col 32 is open
-The point at row 2 , col 33 is open
-The point at row 2 , col 34 is open
-The point at row 2 , col 35 is open
-The point at row 2 , col 36 is open
-The point at row 2 , col 37 is open
-The point at row 2 , col 38 is open
-The point at row 2 , col 39 is open
-The point at row 2 , col 40 is open
+The point at row 2 , col 32 is passage spot
+The point at row 2 , col 33 is passage spot
+The point at row 2 , col 34 is passage spot
+The point at row 2 , col 35 is passage spot
+The point at row 2 , col 36 is passage spot
+The point at row 2 , col 37 is passage spot
+The point at row 2 , col 38 is passage spot
+The point at row 2 , col 39 is passage spot
+The point at row 2 , col 40 is passage spot
 The point at row 2 , col 41 is not open
 The point at row 2 , col 42 is not open
 The point at row 2 , col 43 is not open
@@ -280,16 +277,16 @@ The point at row 2 , col 78 is not open
 The point at row 3 , col 0 is not open
 The point at row 3 , col 1 is not open
 The point at row 3 , col 2 is not open
-The point at row 3 , col 3 is open
-The point at row 3 , col 4 is open
-The point at row 3 , col 5 is open
-The point at row 3 , col 6 is open
-The point at row 3 , col 7 is open
-The point at row 3 , col 8 is open
-The point at row 3 , col 9 is open
-The point at row 3 , col 10 is open
-The point at row 3 , col 11 is open
-The point at row 3 , col 12 is open
+The point at row 3 , col 3 is passage spot
+The point at row 3 , col 4 is passage spot
+The point at row 3 , col 5 is passage spot
+The point at row 3 , col 6 is passage spot
+The point at row 3 , col 7 is passage spot
+The point at row 3 , col 8 is passage spot
+The point at row 3 , col 9 is passage spot
+The point at row 3 , col 10 is passage spot
+The point at row 3 , col 11 is passage spot
+The point at row 3 , col 12 is passage spot
 The point at row 3 , col 13 is not open
 The point at row 3 , col 14 is not open
 The point at row 3 , col 15 is not open
@@ -314,7 +311,7 @@ The point at row 3 , col 33 is not open
 The point at row 3 , col 34 is not open
 The point at row 3 , col 35 is not open
 The point at row 3 , col 36 is not open
-The point at row 3 , col 37 is open
+The point at row 3 , col 37 is room spot
 The point at row 3 , col 38 is not open
 The point at row 3 , col 39 is not open
 The point at row 3 , col 40 is not open
@@ -336,13 +333,13 @@ The point at row 3 , col 55 is not open
 The point at row 3 , col 56 is not open
 The point at row 3 , col 57 is not open
 The point at row 3 , col 58 is not open
-The point at row 3 , col 59 is open
-The point at row 3 , col 60 is open
-The point at row 3 , col 61 is open
-The point at row 3 , col 62 is open
-The point at row 3 , col 63 is open
-The point at row 3 , col 64 is open
-The point at row 3 , col 65 is open
+The point at row 3 , col 59 is passage spot
+The point at row 3 , col 60 is passage spot
+The point at row 3 , col 61 is passage spot
+The point at row 3 , col 62 is passage spot
+The point at row 3 , col 63 is passage spot
+The point at row 3 , col 64 is passage spot
+The point at row 3 , col 65 is passage spot
 The point at row 3 , col 66 is not open
 The point at row 3 , col 67 is not open
 The point at row 3 , col 68 is not open
@@ -368,7 +365,7 @@ The point at row 4 , col 8 is not open
 The point at row 4 , col 9 is not open
 The point at row 4 , col 10 is not open
 The point at row 4 , col 11 is not open
-The point at row 4 , col 12 is open
+The point at row 4 , col 12 is room spot
 The point at row 4 , col 13 is not open
 The point at row 4 , col 14 is not open
 The point at row 4 , col 15 is not open
@@ -393,7 +390,7 @@ The point at row 4 , col 33 is not open
 The point at row 4 , col 34 is not open
 The point at row 4 , col 35 is not open
 The point at row 4 , col 36 is not open
-The point at row 4 , col 37 is open
+The point at row 4 , col 37 is room spot
 The point at row 4 , col 38 is not open
 The point at row 4 , col 39 is not open
 The point at row 4 , col 40 is not open
@@ -408,20 +405,20 @@ The point at row 4 , col 48 is not open
 The point at row 4 , col 49 is not open
 The point at row 4 , col 50 is not open
 The point at row 4 , col 51 is not open
-The point at row 4 , col 52 is open
-The point at row 4 , col 53 is open
-The point at row 4 , col 54 is open
-The point at row 4 , col 55 is open
-The point at row 4 , col 56 is open
-The point at row 4 , col 57 is open
-The point at row 4 , col 58 is open
-The point at row 4 , col 59 is open
-The point at row 4 , col 60 is open
-The point at row 4 , col 61 is open
-The point at row 4 , col 62 is open
-The point at row 4 , col 63 is open
-The point at row 4 , col 64 is open
-The point at row 4 , col 65 is open
+The point at row 4 , col 52 is room spot
+The point at row 4 , col 53 is room spot
+The point at row 4 , col 54 is room spot
+The point at row 4 , col 55 is room spot
+The point at row 4 , col 56 is room spot
+The point at row 4 , col 57 is room spot
+The point at row 4 , col 58 is room spot
+The point at row 4 , col 59 is passage spot
+The point at row 4 , col 60 is passage spot
+The point at row 4 , col 61 is passage spot
+The point at row 4 , col 62 is passage spot
+The point at row 4 , col 63 is passage spot
+The point at row 4 , col 64 is passage spot
+The point at row 4 , col 65 is passage spot
 The point at row 4 , col 66 is not open
 The point at row 4 , col 67 is not open
 The point at row 4 , col 68 is not open
@@ -447,7 +444,7 @@ The point at row 5 , col 8 is not open
 The point at row 5 , col 9 is not open
 The point at row 5 , col 10 is not open
 The point at row 5 , col 11 is not open
-The point at row 5 , col 12 is open
+The point at row 5 , col 12 is room spot
 The point at row 5 , col 13 is not open
 The point at row 5 , col 14 is not open
 The point at row 5 , col 15 is not open
@@ -472,7 +469,7 @@ The point at row 5 , col 33 is not open
 The point at row 5 , col 34 is not open
 The point at row 5 , col 35 is not open
 The point at row 5 , col 36 is not open
-The point at row 5 , col 37 is open
+The point at row 5 , col 37 is room spot
 The point at row 5 , col 38 is not open
 The point at row 5 , col 39 is not open
 The point at row 5 , col 40 is not open
@@ -487,7 +484,7 @@ The point at row 5 , col 48 is not open
 The point at row 5 , col 49 is not open
 The point at row 5 , col 50 is not open
 The point at row 5 , col 51 is not open
-The point at row 5 , col 52 is open
+The point at row 5 , col 52 is room spot
 The point at row 5 , col 53 is not open
 The point at row 5 , col 54 is not open
 The point at row 5 , col 55 is not open
@@ -497,7 +494,7 @@ The point at row 5 , col 58 is not open
 The point at row 5 , col 59 is not open
 The point at row 5 , col 60 is not open
 The point at row 5 , col 61 is not open
-The point at row 5 , col 62 is open
+The point at row 5 , col 62 is room spot
 The point at row 5 , col 63 is not open
 The point at row 5 , col 64 is not open
 The point at row 5 , col 65 is not open
@@ -526,7 +523,7 @@ The point at row 6 , col 8 is not open
 The point at row 6 , col 9 is not open
 The point at row 6 , col 10 is not open
 The point at row 6 , col 11 is not open
-The point at row 6 , col 12 is open
+The point at row 6 , col 12 is room spot
 The point at row 6 , col 13 is not open
 The point at row 6 , col 14 is not open
 The point at row 6 , col 15 is not open
@@ -551,7 +548,7 @@ The point at row 6 , col 33 is not open
 The point at row 6 , col 34 is not open
 The point at row 6 , col 35 is not open
 The point at row 6 , col 36 is not open
-The point at row 6 , col 37 is open
+The point at row 6 , col 37 is room spot
 The point at row 6 , col 38 is not open
 The point at row 6 , col 39 is not open
 The point at row 6 , col 40 is not open
@@ -566,7 +563,7 @@ The point at row 6 , col 48 is not open
 The point at row 6 , col 49 is not open
 The point at row 6 , col 50 is not open
 The point at row 6 , col 51 is not open
-The point at row 6 , col 52 is open
+The point at row 6 , col 52 is room spot
 The point at row 6 , col 53 is not open
 The point at row 6 , col 54 is not open
 The point at row 6 , col 55 is not open
@@ -576,7 +573,7 @@ The point at row 6 , col 58 is not open
 The point at row 6 , col 59 is not open
 The point at row 6 , col 60 is not open
 The point at row 6 , col 61 is not open
-The point at row 6 , col 62 is open
+The point at row 6 , col 62 is room spot
 The point at row 6 , col 63 is not open
 The point at row 6 , col 64 is not open
 The point at row 6 , col 65 is not open
@@ -605,47 +602,47 @@ The point at row 7 , col 8 is not open
 The point at row 7 , col 9 is not open
 The point at row 7 , col 10 is not open
 The point at row 7 , col 11 is not open
-The point at row 7 , col 12 is open
-The point at row 7 , col 13 is open
-The point at row 7 , col 14 is open
-The point at row 7 , col 15 is open
-The point at row 7 , col 16 is open
-The point at row 7 , col 17 is open
-The point at row 7 , col 18 is open
-The point at row 7 , col 19 is open
-The point at row 7 , col 20 is open
-The point at row 7 , col 21 is open
-The point at row 7 , col 22 is open
-The point at row 7 , col 23 is open
-The point at row 7 , col 24 is open
-The point at row 7 , col 25 is open
-The point at row 7 , col 26 is open
-The point at row 7 , col 27 is open
-The point at row 7 , col 28 is open
-The point at row 7 , col 29 is open
-The point at row 7 , col 30 is open
-The point at row 7 , col 31 is open
-The point at row 7 , col 32 is open
-The point at row 7 , col 33 is open
-The point at row 7 , col 34 is open
-The point at row 7 , col 35 is open
-The point at row 7 , col 36 is open
-The point at row 7 , col 37 is open
-The point at row 7 , col 38 is open
-The point at row 7 , col 39 is open
-The point at row 7 , col 40 is open
+The point at row 7 , col 12 is room spot
+The point at row 7 , col 13 is room spot
+The point at row 7 , col 14 is room spot
+The point at row 7 , col 15 is room spot
+The point at row 7 , col 16 is passage spot
+The point at row 7 , col 17 is passage spot
+The point at row 7 , col 18 is passage spot
+The point at row 7 , col 19 is passage spot
+The point at row 7 , col 20 is passage spot
+The point at row 7 , col 21 is passage spot
+The point at row 7 , col 22 is passage spot
+The point at row 7 , col 23 is passage spot
+The point at row 7 , col 24 is passage spot
+The point at row 7 , col 25 is passage spot
+The point at row 7 , col 26 is passage spot
+The point at row 7 , col 27 is room spot
+The point at row 7 , col 28 is room spot
+The point at row 7 , col 29 is room spot
+The point at row 7 , col 30 is room spot
+The point at row 7 , col 31 is room spot
+The point at row 7 , col 32 is room spot
+The point at row 7 , col 33 is room spot
+The point at row 7 , col 34 is room spot
+The point at row 7 , col 35 is room spot
+The point at row 7 , col 36 is room spot
+The point at row 7 , col 37 is room spot
+The point at row 7 , col 38 is room spot
+The point at row 7 , col 39 is room spot
+The point at row 7 , col 40 is room spot
 The point at row 7 , col 41 is not open
 The point at row 7 , col 42 is not open
 The point at row 7 , col 43 is not open
-The point at row 7 , col 44 is open
-The point at row 7 , col 45 is open
-The point at row 7 , col 46 is open
-The point at row 7 , col 47 is open
-The point at row 7 , col 48 is open
-The point at row 7 , col 49 is open
-The point at row 7 , col 50 is open
-The point at row 7 , col 51 is open
-The point at row 7 , col 52 is open
+The point at row 7 , col 44 is passage spot
+The point at row 7 , col 45 is passage spot
+The point at row 7 , col 46 is passage spot
+The point at row 7 , col 47 is passage spot
+The point at row 7 , col 48 is passage spot
+The point at row 7 , col 49 is passage spot
+The point at row 7 , col 50 is passage spot
+The point at row 7 , col 51 is passage spot
+The point at row 7 , col 52 is passage spot
 The point at row 7 , col 53 is not open
 The point at row 7 , col 54 is not open
 The point at row 7 , col 55 is not open
@@ -655,7 +652,7 @@ The point at row 7 , col 58 is not open
 The point at row 7 , col 59 is not open
 The point at row 7 , col 60 is not open
 The point at row 7 , col 61 is not open
-The point at row 7 , col 62 is open
+The point at row 7 , col 62 is room spot
 The point at row 7 , col 63 is not open
 The point at row 7 , col 64 is not open
 The point at row 7 , col 65 is not open
@@ -688,17 +685,17 @@ The point at row 8 , col 12 is not open
 The point at row 8 , col 13 is not open
 The point at row 8 , col 14 is not open
 The point at row 8 , col 15 is not open
-The point at row 8 , col 16 is open
-The point at row 8 , col 17 is open
-The point at row 8 , col 18 is open
-The point at row 8 , col 19 is open
-The point at row 8 , col 20 is open
-The point at row 8 , col 21 is open
-The point at row 8 , col 22 is open
-The point at row 8 , col 23 is open
-The point at row 8 , col 24 is open
-The point at row 8 , col 25 is open
-The point at row 8 , col 26 is open
+The point at row 8 , col 16 is passage spot
+The point at row 8 , col 17 is passage spot
+The point at row 8 , col 18 is passage spot
+The point at row 8 , col 19 is passage spot
+The point at row 8 , col 20 is passage spot
+The point at row 8 , col 21 is passage spot
+The point at row 8 , col 22 is passage spot
+The point at row 8 , col 23 is passage spot
+The point at row 8 , col 24 is passage spot
+The point at row 8 , col 25 is passage spot
+The point at row 8 , col 26 is passage spot
 The point at row 8 , col 27 is not open
 The point at row 8 , col 28 is not open
 The point at row 8 , col 29 is not open
@@ -712,19 +709,19 @@ The point at row 8 , col 36 is not open
 The point at row 8 , col 37 is not open
 The point at row 8 , col 38 is not open
 The point at row 8 , col 39 is not open
-The point at row 8 , col 40 is open
+The point at row 8 , col 40 is room spot
 The point at row 8 , col 41 is not open
 The point at row 8 , col 42 is not open
 The point at row 8 , col 43 is not open
-The point at row 8 , col 44 is open
-The point at row 8 , col 45 is open
-The point at row 8 , col 46 is open
-The point at row 8 , col 47 is open
-The point at row 8 , col 48 is open
-The point at row 8 , col 49 is open
-The point at row 8 , col 50 is open
-The point at row 8 , col 51 is open
-The point at row 8 , col 52 is open
+The point at row 8 , col 44 is passage spot
+The point at row 8 , col 45 is passage spot
+The point at row 8 , col 46 is passage spot
+The point at row 8 , col 47 is passage spot
+The point at row 8 , col 48 is passage spot
+The point at row 8 , col 49 is passage spot
+The point at row 8 , col 50 is passage spot
+The point at row 8 , col 51 is passage spot
+The point at row 8 , col 52 is passage spot
 The point at row 8 , col 53 is not open
 The point at row 8 , col 54 is not open
 The point at row 8 , col 55 is not open
@@ -734,7 +731,7 @@ The point at row 8 , col 58 is not open
 The point at row 8 , col 59 is not open
 The point at row 8 , col 60 is not open
 The point at row 8 , col 61 is not open
-The point at row 8 , col 62 is open
+The point at row 8 , col 62 is room spot
 The point at row 8 , col 63 is not open
 The point at row 8 , col 64 is not open
 The point at row 8 , col 65 is not open
@@ -791,19 +788,19 @@ The point at row 9 , col 36 is not open
 The point at row 9 , col 37 is not open
 The point at row 9 , col 38 is not open
 The point at row 9 , col 39 is not open
-The point at row 9 , col 40 is open
-The point at row 9 , col 41 is open
-The point at row 9 , col 42 is open
-The point at row 9 , col 43 is open
-The point at row 9 , col 44 is open
-The point at row 9 , col 45 is open
-The point at row 9 , col 46 is open
-The point at row 9 , col 47 is open
-The point at row 9 , col 48 is open
-The point at row 9 , col 49 is open
-The point at row 9 , col 50 is open
-The point at row 9 , col 51 is open
-The point at row 9 , col 52 is open
+The point at row 9 , col 40 is room spot
+The point at row 9 , col 41 is room spot
+The point at row 9 , col 42 is room spot
+The point at row 9 , col 43 is room spot
+The point at row 9 , col 44 is passage spot
+The point at row 9 , col 45 is passage spot
+The point at row 9 , col 46 is passage spot
+The point at row 9 , col 47 is passage spot
+The point at row 9 , col 48 is passage spot
+The point at row 9 , col 49 is passage spot
+The point at row 9 , col 50 is passage spot
+The point at row 9 , col 51 is passage spot
+The point at row 9 , col 52 is passage spot
 The point at row 9 , col 53 is not open
 The point at row 9 , col 54 is not open
 The point at row 9 , col 55 is not open
@@ -813,7 +810,7 @@ The point at row 9 , col 58 is not open
 The point at row 9 , col 59 is not open
 The point at row 9 , col 60 is not open
 The point at row 9 , col 61 is not open
-The point at row 9 , col 62 is open
+The point at row 9 , col 62 is room spot
 The point at row 9 , col 63 is not open
 The point at row 9 , col 64 is not open
 The point at row 9 , col 65 is not open
@@ -878,7 +875,7 @@ The point at row 10 , col 44 is not open
 The point at row 10 , col 45 is not open
 The point at row 10 , col 46 is not open
 The point at row 10 , col 47 is not open
-The point at row 10 , col 48 is open
+The point at row 10 , col 48 is room spot
 The point at row 10 , col 49 is not open
 The point at row 10 , col 50 is not open
 The point at row 10 , col 51 is not open
@@ -892,7 +889,7 @@ The point at row 10 , col 58 is not open
 The point at row 10 , col 59 is not open
 The point at row 10 , col 60 is not open
 The point at row 10 , col 61 is not open
-The point at row 10 , col 62 is open
+The point at row 10 , col 62 is room spot
 The point at row 10 , col 63 is not open
 The point at row 10 , col 64 is not open
 The point at row 10 , col 65 is not open
@@ -957,7 +954,7 @@ The point at row 11 , col 44 is not open
 The point at row 11 , col 45 is not open
 The point at row 11 , col 46 is not open
 The point at row 11 , col 47 is not open
-The point at row 11 , col 48 is open
+The point at row 11 , col 48 is room spot
 The point at row 11 , col 49 is not open
 The point at row 11 , col 50 is not open
 The point at row 11 , col 51 is not open
@@ -971,7 +968,7 @@ The point at row 11 , col 58 is not open
 The point at row 11 , col 59 is not open
 The point at row 11 , col 60 is not open
 The point at row 11 , col 61 is not open
-The point at row 11 , col 62 is open
+The point at row 11 , col 62 is room spot
 The point at row 11 , col 63 is not open
 The point at row 11 , col 64 is not open
 The point at row 11 , col 65 is not open
@@ -1036,23 +1033,23 @@ The point at row 12 , col 44 is not open
 The point at row 12 , col 45 is not open
 The point at row 12 , col 46 is not open
 The point at row 12 , col 47 is not open
-The point at row 12 , col 48 is open
+The point at row 12 , col 48 is room spot
 The point at row 12 , col 49 is not open
 The point at row 12 , col 50 is not open
 The point at row 12 , col 51 is not open
 The point at row 12 , col 52 is not open
 The point at row 12 , col 53 is not open
-The point at row 12 , col 54 is open
-The point at row 12 , col 55 is open
-The point at row 12 , col 56 is open
-The point at row 12 , col 57 is open
-The point at row 12 , col 58 is open
-The point at row 12 , col 59 is open
-The point at row 12 , col 60 is open
-The point at row 12 , col 61 is open
-The point at row 12 , col 62 is open
-The point at row 12 , col 63 is open
-The point at row 12 , col 64 is open
+The point at row 12 , col 54 is passage spot
+The point at row 12 , col 55 is passage spot
+The point at row 12 , col 56 is passage spot
+The point at row 12 , col 57 is passage spot
+The point at row 12 , col 58 is passage spot
+The point at row 12 , col 59 is passage spot
+The point at row 12 , col 60 is passage spot
+The point at row 12 , col 61 is passage spot
+The point at row 12 , col 62 is passage spot
+The point at row 12 , col 63 is passage spot
+The point at row 12 , col 64 is passage spot
 The point at row 12 , col 65 is not open
 The point at row 12 , col 66 is not open
 The point at row 12 , col 67 is not open
@@ -1073,39 +1070,39 @@ The point at row 13 , col 2 is not open
 The point at row 13 , col 3 is not open
 The point at row 13 , col 4 is not open
 The point at row 13 , col 5 is not open
-The point at row 13 , col 6 is open
-The point at row 13 , col 7 is open
-The point at row 13 , col 8 is open
-The point at row 13 , col 9 is open
-The point at row 13 , col 10 is open
-The point at row 13 , col 11 is open
-The point at row 13 , col 12 is open
-The point at row 13 , col 13 is open
-The point at row 13 , col 14 is open
-The point at row 13 , col 15 is open
-The point at row 13 , col 16 is open
-The point at row 13 , col 17 is open
-The point at row 13 , col 18 is open
-The point at row 13 , col 19 is open
-The point at row 13 , col 20 is open
-The point at row 13 , col 21 is open
-The point at row 13 , col 22 is open
-The point at row 13 , col 23 is open
-The point at row 13 , col 24 is open
-The point at row 13 , col 25 is open
-The point at row 13 , col 26 is open
-The point at row 13 , col 27 is open
-The point at row 13 , col 28 is open
-The point at row 13 , col 29 is open
-The point at row 13 , col 30 is open
-The point at row 13 , col 31 is open
-The point at row 13 , col 32 is open
-The point at row 13 , col 33 is open
-The point at row 13 , col 34 is open
-The point at row 13 , col 35 is open
-The point at row 13 , col 36 is open
-The point at row 13 , col 37 is open
-The point at row 13 , col 38 is open
+The point at row 13 , col 6 is passage spot
+The point at row 13 , col 7 is passage spot
+The point at row 13 , col 8 is passage spot
+The point at row 13 , col 9 is passage spot
+The point at row 13 , col 10 is passage spot
+The point at row 13 , col 11 is passage spot
+The point at row 13 , col 12 is passage spot
+The point at row 13 , col 13 is passage spot
+The point at row 13 , col 14 is passage spot
+The point at row 13 , col 15 is passage spot
+The point at row 13 , col 16 is passage spot
+The point at row 13 , col 17 is passage spot
+The point at row 13 , col 18 is passage spot
+The point at row 13 , col 19 is passage spot
+The point at row 13 , col 20 is passage spot
+The point at row 13 , col 21 is passage spot
+The point at row 13 , col 22 is passage spot
+The point at row 13 , col 23 is passage spot
+The point at row 13 , col 24 is passage spot
+The point at row 13 , col 25 is passage spot
+The point at row 13 , col 26 is passage spot
+The point at row 13 , col 27 is passage spot
+The point at row 13 , col 28 is passage spot
+The point at row 13 , col 29 is passage spot
+The point at row 13 , col 30 is passage spot
+The point at row 13 , col 31 is passage spot
+The point at row 13 , col 32 is passage spot
+The point at row 13 , col 33 is passage spot
+The point at row 13 , col 34 is passage spot
+The point at row 13 , col 35 is passage spot
+The point at row 13 , col 36 is passage spot
+The point at row 13 , col 37 is passage spot
+The point at row 13 , col 38 is passage spot
 The point at row 13 , col 39 is not open
 The point at row 13 , col 40 is not open
 The point at row 13 , col 41 is not open
@@ -1115,23 +1112,23 @@ The point at row 13 , col 44 is not open
 The point at row 13 , col 45 is not open
 The point at row 13 , col 46 is not open
 The point at row 13 , col 47 is not open
-The point at row 13 , col 48 is open
-The point at row 13 , col 49 is open
-The point at row 13 , col 50 is open
-The point at row 13 , col 51 is open
-The point at row 13 , col 52 is open
-The point at row 13 , col 53 is open
-The point at row 13 , col 54 is open
-The point at row 13 , col 55 is open
-The point at row 13 , col 56 is open
-The point at row 13 , col 57 is open
-The point at row 13 , col 58 is open
-The point at row 13 , col 59 is open
-The point at row 13 , col 60 is open
-The point at row 13 , col 61 is open
-The point at row 13 , col 62 is open
-The point at row 13 , col 63 is open
-The point at row 13 , col 64 is open
+The point at row 13 , col 48 is room spot
+The point at row 13 , col 49 is room spot
+The point at row 13 , col 50 is room spot
+The point at row 13 , col 51 is room spot
+The point at row 13 , col 52 is room spot
+The point at row 13 , col 53 is room spot
+The point at row 13 , col 54 is passage spot
+The point at row 13 , col 55 is passage spot
+The point at row 13 , col 56 is passage spot
+The point at row 13 , col 57 is passage spot
+The point at row 13 , col 58 is passage spot
+The point at row 13 , col 59 is passage spot
+The point at row 13 , col 60 is passage spot
+The point at row 13 , col 61 is passage spot
+The point at row 13 , col 62 is passage spot
+The point at row 13 , col 63 is passage spot
+The point at row 13 , col 64 is passage spot
 The point at row 13 , col 65 is not open
 The point at row 13 , col 66 is not open
 The point at row 13 , col 67 is not open
@@ -1152,39 +1149,39 @@ The point at row 14 , col 2 is not open
 The point at row 14 , col 3 is not open
 The point at row 14 , col 4 is not open
 The point at row 14 , col 5 is not open
-The point at row 14 , col 6 is open
-The point at row 14 , col 7 is open
-The point at row 14 , col 8 is open
-The point at row 14 , col 9 is open
-The point at row 14 , col 10 is open
-The point at row 14 , col 11 is open
-The point at row 14 , col 12 is open
-The point at row 14 , col 13 is open
-The point at row 14 , col 14 is open
-The point at row 14 , col 15 is open
-The point at row 14 , col 16 is open
-The point at row 14 , col 17 is open
-The point at row 14 , col 18 is open
-The point at row 14 , col 19 is open
-The point at row 14 , col 20 is open
-The point at row 14 , col 21 is open
-The point at row 14 , col 22 is open
-The point at row 14 , col 23 is open
-The point at row 14 , col 24 is open
-The point at row 14 , col 25 is open
-The point at row 14 , col 26 is open
-The point at row 14 , col 27 is open
-The point at row 14 , col 28 is open
-The point at row 14 , col 29 is open
-The point at row 14 , col 30 is open
-The point at row 14 , col 31 is open
-The point at row 14 , col 32 is open
-The point at row 14 , col 33 is open
-The point at row 14 , col 34 is open
-The point at row 14 , col 35 is open
-The point at row 14 , col 36 is open
-The point at row 14 , col 37 is open
-The point at row 14 , col 38 is open
+The point at row 14 , col 6 is passage spot
+The point at row 14 , col 7 is passage spot
+The point at row 14 , col 8 is passage spot
+The point at row 14 , col 9 is passage spot
+The point at row 14 , col 10 is passage spot
+The point at row 14 , col 11 is passage spot
+The point at row 14 , col 12 is passage spot
+The point at row 14 , col 13 is passage spot
+The point at row 14 , col 14 is passage spot
+The point at row 14 , col 15 is passage spot
+The point at row 14 , col 16 is passage spot
+The point at row 14 , col 17 is passage spot
+The point at row 14 , col 18 is passage spot
+The point at row 14 , col 19 is passage spot
+The point at row 14 , col 20 is passage spot
+The point at row 14 , col 21 is passage spot
+The point at row 14 , col 22 is passage spot
+The point at row 14 , col 23 is passage spot
+The point at row 14 , col 24 is passage spot
+The point at row 14 , col 25 is passage spot
+The point at row 14 , col 26 is passage spot
+The point at row 14 , col 27 is passage spot
+The point at row 14 , col 28 is passage spot
+The point at row 14 , col 29 is passage spot
+The point at row 14 , col 30 is passage spot
+The point at row 14 , col 31 is passage spot
+The point at row 14 , col 32 is passage spot
+The point at row 14 , col 33 is passage spot
+The point at row 14 , col 34 is passage spot
+The point at row 14 , col 35 is passage spot
+The point at row 14 , col 36 is passage spot
+The point at row 14 , col 37 is passage spot
+The point at row 14 , col 38 is passage spot
 The point at row 14 , col 39 is not open
 The point at row 14 , col 40 is not open
 The point at row 14 , col 41 is not open
@@ -1194,23 +1191,23 @@ The point at row 14 , col 44 is not open
 The point at row 14 , col 45 is not open
 The point at row 14 , col 46 is not open
 The point at row 14 , col 47 is not open
-The point at row 14 , col 48 is open
+The point at row 14 , col 48 is room spot
 The point at row 14 , col 49 is not open
 The point at row 14 , col 50 is not open
 The point at row 14 , col 51 is not open
 The point at row 14 , col 52 is not open
 The point at row 14 , col 53 is not open
-The point at row 14 , col 54 is open
-The point at row 14 , col 55 is open
-The point at row 14 , col 56 is open
-The point at row 14 , col 57 is open
-The point at row 14 , col 58 is open
-The point at row 14 , col 59 is open
-The point at row 14 , col 60 is open
-The point at row 14 , col 61 is open
-The point at row 14 , col 62 is open
-The point at row 14 , col 63 is open
-The point at row 14 , col 64 is open
+The point at row 14 , col 54 is passage spot
+The point at row 14 , col 55 is passage spot
+The point at row 14 , col 56 is passage spot
+The point at row 14 , col 57 is passage spot
+The point at row 14 , col 58 is passage spot
+The point at row 14 , col 59 is passage spot
+The point at row 14 , col 60 is passage spot
+The point at row 14 , col 61 is passage spot
+The point at row 14 , col 62 is passage spot
+The point at row 14 , col 63 is passage spot
+The point at row 14 , col 64 is passage spot
 The point at row 14 , col 65 is not open
 The point at row 14 , col 66 is not open
 The point at row 14 , col 67 is not open
@@ -1231,12 +1228,12 @@ The point at row 15 , col 2 is not open
 The point at row 15 , col 3 is not open
 The point at row 15 , col 4 is not open
 The point at row 15 , col 5 is not open
-The point at row 15 , col 6 is open
-The point at row 15 , col 7 is open
-The point at row 15 , col 8 is open
-The point at row 15 , col 9 is open
-The point at row 15 , col 10 is open
-The point at row 15 , col 11 is open
+The point at row 15 , col 6 is passage spot
+The point at row 15 , col 7 is passage spot
+The point at row 15 , col 8 is passage spot
+The point at row 15 , col 9 is passage spot
+The point at row 15 , col 10 is passage spot
+The point at row 15 , col 11 is passage spot
 The point at row 15 , col 12 is not open
 The point at row 15 , col 13 is not open
 The point at row 15 , col 14 is not open
@@ -1254,16 +1251,16 @@ The point at row 15 , col 25 is not open
 The point at row 15 , col 26 is not open
 The point at row 15 , col 27 is not open
 The point at row 15 , col 28 is not open
-The point at row 15 , col 29 is open
-The point at row 15 , col 30 is open
-The point at row 15 , col 31 is open
-The point at row 15 , col 32 is open
-The point at row 15 , col 33 is open
-The point at row 15 , col 34 is open
-The point at row 15 , col 35 is open
-The point at row 15 , col 36 is open
-The point at row 15 , col 37 is open
-The point at row 15 , col 38 is open
+The point at row 15 , col 29 is passage spot
+The point at row 15 , col 30 is passage spot
+The point at row 15 , col 31 is passage spot
+The point at row 15 , col 32 is passage spot
+The point at row 15 , col 33 is passage spot
+The point at row 15 , col 34 is passage spot
+The point at row 15 , col 35 is passage spot
+The point at row 15 , col 36 is passage spot
+The point at row 15 , col 37 is passage spot
+The point at row 15 , col 38 is passage spot
 The point at row 15 , col 39 is not open
 The point at row 15 , col 40 is not open
 The point at row 15 , col 41 is not open
@@ -1273,23 +1270,23 @@ The point at row 15 , col 44 is not open
 The point at row 15 , col 45 is not open
 The point at row 15 , col 46 is not open
 The point at row 15 , col 47 is not open
-The point at row 15 , col 48 is open
+The point at row 15 , col 48 is room spot
 The point at row 15 , col 49 is not open
 The point at row 15 , col 50 is not open
 The point at row 15 , col 51 is not open
 The point at row 15 , col 52 is not open
 The point at row 15 , col 53 is not open
-The point at row 15 , col 54 is open
-The point at row 15 , col 55 is open
-The point at row 15 , col 56 is open
-The point at row 15 , col 57 is open
-The point at row 15 , col 58 is open
-The point at row 15 , col 59 is open
-The point at row 15 , col 60 is open
-The point at row 15 , col 61 is open
-The point at row 15 , col 62 is open
-The point at row 15 , col 63 is open
-The point at row 15 , col 64 is open
+The point at row 15 , col 54 is passage spot
+The point at row 15 , col 55 is passage spot
+The point at row 15 , col 56 is passage spot
+The point at row 15 , col 57 is passage spot
+The point at row 15 , col 58 is passage spot
+The point at row 15 , col 59 is passage spot
+The point at row 15 , col 60 is passage spot
+The point at row 15 , col 61 is passage spot
+The point at row 15 , col 62 is passage spot
+The point at row 15 , col 63 is passage spot
+The point at row 15 , col 64 is passage spot
 The point at row 15 , col 65 is not open
 The point at row 15 , col 66 is not open
 The point at row 15 , col 67 is not open
@@ -1310,12 +1307,12 @@ The point at row 16 , col 2 is not open
 The point at row 16 , col 3 is not open
 The point at row 16 , col 4 is not open
 The point at row 16 , col 5 is not open
-The point at row 16 , col 6 is open
-The point at row 16 , col 7 is open
-The point at row 16 , col 8 is open
-The point at row 16 , col 9 is open
-The point at row 16 , col 10 is open
-The point at row 16 , col 11 is open
+The point at row 16 , col 6 is passage spot
+The point at row 16 , col 7 is passage spot
+The point at row 16 , col 8 is passage spot
+The point at row 16 , col 9 is passage spot
+The point at row 16 , col 10 is passage spot
+The point at row 16 , col 11 is passage spot
 The point at row 16 , col 12 is not open
 The point at row 16 , col 13 is not open
 The point at row 16 , col 14 is not open
@@ -1333,26 +1330,26 @@ The point at row 16 , col 25 is not open
 The point at row 16 , col 26 is not open
 The point at row 16 , col 27 is not open
 The point at row 16 , col 28 is not open
-The point at row 16 , col 29 is open
-The point at row 16 , col 30 is open
-The point at row 16 , col 31 is open
-The point at row 16 , col 32 is open
-The point at row 16 , col 33 is open
-The point at row 16 , col 34 is open
-The point at row 16 , col 35 is open
-The point at row 16 , col 36 is open
-The point at row 16 , col 37 is open
-The point at row 16 , col 38 is open
-The point at row 16 , col 39 is open
-The point at row 16 , col 40 is open
-The point at row 16 , col 41 is open
-The point at row 16 , col 42 is open
-The point at row 16 , col 43 is open
-The point at row 16 , col 44 is open
-The point at row 16 , col 45 is open
-The point at row 16 , col 46 is open
-The point at row 16 , col 47 is open
-The point at row 16 , col 48 is open
+The point at row 16 , col 29 is passage spot
+The point at row 16 , col 30 is passage spot
+The point at row 16 , col 31 is passage spot
+The point at row 16 , col 32 is passage spot
+The point at row 16 , col 33 is passage spot
+The point at row 16 , col 34 is passage spot
+The point at row 16 , col 35 is passage spot
+The point at row 16 , col 36 is passage spot
+The point at row 16 , col 37 is passage spot
+The point at row 16 , col 38 is passage spot
+The point at row 16 , col 39 is room spot
+The point at row 16 , col 40 is room spot
+The point at row 16 , col 41 is room spot
+The point at row 16 , col 42 is room spot
+The point at row 16 , col 43 is room spot
+The point at row 16 , col 44 is room spot
+The point at row 16 , col 45 is room spot
+The point at row 16 , col 46 is room spot
+The point at row 16 , col 47 is room spot
+The point at row 16 , col 48 is room spot
 The point at row 16 , col 49 is not open
 The point at row 16 , col 50 is not open
 The point at row 16 , col 51 is not open
@@ -1389,12 +1386,12 @@ The point at row 17 , col 2 is not open
 The point at row 17 , col 3 is not open
 The point at row 17 , col 4 is not open
 The point at row 17 , col 5 is not open
-The point at row 17 , col 6 is open
-The point at row 17 , col 7 is open
-The point at row 17 , col 8 is open
-The point at row 17 , col 9 is open
-The point at row 17 , col 10 is open
-The point at row 17 , col 11 is open
+The point at row 17 , col 6 is passage spot
+The point at row 17 , col 7 is passage spot
+The point at row 17 , col 8 is passage spot
+The point at row 17 , col 9 is passage spot
+The point at row 17 , col 10 is passage spot
+The point at row 17 , col 11 is passage spot
 The point at row 17 , col 12 is not open
 The point at row 17 , col 13 is not open
 The point at row 17 , col 14 is not open
@@ -1412,16 +1409,16 @@ The point at row 17 , col 25 is not open
 The point at row 17 , col 26 is not open
 The point at row 17 , col 27 is not open
 The point at row 17 , col 28 is not open
-The point at row 17 , col 29 is open
-The point at row 17 , col 30 is open
-The point at row 17 , col 31 is open
-The point at row 17 , col 32 is open
-The point at row 17 , col 33 is open
-The point at row 17 , col 34 is open
-The point at row 17 , col 35 is open
-The point at row 17 , col 36 is open
-The point at row 17 , col 37 is open
-The point at row 17 , col 38 is open
+The point at row 17 , col 29 is passage spot
+The point at row 17 , col 30 is passage spot
+The point at row 17 , col 31 is passage spot
+The point at row 17 , col 32 is passage spot
+The point at row 17 , col 33 is passage spot
+The point at row 17 , col 34 is passage spot
+The point at row 17 , col 35 is passage spot
+The point at row 17 , col 36 is passage spot
+The point at row 17 , col 37 is passage spot
+The point at row 17 , col 38 is passage spot
 The point at row 17 , col 39 is not open
 The point at row 17 , col 40 is not open
 The point at row 17 , col 41 is not open
@@ -1468,12 +1465,12 @@ The point at row 18 , col 2 is not open
 The point at row 18 , col 3 is not open
 The point at row 18 , col 4 is not open
 The point at row 18 , col 5 is not open
-The point at row 18 , col 6 is open
-The point at row 18 , col 7 is open
-The point at row 18 , col 8 is open
-The point at row 18 , col 9 is open
-The point at row 18 , col 10 is open
-The point at row 18 , col 11 is open
+The point at row 18 , col 6 is passage spot
+The point at row 18 , col 7 is passage spot
+The point at row 18 , col 8 is passage spot
+The point at row 18 , col 9 is passage spot
+The point at row 18 , col 10 is passage spot
+The point at row 18 , col 11 is passage spot
 The point at row 18 , col 12 is not open
 The point at row 18 , col 13 is not open
 The point at row 18 , col 14 is not open
@@ -1491,16 +1488,16 @@ The point at row 18 , col 25 is not open
 The point at row 18 , col 26 is not open
 The point at row 18 , col 27 is not open
 The point at row 18 , col 28 is not open
-The point at row 18 , col 29 is open
-The point at row 18 , col 30 is open
-The point at row 18 , col 31 is open
-The point at row 18 , col 32 is open
-The point at row 18 , col 33 is open
-The point at row 18 , col 34 is open
-The point at row 18 , col 35 is open
-The point at row 18 , col 36 is open
-The point at row 18 , col 37 is open
-The point at row 18 , col 38 is open
+The point at row 18 , col 29 is passage spot
+The point at row 18 , col 30 is passage spot
+The point at row 18 , col 31 is passage spot
+The point at row 18 , col 32 is passage spot
+The point at row 18 , col 33 is passage spot
+The point at row 18 , col 34 is passage spot
+The point at row 18 , col 35 is passage spot
+The point at row 18 , col 36 is passage spot
+The point at row 18 , col 37 is passage spot
+The point at row 18 , col 38 is passage spot
 The point at row 18 , col 39 is not open
 The point at row 18 , col 40 is not open
 The point at row 18 , col 41 is not open
@@ -1547,39 +1544,39 @@ The point at row 19 , col 2 is not open
 The point at row 19 , col 3 is not open
 The point at row 19 , col 4 is not open
 The point at row 19 , col 5 is not open
-The point at row 19 , col 6 is open
-The point at row 19 , col 7 is open
-The point at row 19 , col 8 is open
-The point at row 19 , col 9 is open
-The point at row 19 , col 10 is open
-The point at row 19 , col 11 is open
-The point at row 19 , col 12 is open
-The point at row 19 , col 13 is open
-The point at row 19 , col 14 is open
-The point at row 19 , col 15 is open
-The point at row 19 , col 16 is open
-The point at row 19 , col 17 is open
-The point at row 19 , col 18 is open
-The point at row 19 , col 19 is open
-The point at row 19 , col 20 is open
-The point at row 19 , col 21 is open
-The point at row 19 , col 22 is open
-The point at row 19 , col 23 is open
-The point at row 19 , col 24 is open
-The point at row 19 , col 25 is open
-The point at row 19 , col 26 is open
-The point at row 19 , col 27 is open
-The point at row 19 , col 28 is open
-The point at row 19 , col 29 is open
-The point at row 19 , col 30 is open
-The point at row 19 , col 31 is open
-The point at row 19 , col 32 is open
-The point at row 19 , col 33 is open
-The point at row 19 , col 34 is open
-The point at row 19 , col 35 is open
-The point at row 19 , col 36 is open
-The point at row 19 , col 37 is open
-The point at row 19 , col 38 is open
+The point at row 19 , col 6 is passage spot
+The point at row 19 , col 7 is passage spot
+The point at row 19 , col 8 is passage spot
+The point at row 19 , col 9 is passage spot
+The point at row 19 , col 10 is passage spot
+The point at row 19 , col 11 is passage spot
+The point at row 19 , col 12 is passage spot
+The point at row 19 , col 13 is passage spot
+The point at row 19 , col 14 is passage spot
+The point at row 19 , col 15 is passage spot
+The point at row 19 , col 16 is passage spot
+The point at row 19 , col 17 is passage spot
+The point at row 19 , col 18 is passage spot
+The point at row 19 , col 19 is passage spot
+The point at row 19 , col 20 is passage spot
+The point at row 19 , col 21 is passage spot
+The point at row 19 , col 22 is passage spot
+The point at row 19 , col 23 is passage spot
+The point at row 19 , col 24 is passage spot
+The point at row 19 , col 25 is passage spot
+The point at row 19 , col 26 is passage spot
+The point at row 19 , col 27 is passage spot
+The point at row 19 , col 28 is passage spot
+The point at row 19 , col 29 is passage spot
+The point at row 19 , col 30 is passage spot
+The point at row 19 , col 31 is passage spot
+The point at row 19 , col 32 is passage spot
+The point at row 19 , col 33 is passage spot
+The point at row 19 , col 34 is passage spot
+The point at row 19 , col 35 is passage spot
+The point at row 19 , col 36 is passage spot
+The point at row 19 , col 37 is passage spot
+The point at row 19 , col 38 is passage spot
 The point at row 19 , col 39 is not open
 The point at row 19 , col 40 is not open
 The point at row 19 , col 41 is not open
