@@ -143,14 +143,19 @@ initializeGame(char** argv)
     fprintf(stderr, "Failed to create gold counters. Exiting...\n");
     exit(1);
   }
-  initializeGoldPiles();
-  // counters_print(game->gold, stdout);
+  initializeGoldPiles();      // initialize gold piles by generate random number of gold piles and random number of gold on the grid
   game->addresses = mem_malloc((MaxPlayers + 1) * sizeof(addr_t));
-  game->spectatorAddressID = 0;  // no spectator initially. set to MaxPlayers if spectator connected
+  game->spectatorAddressID = 0;  // no spectator initially. set value MaxPlayers if spectator connected
   game->numPlayers = 0;
 }
 
 /* ***************** buildGrid ********************** */
+/*
+ * Loads the map.txt given by the caller into a grid_t and stores it
+ *
+ * Pseudocode:
+ *   call grid_read from the grid module on the map filename given to server and store in game->grid
+ */
 static void
 buildGrid(grid_t* grid, char** argv)
 {
@@ -159,13 +164,25 @@ buildGrid(grid_t* grid, char** argv)
 }
 
 /* ***************** initializeGoldPiles ********************** */
+/*  
+ * Generates a random number of gold piles and a random number of gold in each pile for the game
+ *
+ * Pseudocode:
+ *  calculate the maximum number of available spots on the grid
+ *  compare the maxAvailableSpots with GoldMaxNumPiles and take the smaller number
+ *  generate a random number of gold piles between GoldMinNumPiles and the smaller number calculated earlier
+ *  create an array with size number of gold piles storing the locations to put the gold piles
+ *  create an array with size number of gold piles storing the random number of gold in each pile summing up to GoldTotal
+ *  loop through number of gold piles generated, setting the location and the gold count in game->gold
+ *   
+ */
 static void
 initializeGoldPiles()
 {
   int cols = grid_getNumberCols(game->grid);
   int rows = grid_getNumberRows(game->grid);
-  int maxAvailableSpots = (rows * cols) - (rows * 2) - (cols * 2);
-  int max = (GoldMaxNumPiles > maxAvailableSpots) ? maxAvailableSpots : GoldMaxNumPiles;
+  int maxAvailableSpots = (rows * cols) - (rows * 2) - (cols * 2);    // generate number of open spots to put gold
+  int max = (GoldMaxNumPiles > maxAvailableSpots) ? maxAvailableSpots : GoldMaxNumPiles;  // get the smaller number of piles
   int numGoldPiles = (rand() % (max - GoldMinNumPiles + 1)) + GoldMinNumPiles;  // generate a value between min and max range of gold piles
   int goldDistributionArray[numGoldPiles];
   int randomLocations[numGoldPiles];
@@ -178,14 +195,23 @@ initializeGoldPiles()
   }
 }
 
-// generate an array of random valid locations on the grid
+/* ***************** generateRandomLocations ********************** */
+/*
+ * Generates an array of random locations on the grid to put the gold piles
+ *
+ * Pseudocode:
+ *   loop through the number of gold piles
+ *      generate a random location
+ *      if location is a valid spot on the grid to put the gold
+ *        if the location is not occupied by gold
+ *            store location
+ */
 static void
 generateRandomLocations(int numGoldPiles, int* arr)
 {
   int nRows = grid_getNumberRows(game->grid);
   int nCols = grid_getNumberCols(game->grid);
   int i = 0;
-  // counters_print(game->gold, stdout);
   while (i < numGoldPiles) {
     int location = rand() % (nRows * nCols);          // get the index in the map
     if (grid_isOpen(game->grid, location)) {          // if it is an available space
@@ -195,13 +221,24 @@ generateRandomLocations(int numGoldPiles, int* arr)
       else {  // if location not occupied by gold
         arr[i] = location;
         i++;
-        counters_set(game->gold, location, 1);
+        counters_set(game->gold, location, 1);        // mark location for having gold piles
       }
     }
   }
 }
 
-// generate an array of random gold amount, summing up to goldTotal
+/* ***************** generateGoldDistribution ********************** */
+/*
+ * Generates an array of random number of gold for each gold pile, summing up to GoldTotal
+ *
+ * Pseudocode:
+ *   Calculate goldRemaining, the max value of gold that can be generated such that each gold pile has at least 1 gold in it.
+ *   loop through the number of gold piles - 1,
+ *      generate a random gold amount
+ *      store the gold amount in the array
+ *      update number of goldRemaining
+ *   allocate the remaining gold unallocated to the last gold pile
+ */
 static void
 generateGoldDistribution(int numGoldPiles, int* arr)
 {
@@ -222,17 +259,25 @@ generateGoldDistribution(int numGoldPiles, int* arr)
 
 /* ***************** parseArgs ********************** */
 /*
- * Builds the inverted-index data structure mapping words to (documentID, count) pairs
- * wherein each count represents the number of occurrences of the given word in the
- * given document. Ignore words with fewer than three characters, and "normalize"
- * the word before indexing.
- *
+ * checks the arguments given by the caller, ensuring that maps.txt is readable and setting the random seed number
+ * if [seed] is provided. Otherwise, generate a random seed using process id.
+ * 
+ * We Return:
+ *    1 if invalid seed given or map.txt given is not readable
+ *    0 if valid map.txt and valid seed (if given)
+ * 
  * Pseudocode:
- *
- *   loops over document ID numbers, counting from 1
- *     loads a webpage from the document file 'pageDirectory/id'
- *     if successful,
- *      passes the webpage and docID to indexPage
+ *    if 2 or 3 arguments provided, including the command itself, 
+ *        if 3 arguments,
+ *           return error code 1 if value is not a positive integer
+ *           srand(value) if it is a positive integer
+ *        else (if 2 arguments),
+ *           srand(getPid())
+ *        check if 2nd argument given is a readable file, returning error code if not readable
+ *        
+ *    else
+ *        print to stderr and return error code
+ *  
  */
 static int
 parseArgs(const int argc, char* argv[])
@@ -286,31 +331,65 @@ isReadable(char* pathName)
 /*
  * Handle all messages passed from the client to the server based on protocol
  * in requirements spec.
+ * 
+ * We return:
+ *  true if ending game and exiting message loop
+ *  false if game still ongoing and should remain in message loop
+ * 
+ * Pseudocode:
+ *    if client sends PLAY:
+ *        call playerJoin to join the player 
+ *        send GOLD message to all clients connected
+ *        send DISPLAY message to all clients connected
+ *        update spectator's display
+ *    else if client sends SPECTATE
+ *        call spectatorJoin, initializing the spectator
+ *    else if message starts with "KEY "
+ *        find the player in game->allPlayers
+ *        if character is lower character,
+ *           call player_moverRegular
+ *           if player_moveRegular returns true, it is a valid move and player moves and collects gold accordingly
+ *                if game->numGoldLeft is 0, no more gold in game, end the game and send QUIT message to all clients
+ *                update all clients' GOLD
+ *                update all clients' DISPLAY
+ *                updateSpectatorDisplay
+ *           else, it is an invalid move and server sends message to client informing them that it is invalid
+ *        if character is uppercase,
+ *           if character is Q,
+ *              if it is a player
+ *                  call player_quit
+ *              if it is a spectator
+ *                  set spectatorAddressID to 0, quitting the spectator and marking that no spectator is connected
+ *              send QUIT message to spectator/player
+ *              sendGoldMessage to all clients
+ *              sendDisplayMessage to all clients
+ *              updateSpectatorDisplay
+ *              
+ *           else
+ *              call player_moveCapital
+ *              if player_moveCapital returns true, it is a valid move and player moves and collects gold accordingly
+ *                if game->numGoldLeft is 0, no more gold in game, end the game and send QUIT message to all clients
+ *                   update all clients' GOLD
+ *                   update all clients' DISPLAY
+ *                   updateSpectatorDisplay
+ *               else, it is an invalid move and server sends message to client informing them that it is invalid
  */
 static bool
 handleMessage(void* arg, const addr_t from, const char* message)
 {
-  printf("%s", "here in handle");
-  fflush(stdout);
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
     char* name = mem_malloc(strlen(realName) + 1);
     strcpy(name, realName);
-    playerJoin(name, from);
-    printf("%s", "updating everyone");
-    fflush(stdout);
+    playerJoin(name, from);     // join player
     hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
     hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
     updateSpectatorDisplay();
     mem_free(name);
   }
-
   else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
-    printf("\n%s", "CALLING SPECTATOR JOIN!!");
-    fflush(stdout);
     spectatorJoin(&from);
   }
-
   else if (strncmp(message, "KEY ", strlen("KEY ")) == 0) {
     char move = message[strlen("KEY ")];
     // if message is a character
@@ -324,7 +403,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
         // player was successfully moved
         if (*game->numGoldLeft == 0) {  // if no more gold left
           endGame();                    // end game, send summary to all players, delete players
-          return true;
+          return true;                  // stay in message loop
         }
         // update gold and play displays whenever a keystroke is pressed
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
@@ -355,7 +434,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
         else {
           if (*game->numGoldLeft == 0) {  // if no more gold left
             endGame();                    // end game, send summary to all players, delete players
-            return true;
+            return true;                  // exit message loop
           }
           // update gold and play displays whenever a keystroke is pressed
           hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
@@ -365,10 +444,11 @@ handleMessage(void* arg, const addr_t from, const char* message)
       }
     }
   }
-  return false;  // TODO: should we print an error???
+  return false;  // stay in message loop
 }
 
-static void updateSpectatorDisplay()
+static void 
+updateSpectatorDisplay()
 {
   if (game->spectatorAddressID != 0) {  // if spectator is connected, update spectator's display
 
@@ -383,16 +463,16 @@ static void updateSpectatorDisplay()
     char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
     strcpy(displayMessage, "DISPLAY\n");
     strcat(displayMessage, display);
-    // int* addrID = hashtable_find(game->addrID, game->spectatorAddress);
+
     addr_t specAddr = game->addresses[game->spectatorAddressID];  // get spectator address using its index
-    message_send(specAddr, goldMsg);
+    message_send(specAddr, goldMsg);         // send gold messsage
     message_send(specAddr, displayMessage);  // send display message
 
+    // clear memory space
     set_delete(playerLoc, itemDelete);
     set_delete(spectatorLocations, NULL);
     mem_free(display);
     mem_free(displayMessage);
-    // set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
   }
 }
 
