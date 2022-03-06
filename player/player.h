@@ -1,16 +1,17 @@
-/* 
+/*
  * player.h - header file for CS50 player module
  *
  * The player module stores a structure for a player in the game
- * 
+ *
  * Nitya Agarwala 2022
  */
 
 #ifndef __player_H
 #define __player_H
 
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
+
 #include "../grid/grid.h"
 #include "../libcs50/counters.h"
 #include "../libcs50/file.h"
@@ -28,9 +29,9 @@ typedef struct player player_t;  // opaque to users of the module
 /* Create a new initialized player structure.
  *
  * We return:
- *   pointer to a new player_t; NULL if error. 
+ *   pointer to a new player_t; NULL if error.
  * We guarantee:
- *   playeret is intialized with an ID, random open coordinate, gold at that coordinate and its name 
+ *   playeret is intialized with an ID, random open coordinate, gold at that coordinate and its name
  * Caller is responsible for:
  *   later calling player_delete();
  */
@@ -38,7 +39,7 @@ player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* num
 
 /**************** player_updateCoordinate ****************/
 /* Update the coordinate of a player
- * 
+ *
  * Caller provides:
  *   valid pointer to player (not NULL)
  *   a new coordinate
@@ -91,7 +92,7 @@ bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, gr
 /* Collect gold in new location of there is any
  *
  * Caller provides:
- *   valid pointer to player, 
+ *   valid pointer to player,
  *   pointer to integer number of gold left
  *   pointer to counter with gold
  * We do:
@@ -109,7 +110,7 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 /* if there is another player in that locatin, swap the location
  *
  * Caller provides:
- *   valid pointer to current player, 
+ *   valid pointer to current player,
  *   pointer to hashtable with all player
  *   int of new location player is trying to move to
  * We do:
@@ -134,8 +135,7 @@ bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int new
  *  true if player was found an deleted
  *  false if player was not found
  */
-bool player_quit(const char* address, hashtable_t* allPlayers);
-
+bool player_quit(const char* address, hashtable_t* allPlayers, counters_t* gold, int* numGoldLeft);
 
 /**************** player_locations ****************/
 /* Prepapres a set of (int player location, char player IDs)
@@ -172,7 +172,7 @@ char* player_summary(hashtable_t* allPlayers);
  */
 void player_delete(player_t* player);
 
-#endif // __player_H
+#endif  // __player_H
 
 // Getter method prototypes
 int player_getCurrCoor(player_t* player);

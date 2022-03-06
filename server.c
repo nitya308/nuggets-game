@@ -344,7 +344,10 @@ handleMessage(void* arg, const addr_t from, const char* message)
     else {                // if capital letter
       if (move == 'Q') {  // if Q, tell client to QUIT and remove player from game
         message_send(from, "QUIT Thanks for playing!\n");
-        player_quit(message_stringAddr(from), game->allPlayers);
+        player_quit(message_stringAddr(from), game->allPlayers, game->gold, game->numGoldLeft);
+        hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
+        hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+        updateSpectatorDisplay();
       }
       else {
         if (!player_moveCapital(player, move, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {

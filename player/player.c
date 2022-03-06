@@ -46,7 +46,7 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
 bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
-bool player_quit(const char* address, hashtable_t* allPlayers);
+bool player_quit(const char* address, hashtable_t* allPlayers, counters_t* gold, int* numGoldLeft);
 void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
 set_t* player_locations(hashtable_t* allPlayers);
@@ -225,7 +225,7 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
     }
     else {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
-        if(!player_collectGold(player, numGoldLeft, gold)){
+        if (!player_collectGold(player, numGoldLeft, gold)) {
           player->recentGoldCollected = 0;
         }
         return true;
@@ -333,7 +333,7 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor)
 {
   struct playerSwap args = {currPlayer, newCoor, false};
-  if (allPlayers!= NULL) {
+  if (allPlayers != NULL) {
     hashtable_iterate(allPlayers, &args, swap_helper);
   }
 
@@ -357,12 +357,14 @@ static void swap_helper(void* arg, const char* key, void* item)
 
 /**************** player_quit ****************/
 /* see player.h for description */
-bool player_quit(const char* address, hashtable_t* allPlayers)
+bool player_quit(const char* address, hashtable_t* allPlayers, counters_t* gold, int* numGoldLeft)
 {
   player_t* player = hashtable_find(allPlayers, address);
   if (player == NULL) {
     return false;
   }
+  counters_set(gold, player->currCoor, counters_get(gold, player->currCoor) + player->purse);
+  *numGoldLeft += player->purse;
   player_delete(player);
   player = NULL;
   return true;
