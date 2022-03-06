@@ -77,6 +77,22 @@ int* grid_locationConvert(grid_t* grid, int loc);
  */
 bool grid_isOpen(grid_t* grid, int loc);
 
+/**************** grid_isRoom ****************/
+/* Verify whether a location on a grid is room spot
+ * 
+ * Caller provides:
+ *  pointer to grid_t struct and an integer location
+ * We return:
+ *  true if location points to  passage spot '#' on grid
+ *  false if points to anything else
+ *  false if location or grid invalid
+ * We do:
+ *  Call grid_locationConvert on location and grid
+ *  Compare against the character stored at that location
+ *  in the grid character array
+ */
+bool grid_isRoom(grid_t* grid, int loc);
+
 
 /**************** grid_visible ****************/
 /* Give set of visible locations, gold, players, from a 

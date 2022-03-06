@@ -143,6 +143,27 @@ bool grid_isOpen(grid_t* grid, int loc)
   return false;
 }
 
+/******************grid_isRoom**************/
+/* see grid.h */
+bool grid_isRoom(grid_t* grid, int loc)
+{
+  char passageSpot = '#';
+  int* coordinates = grid_locationConvert(grid, loc);
+  if (coordinates != NULL) {
+    char** carr = grid->map;
+    if (carr[coordinates[0]][coordinates[1]] != passageSpot) {
+      mem_free(coordinates);
+      return false;
+    }
+    else {
+      mem_free(coordinates);
+      return true;
+    }
+  }
+  return false;
+}
+
+
 set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t* gold)
 {
   if (grid_isOpen(grid, loc)) {
