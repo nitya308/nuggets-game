@@ -138,7 +138,6 @@ bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* 
   player->currCoor = newCoor;
   set_t* playerLocations = player_locations(allPlayers);
   set_t* newSeenBefore = grid_updateView(grid, newCoor, player->seenBefore, playerLocations, gold);
-  set_delete(player->seenBefore, NULL);
   player->seenBefore = newSeenBefore;
   set_delete(playerLocations, stringfree);
   return true;
