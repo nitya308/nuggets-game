@@ -12,16 +12,13 @@
 #include "support/message.h"
 
 /**
- * crawler - explores a file starting from the given webpage, and at each page, the
- * crawler retrieves all the links in that page and creates a file with a unique id
- * for it indicating the depth from the original input webpage.
+ * server - handles all game logic and message sent from all the clients for the gold nuggets game
  *
- * usage: ./crawler seedURL pageDirectory maxDepth
- *   where seedURL is an 'internal' directory, to be used as the initial URL,
- *   where pageDirectory is the (existing) directory in which to write downloaded webpages, and
- *   where maxDepth is an integer in range [0..10] indicating the maximum crawl depth.
+ * usage: ./server map.txt [seed]
+ *   where map.txt is the path to a map file for the game
+ *   where seed is the random seed number
  *
- * Assumption: The pageDirectory does not contain any files whose name is an integer (i.e., 1, 2, ...).
+ * Assumption: The map.txt file is a valid map file (see https://github.com/cs50winter2022/nuggets-info/blob/main/REQUIREMENTS.md#valid-maps)
  */
 
 /* *********************************************************************** */
@@ -48,12 +45,12 @@ static void generateGoldDistribution(int numGoldPiles, int* arr);
 static void itemprint(FILE* fp, const char* key, void* item);
 static void playeritemprint(FILE* fp, const char* key, void* item);
 static void setitemprint(FILE* fp, const char* key, void* item);
-/**************** local types ****************/
+
+/**************** global types ****************/
 typedef struct game {
   hashtable_t* allPlayers;
   hashtable_t* addrID;
   addr_t* addresses;  // store all player addresses and an additional slot for spectatorAddress (last slot in array)
-  int tempCount;
   int* numGoldLeft;
   int numPlayers;
   grid_t* grid;
@@ -62,6 +59,7 @@ typedef struct game {
   int port;
 } game_t;
 
+/**************** local variables ****************/
 static game_t* game;                    // game struct storing the state of the game
 static const int MaxPlayers = 26;       // maximum number of players
 static const int GoldTotal = 250;       // amount of gold in the game
@@ -78,8 +76,7 @@ int main(const int argc, char* argv[])
   }
   initializeGame(argv);  // initialize the game with the map
 
-  // play the game
-  // initialize the message module (without logging)
+  // initialize the message module and play the game
   int port;
   if ((port = message_init(stderr)) == 0) {
     fprintf(stderr, "Failed to initialize message module.\n");
@@ -94,7 +91,6 @@ int main(const int argc, char* argv[])
   // shut down the message module
   message_done();
 
-  // todo: handle ok
   if (ok) {
     exit(0);  // successfully ran program
   }
@@ -104,6 +100,20 @@ int main(const int argc, char* argv[])
 }
 
 /* ***************** initializeGame ********************** */
+/*
+ * Initializes the game, allocating memory for the game struct and initialize the variables in it
+ *
+ * Pseudocode:
+ *   allocate memory to game and check if successful
+ *   call buildGrid to create grid_t by loading the map file
+ *   set numGoldLeft
+ *   create the allPlayers hashtable
+ *   create the addrID hashtable that stores the ID to the addresses for each client connected
+ *   create the counters_t for gold that stores (key, count), where key is the location on the grid and count is the number of gold at that locaton
+ *   call initializeGoldPiles to create random gold piles in the map
+ *   allocate memory for addresses that stores an array of all the addr_t of clients
+ *   set spectatorAddressID and numPlayers to 0
+ */
 static void
 initializeGame(char** argv)
 {
@@ -117,19 +127,19 @@ initializeGame(char** argv)
   *(game->numGoldLeft) = GoldTotal;
   game->allPlayers = hashtable_new(MaxPlayers);
   if (game->allPlayers == NULL) {
-    endGame();  // TODO: free the memory
+    endGame();      // end the game and free all memory
     fprintf(stderr, "Failed to create allPlayers hashtable. Exiting...\n");
     exit(1);
   }
   game->addrID = hashtable_new(MaxPlayers);
   if (game->addrID == NULL) {
-    endGame();  // TODO: free the memory
+    endGame();      // end the game and free all memory
     fprintf(stderr, "Failed to create addresses hashtable. Exiting...\n");
     exit(1);
   }
   game->gold = counters_new();
   if (game->gold == NULL) {
-    endGame();  // TODO: free the memory
+    endGame();      // end the game and free all memory
     fprintf(stderr, "Failed to create gold counters. Exiting...\n");
     exit(1);
   }
@@ -138,7 +148,6 @@ initializeGame(char** argv)
   game->addresses = mem_malloc((MaxPlayers + 1) * sizeof(addr_t));
   game->spectatorAddressID = 0;  // no spectator initially. set to MaxPlayers if spectator connected
   game->numPlayers = 0;
-  game->tempCount = 0;
 }
 
 /* ***************** buildGrid ********************** */
