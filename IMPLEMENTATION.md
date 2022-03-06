@@ -507,7 +507,7 @@ bool grid_isOpen(grid_t* grid, int location);
 
 Takes int location input and calculates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec. Returns this set
 ```c
-set_t* grid_isVisible(grid_t* grid, int location);
+set_t* grid_isVisible(grid_t* grid, int location, set_t* playerLocations, counters_t* gold);
 ```
 
 Modifies the player’s seen-before set of locations to include the newly visible portions of the map. Includes gold and other player symbols as items only in the newly visible portion.
@@ -520,23 +520,7 @@ Creates a set of locations and characters to display at that location to represe
 set_t* grid_displaySpectator(grid_t* grid, set_t* playerLocations, counters_t* gold)
 ```
 
-Helper function to merge two sets (taking the union of locations seen before, and adding in any newly visible locations).
-```c
-static void mergeHelper(void* arg, const char* key, void* item)
-```
-
-Helper function to insert gold symbols into set based on the locations in the gold counter.
-```c
-static void insertGold(void* arg, const char* key, void* item)
-```
-
-Helper function to insert other player symbols  into set based on the locations in the set of other players.
-```c
- static void insertPlayers(void* arg, const char* key, void* item)
-
-```
-
-A helper function which takes an integer input, grid number of columns, grid number of rows. Returns 2D location coordinate
+A function which takes an integer input, grid number of columns, grid number of rows. Returns 2D location coordinate
 ```c
 int* grid_locationConvert(grid_t*, int location);
 ```
@@ -561,137 +545,168 @@ Deletes the given grid
 static void grid_delete(grid_t* grid);
 ```
 
+Helper function to merge two sets (taking the union of locations seen before, and adding in any newly visible locations).
+```c
+static void mergeHelper(void* arg, const char* key, void* item)
+```
+
+Helper function to determine whether a given input point is visible or not from a given vantage point in the grid. 
+```c
+static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int colp);
+```
 
 ### Pseudo code for logic/algorithmic flow
 
 #### `grid_read`
-	if file can be opened, assumes valid format for map
-	if file pointer is null
+	if file can be opened (assumes valid format for map)
+		allocate memory for a grid_t*
+			
+		Read a line of the file. 
+		initialize grid's num columns as length of the string returned
+		Read lines until EOF, store num reads as integer height (add 1)
+		initialize grid's num rows as this height
+
+		Initialize empty 2-d array of chars dimensions width, height
+		if NULL
+			print to stderr
+			return NULL
+		while not end of file
+			read file line into a row in the 2-d array.
+			Increment current array row
+	else
 		print to stderr
 		return null
-	Read chars until new line, store num of reads as integer width (add 1) 
-	Read lines until EOF, store num reads as integer height (add 1) 
-	Initialize empty 2-d array of chars dimensions width, height
-	if NULL
-		print to stderr
-		return NULL
-	while not end of file
-		Append the char from file to the current row in the 2-d array
-		if reached newline in file
-			Increment current array row
-	Initialize array element of grid to this array
-	Set grid height and width elements
 
-#### grid_isOpen
-	if null grid or location < 0 or location > height times width
+#### `grid_locationConvert`
+	if grid not null, location >=0, location < grid's num columns * num rows
+		row number is  location/width
+		column number is location%width
+		return 2-element array of these two numbers
+	else
+		return NULL
+
+
+#### `grid_isOpen`
+	if coordinates given by locationConvert on location are null
 		return false;
-	make array of 2 ints by calling grid_locationConvert on the int location.
-	if the appropriate char in grid’s char** array  is a . or # (room spot or passage) 
+	if the coordinates given point to a room or passage spot in 2-d grid char array
 		return true;
 	else
 		return false;
 
-#### grid_isVisible
-	call locationConvert on the input integer
-	if current location is in passage 
-		for all adjacent locations (rownum +-1, col +-1)
-			if the grid character is not space
-				add the location to the set
+#### `grid_isVisible`
+	if grid_isOpen on this location is true
+		initialize set of location keys
+		print the int key to a string literal
+		store an "@" item for that location key 
 
-	if current location is in room spot
-	set small tolerance value 
-	set oncorner boolean to false
+		grid_locationConvert on the int to get observer row, column number
+		for every row, col coordinate in grid
+			if not isBlocked on that coordinate from observer location
+				print that location to string key
+				if counters_get on gold counter for that location is >0
+					insert gold symbol for this string key into set
+				else if set_find on playerLocations set for that location is not NULL
+					insert that player's symbol this string key into set
+				else
+					insert dummy symbol "g" for this location key into the set
 
-	for angles from 0 to 360
-		for radius starting at 0
-			convert to rectangular coordinates	
-
-				if math.floor of coordinate is wall location
-					set oncorner to false
-					Add to visible set
-					Break radius loop
-					
-				else if abs value(polar coordinate - nearest coordinate) < tolerance
-					if nearest coordinate is room spot
-						Add to visible set
-						Increase radius
-					if the nearest coordinate is corner spot
-						Add to visible set
-						Break radius loop
-						set oncorner to true
-
-				if oncorner is true
-					if floor( of coordinate) is corner location
-						break radius loop (corner is treated like wall spot now)
+		return the locations set
+	else
+		return null
 
 
+#### `grid_isBlocked`
+	if observer and point fall on same column
+		iterate from observer's row + or - 1 to the point 
+			if this location is not a room spot
+				return true (meaning input point is blocked)
+		return false (not blocked)
+
+	if same row
+		do above prodecure for rows
+	
+	define a small tolerance value
+	calculate slope between observed point and observer using slope formula
+
+	do the diagonal procedure:
+	define a unit vector for column (just + or -1 based on whether observer columns < or > point's col)
+	iterate from observer's col + unit vector to point's col
+		calculate the row (floating point)
+		if row is exactly on a grid point (within tolerance value)
+			if point is not room spot
+				return true (blockage)
+		if both the int row below and row above aren't room spots
+			return true
+	
+	repeat the diagonal procedure but define row unit vector, iterate through rows, and test the calculated columns (reverse roles of rows and columns)
+
+	return false by default
 
 #### `grid_updateView`
-	If grid, gold counter, player locations set, input set not null, and int input location >=0
-		locationConvert on int location
-	Make set grid_isVisible on current location
-		for location keys in player locations set
-	Convert location to string key
-			if the location (key)  is in visible set (set_find)
-				make corresponding value of isVisible set’s char* the ID (key location)
-		for each location in the gold counter of Game
-			if the location (key)  is in visible set (set_find)
-				insert gold symbol * item for the key location
-		have set item be null by default
-		set_insert the input argument set into this set
+	If grid not null
+		call grid_isVisible on the new location, with grid, players set, gold counter
+		if resulting visible set is not null
+			set_iterate through seen-before set, with visible set as arg, calling mergeHelper
+			set_delete the seen-before set
+			return the visible set
+	return seen-before set
 
-#### insertGold
-	sscanf the string key into an integer key
-	if counters_get the key from the gold counter returns > 0
-		print a gold symbol * to the item (item in newly visible set)
-
-#### insertPlayers
-	if set_find the string key in the players set returns not null
-		insert its return value into the item (item in newly visible set)
-
-#### mergeHelper
+#### `mergeHelper`
 	if set_find the string key (from seen-before) returns null for newly-visible
-		insert the key into newly visible, with dummy char “g” item
+		insert the key into newly visible, with dummy “g” item
 
-#### grid_displaySpectator
-	if grid, gold counter, player locations set all not null,
-		create an empty set of integer keys (locations) and character items
+#### `grid_displaySpectator`
+	if grid is not null,
+		create an empty spectator's set of integer keys (locations) and character items
 		convert integer location to string
-		for each location in playerlocations
-			call set_find with location as key 
-			Replace the value of the returned pointer with playerLocations char ID element.
-		for each key in the gold counter of Game
-			call set_find with location as key 
-			Replace the value of the returned pointer with gold symbol * char
-		return the set
-
-#### `grid_locationConvert`
-	int y coordinate is  location/width;
-	int x coordinate is location%width;
+		for each location in grid
+			if grid_isOpen on location is true
+				call set_find on player locations with location as key 
+				if this returns non null
+					insert the location as key, player symbol as item into spectator set
+				if counters_get on gold counters for this location > 0
+					insert the location as key, gold symbol "*" item into spectator set
+				else
+					insert location key, dummy item "g" into spectator set
+			else
+					insert location key, dummy item "g" into spectator set
+		return spectator's set
+	else
+		return null		
+			
  
 #### `grid_Print`
-	Initialize empty printstring.
-	grid_locationConvert for coordinates
-		make string literal of int for keys into set
-		if the key) is not in the set of visible locations (set_find)
-			append a space “ “ to the printstring. 
-		else if key corresponds to dummy item “g”
-			append the grid character from that location to the printstring
-		else (means set contains special character like gold or player)
-			Append the char stored in the set to the printstring.
-		If int%grid width is 0
-			add a newline character to the printstring
-	return the printstring
+	if grid and input locations set are not null
+		Initialize empty printstring.
+		for every int location in the grid
+			print location int to a string key
+			if set_find key on input set of locations gives null (means not visible)
+				append a space “ “ to the printstring
+			else if key corresponds to dummy item “g” (means visible, ordinary point)
+				append the grid character from that location to the printstring
+			else (means point contains special character like gold or player)
+				Append the char stored in the set to the printstring.
+			If int % grid width is 0
+				add a newline character to the printstring
+		return the printstring
+	else
+		return null
 
 #### `grid_getNumberRows`
-	Gives number of rows in grid
+	if grid not null
+		Gives number of rows in grid
 
 #### `grid_getNumberCols`
-	Gives number of columns in grid
+	if grid not null	
+		Gives number of columns in grid
 
 #### `grid_delete`
-	Free the 2D char array in grid
-		Free the grid
+	if grid not null
+		loop through 2D char array in grid
+			free each 1D string
+		free the char array
+		free the grid
 
 ---
 
@@ -701,7 +716,22 @@ static void grid_delete(grid_t* grid);
 
 Each module will be tested by a unittest class before integrating it with main. 
 For example, for player module, we will create a player, modify its coordinates, try to move it and delete it to make sure there are no memory leaks.
-The grid module will be tested on reading and printing a variety of maps. We will call grid_updateView on locations within the grid to make a running set of seen-before locations, then call grid_print on that set. All the while, we will use pre-made gold locations counter and set of player locations as keys and symbol items. For visibility, we will test the grid_isVisible function by calling it on various int locations within the grid, grid_print the result and seeing whether it conforms to demonstrations.
+
+#### grid module
+The grid module is tested with invalid filename (nonexistent file), for which it gives an error. 
+Then, grid is tested on hole.txt
+Grid reads from file, prints number of rows and columns in grid.
+Display the specator's view of the grid (everything is visible)
+Loop through all locations in grid, call grid_LocationConvert and grid_isOpen, which gives true for room, passage spots, false anywhere else.
+
+Test grid_isOpen on negative locations, locations outside grid array bounds, for which it gives false.
+
+Then, make set of player locations and symbols, counter of gold locations and amounts. Call grid_displaySpectator and grid_print, which gives the grid view but with gold and player symbols. By this test setup, gold and other players could appear in passages.
+
+
+Loop through each of the players in the set, call grid_isVisible and grid_print, displaying each player's limited view with gold and other player symbols. 
+
+Finally, loop through all locations in grid calling grid_updateView and grid_print on that location, which mimics a player moving through the grid and having their seen-before set constantly increased. By this test setup, the view does not increase as the player passes through not-open locations, but in valid locations, player sees other player and gold only in the visible portion of their seen-before set.
 
 ### integration testing
 

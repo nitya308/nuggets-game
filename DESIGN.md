@@ -308,6 +308,7 @@ Handles all functionality to do with the grid and calculates visibility
 9. grid_delete: deletes the grid
 
 
+
 ### Pseudo code for logic/algorithmic flow
 
 #### grid_read
@@ -323,47 +324,52 @@ Handles all functionality to do with the grid and calculates visibility
 	return true if this is an open space.
  
 #### grid_isVisible
-	Takes int location input
-	calulates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec
+	Takes int location input, other player locations and gold locations
+	initializes set of locations
+	for every point in the grid
+		if the point is not blocked by a wall/corner between it and player's vantage point
+		insert the location into set, with player or gold symbol if player or gold is in the location
 	returns this set
 
 #### grid_updateView
-Creates a set of locations and characters to display at that location to represent other players and gold. (Takes set of player locations/symbols, counter of gold locations)
+Creates a set of locations and characters to display at that location to represent other players and gold. (Takes set of player locations/symbols, counter of gold locations, new player location, player's seen before set)
 
-	takes current location
-	create a set of everything visible by calling 	grid_isVisible
-	by default, set stores location key and the char item (from grid, like corner or room symbol)
-	loop over the set of players' locations
-		if player's location is in visible set
-			add the player's char symbol to the set with player ID character
-	for each key (location) in the gold counter of Game
-		if the key (location) is in visible set
-			add the char symbol * to the visible set
-	return the set
+	create a set of everything visible by calling	grid_isVisible
+	for any location in player's seen before set 
+	if location is not in visible set 
+		append it to the visible set, but not the gold or player symbols
+	deletes the seen before set
+	returns the visible set
+	
 
 #### grid_displaySpectator
 Returns whole grid as set, with symbols for players and gold stored as items. (Takes set of player locations/symbols, counter of gold locations)
 
-	create a set of char items (from grid) with all grid locations as keys
-	loop over players set
-		insert the player's symbol into the proper location in the locations set
-	for each key in the gold counter of Game
-		insert the gold symbol * into the proper location in the locations set
+	initialize empty spectator set
+	for every location in grid
+		if location is in player locations set
+			insert the location key and player symbol into spectator set
+		else if location is in counters of gold
+			insert the location key and gold symbol into spectator set
+		else
+			insert location key and dummy item into spectator set
 	return the set
  
 #### grid_locationConvert
-A helper function which takes an integer input, grid number of columns, grid number of rows
+A function which takes an integer input, grid number of columns, grid number of rows
 Turns it into a 2D coordinate on the grid through modulo division
  
 #### grid_print
-Takes set of locations input, null items, save for player and gold symbols (set created by grid_displaySpectator or grid_updateView)
+Takes grid and set of locations input
 	
 	Initialize empty printstring.
 	For each location in the grid
 		if location is not in the set of visible locations
 			add a space “ “ to the printstring. 
-		else 
-			add the char stored in the set to the printstring.
+		else if set stores gold or player symbol for that location
+			add the gold/ player symbol to printstring
+		else
+			add the charcter from the grid array to printstring
 		when the row ends
 			add a newline character to the printstring
 	return the printstring
