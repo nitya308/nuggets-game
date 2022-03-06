@@ -328,7 +328,8 @@ handleMessage(void* arg, const addr_t from, const char* message)
       else {
         // player was successfully moved
         if (*game->numGoldLeft == 0) {  // if no more gold left
-          endGame();                   // end game, send summary to all players, delete players
+          printf("\n %s", "SO numGold is now 0!");
+          endGame();  // end game, send summary to all players, delete players
           return true;
         }
         // update gold and play displays whenever a keystroke is pressed
@@ -336,6 +337,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
         hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
         printf("\n SPECTATOR DISPLAY WAS UPDATED %s", "");
+        fflush(stdout);
         updateSpectatorDisplay();
       }
     }
@@ -352,7 +354,8 @@ handleMessage(void* arg, const addr_t from, const char* message)
         }
         else {
           if (*game->numGoldLeft == 0) {  // if no more gold left
-            endGame();                   // end game, send summary to all players, delete players
+            printf("\n %s", "SO numGold is now 0!");
+            endGame();  // end game, send summary to all players, delete players
             return true;
           }
           // update gold and play displays whenever a keystroke is pressed
@@ -386,6 +389,11 @@ static void updateSpectatorDisplay()
 static void
 endGame()
 {
+  // Update gold and display one final time for all players
+  hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
+  hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+  updateSpectatorDisplay();
+
   char* summary = player_summary(game->allPlayers);
 
   // send quit message with summary to all players
@@ -458,8 +466,9 @@ deletePlayer(void* item)
 static void
 sendEndMessage(void* arg, const char* addr, void* item)
 {
-  char* message = "QUIT GAME OVER:\n";
   char* summary = arg;
+  char* message = malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
+  strcpy(message, "QUIT GAME OVER:\n");
   strcat(message, summary);
   addr_t* addrCast = hashtable_find(game->addresses, addr);
   if (addrCast != NULL && item != NULL) {  // if player still connected, tell client to quit
