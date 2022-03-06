@@ -11,7 +11,7 @@
 #include "mem.h"
 #include "set.h"
 
-#define PI 3.14159265
+#define RADIUS 5
 
 /**************** local types ****************/
 typedef struct grid {
@@ -166,24 +166,29 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
         if (r != coordinates[0] || c != coordinates[1]) {
 
           if (!isBlocked(grid, coordinates[0], coordinates[1], r, c)) {
-            //if not blocked, print the location to string key
-            location = r * (grid->ncols) + c;
-            sprintf(intToStr, "%d", location);
+            if((coordinates[0]-r)*(coordinates[0]-r) + (coordinates[1]-c)*(coordinates[1]-c) 
+                <= RADIUS*RADIUS ){
+              //if distance is less than radius
+              //if not blocked, print the location to string key
+              location = r * (grid->ncols) + c;
+              sprintf(intToStr, "%d", location);
 
-            //insert appropriate symbol into set 
-            //(either player symbol, gold symbol, or dummy "g")
-            if (!grid_isOpen(grid, location)) {
-              set_insert(visible, intToStr, "g");
-            }
-            else if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {
-              set_insert(visible, intToStr, "*");
-            }
-            else if (set_find(playerLocations, intToStr) != NULL) {
-              set_insert(visible, intToStr, set_find(playerLocations, intToStr));
-            }
-            else {
-              set_insert(visible, intToStr, "g");
-            }
+              //insert appropriate symbol into set 
+              //(either player symbol, gold symbol, or dummy "g")
+              if (!grid_isOpen(grid, location)) {
+                set_insert(visible, intToStr, "g");
+              }
+              else if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {
+                set_insert(visible, intToStr, "*");
+              }
+              else if (set_find(playerLocations, intToStr) != NULL) {
+                set_insert(visible, intToStr, set_find(playerLocations, intToStr));
+              }
+              else {
+                set_insert(visible, intToStr, "g");
+              }
+           }
+            
           }
         }
       }
@@ -290,7 +295,7 @@ static void mergeHelper(void* arg, const char* key, void* item)
 {
   set_t* newlyVisible = arg;
   if (set_find(newlyVisible, key) == NULL) {
-    set_insert(newlyVisible, key, NULL);
+    set_insert(newlyVisible, key, "g");
   }
 }
 
