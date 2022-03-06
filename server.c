@@ -135,7 +135,7 @@ initializeGame(char** argv)
   }
   initializeGoldPiles();
   counters_print(game->gold, stdout);
-  game->addresses = malloc(MaxPlayers * sizeof(addr_t));
+  game->addresses = mem_malloc(MaxPlayers * sizeof(addr_t));
   game->spectatorAddressID = 0;  // no spectator initially. set to MaxPlayers if spectator connected
   game->numPlayers = 0;
   game->tempCount = 0;
@@ -285,7 +285,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
   fflush(stdout);
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
-    char* name = malloc(strlen(realName) + 1);
+    char* name = mem_malloc(strlen(realName) + 1);
     strcpy(name, realName);
     playerJoin(name, from);
     printf("%s", "updating everyone");
@@ -293,6 +293,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
     hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
     hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
     updateSpectatorDisplay();
+    mem_free(name);
   }
 
   else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
@@ -383,7 +384,7 @@ static void updateSpectatorDisplay()
   if (game->spectatorAddressID != 0) {  // if spectator is connected, update spectator's display
     printf("\n%s\n", "here spectator is not NULL");
     fflush(stdout);
-    
+
     int buf = 20;
     int goldLen = strlen("GOLD") + buf;
     char goldMsg[goldLen];
@@ -391,13 +392,16 @@ static void updateSpectatorDisplay()
     set_t* playerLoc = player_locations(game->allPlayers);
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
-    char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+    char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
     strcpy(displayMessage, "DISPLAY\n");
     strcat(displayMessage, display);
     // int* addrID = hashtable_find(game->addrID, game->spectatorAddress);
     addr_t specAddr = game->addresses[game->spectatorAddressID];  // get spectator address using its index
-    message_send(specAddr, goldMsg);   
-    message_send(specAddr, displayMessage);                       // send display message
+    message_send(specAddr, goldMsg);
+    message_send(specAddr, displayMessage);  // send display message
+
+    mem_free(display);
+    mem_free(displayMessage);
     // set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
   }
 }
@@ -418,19 +422,23 @@ endGame()
 
   // send quit message with summary to spectator
   if (game->spectatorAddressID != 0) {
-    char* quitSpectatorMessage = malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
+    char* quitSpectatorMessage = mem_malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
     strcpy(quitSpectatorMessage, "QUIT GAME OVER:\n");
     strcat(quitSpectatorMessage, summary);
     // int* addrID = hashtable_find(game->addrID, game->spectatorAddress);
     addr_t specAddr = game->addresses[game->spectatorAddressID];
     message_send(specAddr, quitSpectatorMessage);
+    mem_free(quitSpectatorMessage);
   }
+
+  mem_free(summary);
 
   // free all memory
   hashtable_delete(game->allPlayers, deletePlayer);  // delete every player in hashtable
   hashtable_delete(game->addrID, itemDelete);        // delete all the address ids, freeing the item
   counters_delete(game->gold);
   grid_delete(game->grid);
+  mem_free(game->numGoldLeft);
   mem_free(game->addresses);
   // mem_free(game->spectatorAddress);
   mem_free(game);
@@ -441,7 +449,8 @@ static void
 sendGoldMessage(void* arg, const char* addr, void* item)
 {
   player_t* player = item;
-  int* id = hashtable_find(game->addrID, addr);
+  int* id = NULL;
+  id = hashtable_find(game->addrID, addr);
   if (id != NULL && player != NULL) {  // if address exists and player still in game
     int buffer = 20;
     int goldLength = strlen("GOLD") + buffer;
@@ -470,7 +479,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
     set_print(newSeenBefore, stdout, setitemprint);
 
     char* display = grid_print(game->grid, newSeenBefore);
-    char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+    char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
     strcpy(displayMessage, "DISPLAY\n");
     strcat(displayMessage, display);           // send all locations that player can see and have seen
     message_send(actualAddr, displayMessage);  // send display message
@@ -478,6 +487,9 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
     set_delete(playerLocations, itemDelete);
     set_delete(player_getSeenBefore(player), NULL);
     player_setSeenBefore(player, newSeenBefore);
+
+    mem_free(display);
+    mem_free(displayMessage);
   }
 }
 
@@ -495,7 +507,7 @@ static void
 sendEndMessage(void* arg, const char* addr, void* item)
 {
   char* summary = arg;
-  char* message = malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
+  char* message = mem_malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
   strcpy(message, "QUIT GAME OVER:\n");
   strcat(message, summary);
   int* id = hashtable_find(game->addrID, addr);
@@ -503,6 +515,7 @@ sendEndMessage(void* arg, const char* addr, void* item)
     addr_t actualAddr = game->addresses[*id];
     message_send(actualAddr, message);
   }
+  mem_free(message);
 }
 
 // adapted from message.c
@@ -594,12 +607,16 @@ playerJoin(char* name, const addr_t client)
     hashtable_insert(game->allPlayers, message_stringAddr(client), newPlayer);  // store new player in allPlayers
 
     set_t* playerLocations = player_locations(game->allPlayers);
+    set_t* currSeenBfr = player_getSeenBefore(newPlayer);
+    set_delete(currSeenBfr, NULL);
     player_setSeenBefore(newPlayer, grid_updateView(game->grid, player_getCurrCoor(newPlayer), NULL, playerLocations, game->gold));
 
     message_send(client, okMessage);                   // send the player message
     message_send(client, gridMessage);                 // send grid message
     hashtable_print(game->addrID, stdout, itemprint);  // debug
     (game->numPlayers)++;
+
+    set_delete(playerLocations, itemDelete);    
   }
 }
 
@@ -641,7 +658,7 @@ spectatorJoin(const addr_t* address)
   set_t* playerLoc = player_locations(game->allPlayers);
   set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
   char* display = grid_print(game->grid, spectatorLocations);
-  char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+  char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
   strcpy(displayMessage, "DISPLAY\n");
   strcat(displayMessage, display);
   // int* addrID = hashtable_find(game->addresses, game->spectatorAddress);
@@ -649,7 +666,7 @@ spectatorJoin(const addr_t* address)
   message_send(specAddr, gridMessage);     // send grid message
   message_send(specAddr, goldMessage);     // send gold message
   message_send(specAddr, displayMessage);  // send display message
-  printf("\n%s\n", "sent messages");
+  mem_free(displayMessage);
 
   /*   set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
     set_delete(spectatorLocations, NULL);      */
