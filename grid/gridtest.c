@@ -28,7 +28,7 @@ int main(const int argc, char* argv[])
   }  
 
   //read a small grid file (valid, and assume right format) into a grid structure
-  printf("Reading grid from visdemo.txt...\n");
+  printf("Reading grid from hole.txt...\n");
   grid = grid_read("hole.txt");
   if(grid == NULL){
     fprintf(stderr,"Error reading grid\n");
@@ -91,7 +91,12 @@ int main(const int argc, char* argv[])
   for(int i =0; i< grid_getNumberCols(grid)*grid_getNumberRows(grid); i++){
     coordinates = grid_locationConvert(grid,i);
     if(grid_isOpen(grid, i)){
-      printf("The point at row %d , col %d is open\n", coordinates[0], coordinates[1]);
+      if(grid_isRoom(grid,i)){
+        printf("The point at row %d , col %d is room spot\n", coordinates[0], coordinates[1]);
+      }
+      else{
+        printf("The point at row %d , col %d is passage spot\n", coordinates[0], coordinates[1]);
+      }
     }
     else{
       printf("The point at row %d , col %d is not open\n", coordinates[0], coordinates[1]);
@@ -129,7 +134,7 @@ int main(const int argc, char* argv[])
 
 
   //testing the visiblity feature
-
+  printf("Testing visibility (radius defined 5)\n");
   printf("calculating player A's view\n");
   visible = grid_isVisible(grid,1507,playerLoc,gold);
   printString = grid_print(grid, visible);

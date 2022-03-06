@@ -553,7 +553,6 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
     message_send(actualAddr, displayMessage);  // send display message
 
     set_delete(playerLocations, itemDelete);
-    set_delete(player_getSeenBefore(player), NULL);
     player_setSeenBefore(player, newSeenBefore);
 
     mem_free(display);
