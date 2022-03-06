@@ -322,13 +322,17 @@ handleMessage(void* arg, const addr_t from, const char* message)
         printf("\n%s\n", "in else condition");
         fflush(stdout);
         // player was successfully moved
-        if (game->numGoldLeft == 0) {  // if no more gold left
-          endGame();                   // end game, send summary to all players, delete players
+        if (*game->numGoldLeft == 0) {  // if no more gold left
+          printf("\n %s", "SO numGold is now 0!");
+          endGame();  // end game, send summary to all players, delete players
           return true;
         }
         // update gold and play displays whenever a keystroke is pressed
+        printf("\n UPDATING EVERYONE %s", "");
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
         hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+        printf("\n SPECTATOR DISPLAY WAS UPDATED %s", "");
+        fflush(stdout);
         updateSpectatorDisplay();
       }
     }
@@ -348,10 +352,20 @@ handleMessage(void* arg, const addr_t from, const char* message)
           message_send(from, "ERROR. Invalid keystroke.\n");
         }
         else {
-          if (game->numGoldLeft == 0) {  // if no more gold left
-            endGame();                   // end game, send summary to all players, delete players
+          if (*game->numGoldLeft == 0) {  // if no more gold left
+            printf("\n %s", "SO numGold is now 0!");
+            endGame();  // end game, send summary to all players, delete players
             return true;
           }
+<<<<<<< HEAD
+=======
+          // update gold and play displays whenever a keystroke is pressed
+          printf("\n UPDATING EVERYONE %s", "");
+          hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
+          hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+          printf("\n SPECTATOR DISPLAY WAS UPDATED %s", "");
+          updateSpectatorDisplay();
+>>>>>>> dev
         }
       }
       // update gold and play displays whenever a keystroke is pressed
@@ -387,6 +401,11 @@ static void updateSpectatorDisplay()
 static void
 endGame()
 {
+  // Update gold and display one final time for all players
+  hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
+  hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
+  updateSpectatorDisplay();
+
   char* summary = player_summary(game->allPlayers);
 
   // send quit message with summary to all players
@@ -458,8 +477,9 @@ deletePlayer(void* item)
 static void
 sendEndMessage(void* arg, const char* addr, void* item)
 {
-  char* message = "QUIT GAME OVER:\n";
   char* summary = arg;
+  char* message = malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
+  strcpy(message, "QUIT GAME OVER:\n");
   strcat(message, summary);
   int* id = hashtable_find(game->addrID, addr);
   if (id != NULL && item != NULL) {  // if player still connected, tell client to quit
