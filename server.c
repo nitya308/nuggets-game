@@ -447,6 +447,16 @@ handleMessage(void* arg, const addr_t from, const char* message)
   return false;  // stay in message loop
 }
 
+/* ***************** updateSpectatorDisplay ********************** */
+/* Updates the spectator's display if the spectator exists
+ * 
+ * Pseudocode:
+ *   if spectator is connected
+ *      create a gold message
+ *      create a display message
+ *      send gold and display message to the spectator
+ *   free all unused memory
+ */
 static void 
 updateSpectatorDisplay()
 {
@@ -476,7 +486,18 @@ updateSpectatorDisplay()
   }
 }
 
-// end the game, sending quit messages to all connnected clients and freeing all game memory
+/* ***************** endGame ********************** */
+/* Ends the game and send GOLD, DISPLAY, and QUIT messages to all clients
+ * 
+ * Pseudocode:
+ *   send GOLD messsage to all players
+ *   send DISPLAY message to all players
+ *   updateSpectatorDisplay
+ *   call player_summary and send end message to all players with the summary
+ *   if spectator is connected
+ *      send quit message to spectator
+ *   free all unused memory, deleting allPlayers, addrID, gold, grid, addresses, numGoldLeft and game.
+ */
 static void
 endGame()
 {
@@ -510,7 +531,6 @@ endGame()
   grid_delete(game->grid);
   mem_free(game->numGoldLeft);
   mem_free(game->addresses);
-  // mem_free(game->spectatorAddress);
   mem_free(game);
 }
 
@@ -553,6 +573,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
     message_send(actualAddr, displayMessage);  // send display message
 
     set_delete(playerLocations, itemDelete);
+    set_delete(player_getSeenBefore(player), NULL);
     player_setSeenBefore(player, newSeenBefore);
 
     mem_free(display);
