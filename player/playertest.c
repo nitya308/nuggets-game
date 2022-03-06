@@ -11,8 +11,10 @@
 #include "../libcs50/file.h"
 #include "player.h"
 
+// static function prototypes
 void itemPrint(FILE* fp, const char* key, void* item);
 void freeString(void* item);
+void deletePlayer(void* item);
 
 /* **************************************** */
 int main()
@@ -109,15 +111,27 @@ int main()
   set_delete(allLocations, NULL);
   counters_delete(gold);
   grid_delete(grid);
-  hashtable_delete(allPlayers, player_delete);
+  hashtable_delete(allPlayers, deletePlayer);
   exit(0);
 }
 
+/******** delete_player *********/
+/* deletes each player in a hashtable */
+void deletePlayer(void* item)
+{
+  player_t* player = item;
+  player_delete(player);
+}
+
+/******** itemPrint *********/
+/* prints each location and player in a set */
 void itemPrint(FILE* fp, const char* key, void* item)
 {
   fprintf(fp, " location:%s player:%s ", key, (char*)item);
 }
 
+/******** freeString *********/
+/* free character pointer item in a set */
 void freeString(void* item){
   if (item!=NULL) {
     free(item);

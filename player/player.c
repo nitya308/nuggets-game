@@ -225,7 +225,9 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
     }
     else {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
-        player_collectGold(player, numGoldLeft, gold);
+        if(!player_collectGold(player, numGoldLeft, gold)){
+          player->recentGoldCollected = 0;
+        }
         return true;
       }
       else {
@@ -303,7 +305,9 @@ bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, gr
     }
     else {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
-        player_collectGold(player, numGoldLeft, gold);
+        if (!player_collectGold(player, numGoldLeft, gold)) {
+          player->recentGoldCollected = 0;
+        }
       }
     }
   }
