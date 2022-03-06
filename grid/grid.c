@@ -188,7 +188,6 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
                 set_insert(visible, intToStr, "g");
               }
            }
-            
           }
         }
       }
@@ -283,7 +282,6 @@ set_t* grid_updateView(grid_t* grid, int newloc,
     set_t* visible = grid_isVisible(grid, newloc, playerLocations, gold);
     if (visible != NULL) {
       set_iterate(seenBefore, visible, mergeHelper);
-      // TODO: Make sure we delete seenBfr
       set_delete(seenBefore,NULL);
       return visible;
     }
