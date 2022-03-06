@@ -10,9 +10,8 @@
 #include "file.h"
 #include "mem.h"
 #include "set.h"
-#include "grid.h"
 
-#define PI 3.14159265
+#define RADIUS 5
 
 /**************** local types ****************/
 typedef struct grid {
@@ -44,6 +43,8 @@ static void mergeHelper(void* arg, const char* key, void* item);
  *  if line is clear, then returns false. grid_visible calls this
  *  on each point in the grid, to determine whether to add to visible
  *  set.
+ *  Passage spots block other spots. 
+ *  All points directly adjacent to observer are by default not blocked.
  */
 static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int colp);
 
@@ -142,17 +143,15 @@ bool grid_isOpen(grid_t* grid, int loc)
   return false;
 }
 
-/******************grid_isOpen**************/
+/******************grid_isRoom**************/
 /* see grid.h */
 bool grid_isRoom(grid_t* grid, int loc)
 {
-  char roomSpot = '.';
   char passageSpot = '#';
   int* coordinates = grid_locationConvert(grid, loc);
   if (coordinates != NULL) {
     char** carr = grid->map;
-    if (carr[coordinates[0]][coordinates[1]] != roomSpot &&
-        carr[coordinates[0]][coordinates[1]] != passageSpot) {
+    if (carr[coordinates[0]][coordinates[1]] != passageSpot) {
       mem_free(coordinates);
       return false;
     }
@@ -181,25 +180,34 @@ set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t*
     int location;
     int* coordinates = grid_locationConvert(grid, loc);
 
+    //loop through every location in grid to see if it is blocked (invisible)
     for (int r = 0; r < grid->nrows; r++) {
       for (int c = 0; c < grid->ncols; c++) {
         if (r != coordinates[0] || c != coordinates[1]) {
-          if (!isBlocked(grid, coordinates[0], coordinates[1], r, c)) {
-            location = r * (grid->ncols) + c;
-            sprintf(intToStr, "%d", location);
-            if (!grid_isOpen(grid, location)) {
-              set_insert(visible, intToStr, "g");
-            }
 
-            if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {
-              set_insert(visible, intToStr, "*");
-            }
-            else if (set_find(playerLocations, intToStr) != NULL) {
-              set_insert(visible, intToStr, set_find(playerLocations, intToStr));
-            }
-            else {
-              set_insert(visible, intToStr, "g");
-            }
+          if (!isBlocked(grid, coordinates[0], coordinates[1], r, c)) {
+            if((coordinates[0]-r)*(coordinates[0]-r) + (coordinates[1]-c)*(coordinates[1]-c) 
+                <= RADIUS*RADIUS ){
+              //if distance is less than radius
+              //if not blocked, print the location to string key
+              location = r * (grid->ncols) + c;
+              sprintf(intToStr, "%d", location);
+
+              //insert appropriate symbol into set 
+              //(either player symbol, gold symbol, or dummy "g")
+              if (!grid_isOpen(grid, location)) {
+                set_insert(visible, intToStr, "g");
+              }
+              else if (counters_get(gold, location) > 0 && counters_get(gold, location) != 251) {
+                set_insert(visible, intToStr, "*");
+              }
+              else if (set_find(playerLocations, intToStr) != NULL) {
+                set_insert(visible, intToStr, set_find(playerLocations, intToStr));
+              }
+              else {
+                set_insert(visible, intToStr, "g");
+              }
+           }
           }
         }
       }
@@ -216,39 +224,60 @@ static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int 
   char** carr = grid->map;
   double roundError = 0.000000000001;
   char roomSpot = '.';
+  int unitVec;
 
+  //if observer and point in same column, iterate from observer to point
+  // if runs into any non-room spot, determines point as blocked
   if (colObsrvr == colp) {
-    for (int r = rowObsrvr + (rowp - rowObsrvr) / abs(rowp - rowObsrvr); r != rowp; r += (rowp - rowObsrvr) / abs(rowp - rowObsrvr)) {
+    unitVec = (rowp - rowObsrvr)/abs(rowp - rowObsrvr);
+    for (int r = rowObsrvr + unitVec; r != rowp; r += unitVec) {
       if (carr[r][colp] != roomSpot) {
         return true;
       }
     }
     return false;
   }
-
+  //observer and point in same row
   if (rowObsrvr == rowp) {
-    for (int c = colObsrvr + (colp - colObsrvr) / abs(colp - colObsrvr); c != colp; c += (colp - colObsrvr) / abs(colp - colObsrvr)) {
+    unitVec = (colp - colObsrvr)/abs(colp - colObsrvr);
+    for (int c = colObsrvr + unitVec; c != colp; c += unitVec) {
       if (carr[rowp][c] != roomSpot) {
         return true;
       }
     }
     return false;
   }
+
+  //observer and point are diagonally separated
+  //define a slope between the points
   double slope = (double)(rowp - rowObsrvr) / (double)(colp - colObsrvr);
-  for (int c = colObsrvr + (colp - colObsrvr) / abs(colp - colObsrvr); c != colp; c += (colp - colObsrvr) / abs(colp - colObsrvr)) {
+
+  //start at observer, iterate until point
+  //declaring a signed unitVec simplifies two cases into one
+  unitVec = (colp - colObsrvr)/abs(colp - colObsrvr);
+  for (int c = colObsrvr + unitVec; c != colp; c += unitVec) {
     double row = (double)rowObsrvr + (double)(c - colObsrvr) * slope;
     int r1 = (int)row;
     int r2 = r1 + 1;
+    //if line falls exactly on a point (within roundoff error)
+    //and point isn't room spot, this is a blockage
     if ((r1 - row) * (r1 - row) < roundError) {
       if (carr[r1][c] != roomSpot) {
         return true;
       }
     }
+
+    //if line is between two points, and both points aren't room spots,
+    //this blocks the point
     if (carr[r1][c] != roomSpot && carr[r2][c] != roomSpot) {
       return true;
     }
   }
-  for (int r = rowObsrvr + (rowp - rowObsrvr) / abs(rowp - rowObsrvr); r != rowp; r += (rowp - rowObsrvr) / abs(rowp - rowObsrvr)) {
+
+  //repeat this procedure for columns 
+  //(in case the observer and point were only 1 row apart)
+  unitVec = (rowp - rowObsrvr)/abs(rowp - rowObsrvr);
+  for (int r = rowObsrvr + unitVec; r != rowp; r += unitVec) {
     double col = (double)colObsrvr + (double)(r - rowObsrvr) / slope;
     int c1 = (int)col;
     int c2 = c1 + 1;
@@ -395,3 +424,4 @@ void grid_delete(grid_t* grid)
     mem_free(grid);
   }
 }
+
