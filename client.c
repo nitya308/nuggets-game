@@ -170,10 +170,6 @@ static bool handleInput(void* arg)
       strcat(message, str);
       message_send(*serverp, message);
     }
-
-    else {
-      printw("You may not press anything besides Q.\n");
-    }
   }
   return false;
 }
