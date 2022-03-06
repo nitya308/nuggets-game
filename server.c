@@ -134,8 +134,8 @@ initializeGame(char** argv)
     exit(1);
   }
   initializeGoldPiles();
-  counters_print(game->gold, stdout);
-  game->addresses = mem_malloc(MaxPlayers * sizeof(addr_t));
+  // counters_print(game->gold, stdout);
+  game->addresses = mem_malloc((MaxPlayers+1) * sizeof(addr_t));
   game->spectatorAddressID = 0;  // no spectator initially. set to MaxPlayers if spectator connected
   game->numPlayers = 0;
   game->tempCount = 0;
@@ -176,7 +176,7 @@ generateRandomLocations(int numGoldPiles, int* arr)
   int nRows = grid_getNumberRows(game->grid);
   int nCols = grid_getNumberCols(game->grid);
   int i = 0;
-  counters_print(game->gold, stdout);
+  // counters_print(game->gold, stdout);
   while (i < numGoldPiles) {
     int location = rand() % (nRows * nCols);          // get the index in the map
     if (grid_isOpen(game->grid, location)) {          // if it is an available space
@@ -400,6 +400,8 @@ static void updateSpectatorDisplay()
     message_send(specAddr, goldMsg);
     message_send(specAddr, displayMessage);  // send display message
 
+    set_delete(playerLoc, itemDelete);
+    set_delete(spectatorLocations, NULL);
     mem_free(display);
     mem_free(displayMessage);
     // set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
@@ -470,13 +472,13 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
   int* addrID = hashtable_find(game->addrID, addr);
   if (addrID != NULL && player != NULL) {          // if player address exists and player still in game
     addr_t actualAddr = game->addresses[*addrID];  // get player's address
-    hashtable_print(game->allPlayers, stdout, playeritemprint);
+    // hashtable_print(game->allPlayers, stdout, playeritemprint);
 
     set_t* playerLocations = player_locations(game->allPlayers);
     printf("\n%s", "HERE");
 
     set_t* newSeenBefore = grid_updateView(game->grid, player_getCurrCoor(player), player_getSeenBefore(player), playerLocations, game->gold);
-    set_print(newSeenBefore, stdout, setitemprint);
+   // set_print(newSeenBefore, stdout, setitemprint);
 
     char* display = grid_print(game->grid, newSeenBefore);
     char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
@@ -576,7 +578,7 @@ playerJoin(char* name, const addr_t client)
 {
   if (game->numPlayers < MaxPlayers) {
     player_t* newPlayer = player_new(name, game->grid, game->allPlayers, game->numGoldLeft, game->gold, game->numPlayers);
-    player_print(newPlayer);
+    // player_print(newPlayer);
 
     if (game->numGoldLeft == 0) {  // if no more gold left
       printf("%s", "game ending");
@@ -613,10 +615,10 @@ playerJoin(char* name, const addr_t client)
 
     message_send(client, okMessage);                   // send the player message
     message_send(client, gridMessage);                 // send grid message
-    hashtable_print(game->addrID, stdout, itemprint);  // debug
+    // hashtable_print(game->addrID, stdout, itemprint);  // debug
     (game->numPlayers)++;
 
-    set_delete(playerLocations, itemDelete);    
+    set_delete(playerLocations, itemDelete);
   }
 }
 
@@ -666,11 +668,10 @@ spectatorJoin(const addr_t* address)
   message_send(specAddr, gridMessage);     // send grid message
   message_send(specAddr, goldMessage);     // send gold message
   message_send(specAddr, displayMessage);  // send display message
+  mem_free(display);
   mem_free(displayMessage);
-
-  /*   set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
-    set_delete(spectatorLocations, NULL);      */
-  // free spectatorLocations memory
+  set_delete(playerLoc, itemDelete);
+  set_delete(spectatorLocations, NULL);
 }
 
 // delete a name
