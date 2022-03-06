@@ -72,8 +72,6 @@ static void stringfree(void* item);
 /* see player.h for description */
 player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* numGoldLeft, counters_t* gold, int numPlayers)
 {
-  printf("\n%s\n", "INSIDE player_new");
-  fflush(stdout);
   mem_assert(name, "name provided was null");
   mem_assert(grid, "grid provided was null");
   mem_assert(gold, "gold provided was null");
@@ -89,8 +87,6 @@ player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* num
 
   // truncate an over-length real name to MaxNameLength characters
   if (strlen(name) > MaxNameLength) {
-    printf("String was long: %s", pID);
-    fflush(stdout);
     name[MaxNameLength] = '\0';
   }
 
@@ -105,8 +101,6 @@ player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* num
 
   player->name = mem_malloc(strlen(name) + 1);
   if (player->name == NULL) {
-    printf("%s", "player name null");
-    fflush(stdout);
     // error allocating memory for name;
     // cleanup and return error
     mem_free(player);
@@ -127,14 +121,8 @@ player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* num
     player->recentGoldCollected = player->purse;
   }
 
-  printf("PLayer: %s", player->name);
-  player_print(player);
-  fflush(stdout);
-
   player->seenBefore = set_new();
   if (player->seenBefore == NULL) {
-    printf("%s", "seen before null");
-    fflush(stdout);
     // error allocating memory for name;
     // cleanup and return error
     mem_free(player);
@@ -225,7 +213,7 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
     }
     else {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
-        if(!player_collectGold(player, numGoldLeft, gold)){
+        if (!player_collectGold(player, numGoldLeft, gold)) {
           player->recentGoldCollected = 0;
         }
         return true;
@@ -300,10 +288,7 @@ bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, gr
     if (!grid_isOpen(grid, newCoor)) {
       break;
     }
-    if (player_swapLocations(player, allPlayers, newCoor)) {
-      return true;
-    }
-    else {
+    if (!player_swapLocations(player, allPlayers, newCoor)) {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
         if (!player_collectGold(player, numGoldLeft, gold)) {
           player->recentGoldCollected = 0;
@@ -333,7 +318,7 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor)
 {
   struct playerSwap args = {currPlayer, newCoor, false};
-  if (allPlayers!= NULL) {
+  if (allPlayers != NULL) {
     hashtable_iterate(allPlayers, &args, swap_helper);
   }
 
