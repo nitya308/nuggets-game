@@ -147,11 +147,11 @@ bool grid_isOpen(grid_t* grid, int loc)
 /* see grid.h */
 bool grid_isRoom(grid_t* grid, int loc)
 {
-  char passageSpot = '#';
+  char roomSpot = '.';
   int* coordinates = grid_locationConvert(grid, loc);
   if (coordinates != NULL) {
     char** carr = grid->map;
-    if (carr[coordinates[0]][coordinates[1]] != passageSpot) {
+    if (carr[coordinates[0]][coordinates[1]] != roomSpot) {
       mem_free(coordinates);
       return false;
     }

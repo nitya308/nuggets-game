@@ -601,7 +601,7 @@ static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int 
 #### `grid_isRoom`
   if coordinates given by locationConvert on location are null
     return false
-  if the coordinates given point to a room spot in 2-d grid char array
+  if the coordinates given point to a room character in 2-d grid char array
     return true
   else
     return false
