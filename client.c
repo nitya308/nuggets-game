@@ -163,11 +163,17 @@ static bool handleInput(void* arg)
   }
   
   else {
-    // send as message to server
-    char str[2] = {c, '\0'};
-    char message[6] = "KEY ";
-    strcat(message, str);
-    message_send(*serverp, message);
+    // send any other keystroke to server if client is player
+    if (playerAttributes.isPlayer) {
+      char str[2] = {c, '\0'};
+      char message[6] = "KEY ";
+      strcat(message, str);
+      message_send(*serverp, message);
+    }
+
+    else {
+      printw("You may not press anything besides Q.\n");
+    }
   }
   return false;
 }

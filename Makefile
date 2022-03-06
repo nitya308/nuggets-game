@@ -1,9 +1,7 @@
 
 S = support
 L = libcs50
-G = grid
-P = player
-LIBS = -lncurses -lm
+LIBS = -lncurses
 LLIBS = $S/support.a $P/player.a $G/grid.a $L/libcs50-given.a
 
 # add -DAPPEST for functional tracking report
@@ -11,7 +9,7 @@ LLIBS = $S/support.a $P/player.a $G/grid.a $L/libcs50-given.a
 # (and run `make clean; make` whenever you change this)
 FLAGS = # -DAPPTEST # -DMEMTEST
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(TESTING) -I./$L -I./$S -I./$P -I./$G
+CFLAGS = -Wall -pedantic -std=c11 -ggdb $(TESTING) -I./$L -I./$S
 CC = gcc
 MAKE = make
 
@@ -23,24 +21,21 @@ MAKE = make
 all: 
 	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
 	make -C support
-	make -C grid
-	make -C player
-	make server
 	make client
 
 ########### server ##################
 
-server: server.o $(LLIBS)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+# server: server.o $(LLIBS)
+# 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-########### miniclient ##################
+# ########### miniclient ##################
 
-miniclient: miniclient.o message.o log.o
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+# miniclient: miniclient.o message.o log.o
+# 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-# querier source dependencies
-server.o: $S/message.h $S/log.h $L/mem.h $L/file.h $P/player.h $G/grid.h
-miniclient.o: message.h
+# source dependencies
+client.o: $S/message.h $S/log.h $L/mem.h
+# miniclient.o: message.h
 message.o: message.h
 log.o: log.h
 
@@ -54,5 +49,3 @@ clean:
 	rm -f *~
 	rm -f TAGS
 	make -C support clean
-	make -C grid clean
-	make -C player clean
