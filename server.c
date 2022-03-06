@@ -302,39 +302,24 @@ handleMessage(void* arg, const addr_t from, const char* message)
     spectatorJoin(&from);
   }
 
-  else {
-    if (strlen(message) != 1) {
-      return false;
-    }
-    char move = message[0];
+  else if (strncmp(message, "KEY ", strlen("KEY ")) == 0) {
+    char move = message[strlen("KEY ")];
     // if message is a character
-    printf("%s", "in alpha");
-    fflush(stdout);
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
-    printf("%s", "hash found");
-    fflush(stdout);
-    if (islower(move)) {
-      printf("%s", "is lower");
-      fflush(stdout);                                                                                        // lower character
+    if (islower(move)) {                                                                                     // lower character
       if (!player_moveRegular(player, move, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {  // if not valid keystroke given
         fprintf(stderr, "Error. Invalid keystroke %s", message);                                             // invalid input keystroke
         message_send(from, "ERROR. Invalid keystroke.\n");                                                   // invalid input keystroke
       }
       else {
-        printf("\n%s\n", "in else condition");
-        fflush(stdout);
         // player was successfully moved
         if (*game->numGoldLeft == 0) {  // if no more gold left
-          printf("\n %s", "SO numGold is now 0!");
-          endGame();  // end game, send summary to all players, delete players
+          endGame();                    // end game, send summary to all players, delete players
           return true;
         }
         // update gold and play displays whenever a keystroke is pressed
-        printf("\n UPDATING EVERYONE %s", "");
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
         hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
-        printf("\n SPECTATOR DISPLAY WAS UPDATED %s", "");
-        fflush(stdout);
         updateSpectatorDisplay();
       }
     }
@@ -360,15 +345,12 @@ handleMessage(void* arg, const addr_t from, const char* message)
         }
         else {
           if (*game->numGoldLeft == 0) {  // if no more gold left
-            printf("\n %s", "SO numGold is now 0!");
-            endGame();  // end game, send summary to all players, delete players
+            endGame();                    // end game, send summary to all players, delete players
             return true;
           }
           // update gold and play displays whenever a keystroke is pressed
-          printf("\n UPDATING EVERYONE %s", "");
           hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
           hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // send display messages to all players
-          printf("\n SPECTATOR DISPLAY WAS UPDATED %s", "");
           updateSpectatorDisplay();
         }
       }
@@ -379,11 +361,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
 
 static void updateSpectatorDisplay()
 {
-  printf("\n%s\n", "here updating speccc");
-  fflush(stdout);
   if (game->spectatorAddressID != 0) {  // if spectator is connected, update spectator's display
-    printf("\n%s\n", "here spectator is not NULL");
-    fflush(stdout);
 
     // creating gold message
     char goldMsg[50];
