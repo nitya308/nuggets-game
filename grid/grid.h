@@ -77,6 +77,22 @@ int* grid_locationConvert(grid_t* grid, int loc);
  */
 bool grid_isOpen(grid_t* grid, int loc);
 
+/**************** grid_isRoom ****************/
+/* Verify whether a location on a grid is room spot
+ * 
+ * Caller provides:
+ *  pointer to grid_t struct and an integer location
+ * We return:
+ *  true if location points to  passage spot '#' on grid
+ *  false if points to anything else
+ *  false if location or grid invalid
+ * We do:
+ *  Call grid_locationConvert on location and grid
+ *  Compare against the character stored at that location
+ *  in the grid character array
+ */
+bool grid_isRoom(grid_t* grid, int loc);
+
 
 /**************** grid_visible ****************/
 /* Give set of visible locations, gold, players, from a 
@@ -99,7 +115,8 @@ bool grid_isOpen(grid_t* grid, int loc);
  *  Call grid_locationConvert on location and grid
  *  loop through all other locations in the grid
  *  if line of sight to the location is not blocked by
- *  wall or corner, print the integer location to a string
+ *  wall or corner, and location is less than defined radius
+ *  away from the observer, print the integer location to a string
  *  literal, and add it to the set.
  *  For the item, insert "*" if counters_find on the gold
  *  counter returns > 0 for that location, or insert a 
