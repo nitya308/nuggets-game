@@ -500,9 +500,14 @@ Reads from text file stores each char in a 2D array of characters stores the 2D 
 grid_t* grid_read(char* filename);
 ```
 
-Takes int location input and grid structure.finds the location in the grid and states whether it is wall/corner or an open space.
+Takes int location input and grid structure.finds the location in the grid and states whether it is passage/room spot or not.
 ```c
 bool grid_isOpen(grid_t* grid, int location);
+```
+
+Takes int location input and grid structure.finds the location in the grid and states whether it is room spot.
+```c
+bool grid_isRoom(grid_t* grid, int location);
 ```
 
 Takes int location input and calculates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec. Returns this set
@@ -588,11 +593,19 @@ static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int 
 
 #### `grid_isOpen`
 	if coordinates given by locationConvert on location are null
-		return false;
+		return false
 	if the coordinates given point to a room or passage spot in 2-d grid char array
-		return true;
+		return true
 	else
-		return false;
+		return false
+
+#### `grid_isOpen`
+	if coordinates given by locationConvert on location are null
+		return false
+	if the coordinates given point to a room spot in 2-d grid char array
+		return true
+	else
+		return false
 
 #### `grid_isVisible`
 	if grid_isOpen on this location is true

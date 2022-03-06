@@ -297,15 +297,16 @@ Handles all functionality to do with the grid and calculates visibility
 ### Functional decomposition
 
 1. grid_read: initializes the grid from file name
-2. grid_isOpen: verifies whether given location is wall or not
-3. grid_isVisible: gives set of visible locations from viewpoint
-4. grid_updateView: gives visible set from new location + known set, with gold and players symbols in visible part only
-5. grid_displaySpectator: gives set of all locations, with gold and players symbols as chars
-5. grid_print: turns set of locations into formatted string 
-6. grid_locationConvert: converts integer into 2-d coordinates
-7. grid_getNumberRows: gives number of rows in grid
-8. grid_getNumberCols: gives number of cols in grid
-9. grid_delete: deletes the grid
+2. grid_isOpen: verifies whether given location is room/passage or not
+3. grid_isRoom: verifies whether given location is room spot or not
+4. grid_isVisible: gives set of visible locations from viewpoint
+5. grid_updateView: gives visible set from new location + known set, with gold and players symbols in visible part only
+6. grid_displaySpectator: gives set of all locations, with gold and players symbols as chars
+7. grid_print: turns set of locations into formatted string 
+8. grid_locationConvert: converts integer into 2-d coordinates
+9. grid_getNumberRows: gives number of rows in grid
+10. grid_getNumberCols: gives number of cols in grid
+11. grid_delete: deletes the grid
 
 
 
@@ -320,8 +321,15 @@ Handles all functionality to do with the grid and calculates visibility
 	Takes int location input
 	extracts grid from Game data structure
 	finds the location in the grid
-	returns false is this location is a wall
-	return true if this is an open space.
+	return true if this is passage or room
+	else return false
+
+#### grid_isOpen
+	Takes int location input
+	extracts grid from Game data structure
+	finds the location in the grid
+	returns true is this location is room spot
+	else return false
  
 #### grid_isVisible
 	Takes int location input, other player locations and gold locations
