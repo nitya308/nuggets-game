@@ -10,6 +10,7 @@
 #include "file.h"
 #include "mem.h"
 #include "set.h"
+#include "grid.h"
 
 #define PI 3.14159265
 
@@ -141,6 +142,28 @@ bool grid_isOpen(grid_t* grid, int loc)
   return false;
 }
 
+/******************grid_isOpen**************/
+/* see grid.h */
+bool grid_isRoom(grid_t* grid, int loc)
+{
+  char roomSpot = '.';
+  char passageSpot = '#';
+  int* coordinates = grid_locationConvert(grid, loc);
+  if (coordinates != NULL) {
+    char** carr = grid->map;
+    if (carr[coordinates[0]][coordinates[1]] != roomSpot &&
+        carr[coordinates[0]][coordinates[1]] != passageSpot) {
+      mem_free(coordinates);
+      return false;
+    }
+    else {
+      mem_free(coordinates);
+      return true;
+    }
+  }
+  return false;
+}
+
 set_t* grid_isVisible(grid_t* grid, int loc, set_t* playerLocations, counters_t* gold)
 {
   if (grid_isOpen(grid, loc)) {
@@ -250,7 +273,7 @@ set_t* grid_updateView(grid_t* grid, int newloc,
     set_t* visible = grid_isVisible(grid, newloc, playerLocations, gold);
     if (visible != NULL) {
       set_iterate(seenBefore, visible, mergeHelper);
-      // TODO: Make sure we delete seenBfr
+      set_delete(seenBefore,NULL);
       return visible;
     }
   }
@@ -261,7 +284,7 @@ static void mergeHelper(void* arg, const char* key, void* item)
 {
   set_t* newlyVisible = arg;
   if (set_find(newlyVisible, key) == NULL) {
-    set_insert(newlyVisible, key, NULL);
+    set_insert(newlyVisible, key, "g");
   }
 }
 

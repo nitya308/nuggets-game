@@ -29,7 +29,7 @@ int main(const int argc, char* argv[])
 
   //read a small grid file (valid, and assume right format) into a grid structure
   printf("Reading grid from visdemo.txt...\n");
-  grid = grid_read("hole.txt");
+  grid = grid_read("../maps/hole.txt");
   if(grid == NULL){
     fprintf(stderr,"Error reading grid\n");
   }
@@ -168,7 +168,7 @@ int main(const int argc, char* argv[])
   //invalid locations, but its view will not be updated for those
 
   seenbefore = grid_isVisible(grid, 1507, playerLoc, gold);
-  for(int i =1507; i >= 0; i--){
+  for(int i =1507; i >= 1400; i--){
      seenbefore = grid_updateView(grid,i,seenbefore,playerLoc,gold);
      printString = grid_print(grid, seenbefore);
      printf("New player's cumulative view: \n%s\n",printString);
