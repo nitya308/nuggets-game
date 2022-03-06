@@ -383,6 +383,11 @@ static void updateSpectatorDisplay()
   if (game->spectatorAddressID != 0) {  // if spectator is connected, update spectator's display
     printf("\n%s\n", "here spectator is not NULL");
     fflush(stdout);
+    
+    int buf = 20;
+    int goldLen = strlen("GOLD") + buf;
+    char goldMsg[goldLen];
+    snprintf(goldMsg, strlen(goldMsg) + buf, "GOLD 0 0 %d\n", *(game->numGoldLeft));
     set_t* playerLoc = player_locations(game->allPlayers);
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
@@ -391,6 +396,7 @@ static void updateSpectatorDisplay()
     strcat(displayMessage, display);
     // int* addrID = hashtable_find(game->addrID, game->spectatorAddress);
     addr_t specAddr = game->addresses[game->spectatorAddressID];  // get spectator address using its index
+    message_send(specAddr, goldMsg);   
     message_send(specAddr, displayMessage);                       // send display message
     // set_delete(spectatorLocations, itemDelete);             // free spectatorLocations memory
   }
@@ -461,6 +467,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
 
     set_t* newSeenBefore = grid_updateView(game->grid, player_getCurrCoor(player), player_getSeenBefore(player), playerLocations, game->gold);
     set_print(newSeenBefore, stdout, setitemprint);
+
     char* display = grid_print(game->grid, newSeenBefore);
     char* displayMessage = malloc(strlen("DISPLAY\n") + strlen(display) + 1);
     strcpy(displayMessage, "DISPLAY\n");

@@ -225,7 +225,7 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
     }
     else {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
-        if(!player_collectGold(player, numGoldLeft, gold)){
+        if (!player_collectGold(player, numGoldLeft, gold)) {
           player->recentGoldCollected = 0;
         }
         return true;
@@ -300,10 +300,7 @@ bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, gr
     if (!grid_isOpen(grid, newCoor)) {
       break;
     }
-    if (player_swapLocations(player, allPlayers, newCoor)) {
-      return true;
-    }
-    else {
+    if (!player_swapLocations(player, allPlayers, newCoor)) {
       if (player_updateCoordinate(player, allPlayers, grid, gold, newCoor)) {
         if (!player_collectGold(player, numGoldLeft, gold)) {
           player->recentGoldCollected = 0;
@@ -333,7 +330,7 @@ bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold)
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor)
 {
   struct playerSwap args = {currPlayer, newCoor, false};
-  if (allPlayers!= NULL) {
+  if (allPlayers != NULL) {
     hashtable_iterate(allPlayers, &args, swap_helper);
   }
 
