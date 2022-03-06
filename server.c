@@ -327,7 +327,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
       }
       else {
         // player was successfully moved
-        if (game->numGoldLeft == 0) {  // if no more gold left
+        if (*game->numGoldLeft == 0) {  // if no more gold left
           endGame();                   // end game, send summary to all players, delete players
           return true;
         }
@@ -351,7 +351,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
           message_send(from, "ERROR. Invalid keystroke.\n");
         }
         else {
-          if (game->numGoldLeft == 0) {  // if no more gold left
+          if (*game->numGoldLeft == 0) {  // if no more gold left
             endGame();                   // end game, send summary to all players, delete players
             return true;
           }
