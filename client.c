@@ -87,13 +87,13 @@ int main(const int argc, char* argv[])
   }
 
   // Handle messages
-  bool loopResult = message_loop(&server, 0, NULL, handleInput, receiveMessage);
+  message_loop(&server, 0, NULL, handleInput, receiveMessage);
   message_done();
   endwin();
 
   mem_free(playerAttributes.display);
 
-  return loopResult? 0 : 1; // true if success, false if fail
+  return 0; // true if success, false if fail
 }
 
 /**************** parseArgs **********************/
@@ -159,7 +159,6 @@ static bool handleInput(void* arg)
   if (c == 'Q' || c == EOF) {
     // EOF/EOT case: stop looping
     message_send(*serverp, "KEY Q");
-    return true;
   }
   
   else {
@@ -189,9 +188,11 @@ static bool handleInput(void* arg)
  */
 static bool receiveMessage(void* arg, const addr_t from, const char* message)
 {
-  if (strncmp(message, "QUIT", strlen("QUIT")) == 0) {
-    printw(message);
+  fprintf(stderr, "Test");
+  if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
+    const char* quitContent = message + strlen("QUIT ");
     endwin();
+    printf("%s\n", quitContent);
     return true;
   }
 
@@ -216,7 +217,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   }
 
   else if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
-    const char* displayContent = message + strlen("DISPLAY") + 1;
+    const char* displayContent = message + strlen("DISPLAY\n");
     if (playerAttributes.display != NULL) {
       strcpy(playerAttributes.display, displayContent);
     }
