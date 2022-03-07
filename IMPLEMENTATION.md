@@ -1,4 +1,4 @@
-# CS50 Nuggets
+x# CS50 Nuggets
 ## Implementation Spec
 ### add-drop Winter 2022
 
@@ -35,13 +35,12 @@ typedef struct playerAttributes {
 
 ### Definition of function prototypes
 
-A main function, a function to parse the command-line arguments, and a function to receive messages and handle messages.
-The main function calls parseArgs and handles calling the functions of the message module.
+A main function, a function to parse the command-line arguments, and a function to receive messages and handle messages. The main function calls parseArgs and handles calling the functions of the message module. It also sends a message to the server depending on whether the client is a player or spectator.
 ```c
-static int main(const int argc, char* argv[]);
+int main(const int argc, char* argv[]);
 ```
 
-This function validates the command-line arguments, printing to stderr if any errors are encountered, and sends a message to the server depending on whether the client is a player or spectator.
+This function validates the command-line arguments, printing to stderr if any errors are encountered
 ```c
 static void parseArgs(const int argc, char* argv[]);
 ```
@@ -51,8 +50,7 @@ This function performs error checks, reads from stdin, and calls message_send wi
 static bool handleInput(void* arg);
 ```
 
-This function handles the bulk of the logic when receiving messages such as ‘QUIT’, ‘GOLD’, ‘OK’, ‘DISPLAY’,  ‘GRID’, and ‘ERROR’.
-
+This function handles the bulk of the logic when receiving messages such as ‘QUIT’, ‘GOLD’, ‘OK’, ‘DISPLAY’,  ‘GRID’, and ‘ERROR’, or any other type of message.
 ```c
 static bool receiveMessage(void* arg, const addr_t from, const char* message);
 ```
@@ -67,27 +65,27 @@ static void checkDisplay(int nrow, int ncol);
 #### `main`:
 	call parseArgs on argc and argv
 	if message_init(NULL) is 0
-	exit w/ non-zero int
+		exit w/ non-zero int
 	initialize address type for server
 	call message_setAddr using argv[1] and argv[2] and address, check if returns false
 		print to stderr and exit w/ non-zero status
+	if playerName was received in command-line
+		set playerAttributes.isPlayer to true
+		send play message to server
+	else
+		set playerAttributes.isPlayer to false
+		send spectate message to server
 	set bool variable to what calling message_loop returns
 	call message_done()
 	call endwin()
+free display
 	return 0
 
 #### `parseArgs`:
-	if argc is < 3 or argc > 4
+	if argc is not 3 or 4
 		print to stderr that there are an invalid number of args and exit
 	if argv[1] or argv[2] is NULL
 		print to stderr that the hostname or port is invalid and exit
-	if argc is 4 and argv[3] is not NULL
-		set playerAttributes➞isPlayer to true
-		call message_send to server for `PLAY argv[3]`
-	else
-		set playerAttributes➞isPlayer to false
-	call message_send to server for `SPECTATE`
-	
 
 #### `handleInput`
 	set server address type to arg from param
@@ -98,47 +96,48 @@ static void checkDisplay(int nrow, int ncol);
 		print to stderr
 		return true
 	get character c from stdin
-	if c is EOF or EOT
-		call message_send with quit message
+	if c is Q or EOF
+		call message_send with KEY Q
 	else
-		call message_send with the inputted character
+		if client is player
+			call message_send with the inputted character
 	return false
 
 #### `receiveMessage`:
 	if first word of message is QUIT 
 		endwin()
-	print explanation line
+		print appropriate quit message
 		return true
-	if first word of message is GOLD
+	else if first word of message is GOLD
 		scan message for n p r
-		set playerAttributes➞goldCollected to n
-		set playerAttributes➞purse to p
-		set playerAttributes➞numGoldLeft to r
-	if first word of message is GRID
+		set playerAttributes.goldCollected to n
+		set playerAttributes.purse to p
+		set playerAttributes.numGoldLeft to r
+	else if first word of message is GRID
 		scan nrows and ncols from input
 		call checkDisplay(nrows, ncols)
-	if first word of message is OK
-		set playerAttributes➞playerID to input
-	if first word of message is DISPLAY
-		set playerAttributes➞display to input
+	else if first word of message is OK
+		set playerAttributes.playerID to input
+	else if first word of message is DISPLAY
+		set to formatted input to new string variable
+		if playerAttributes.display isn’t NULL
+			strcpy the string variable into display
 		call clear() from ncurses
-		if playerAttributes➞isPlayer
-			if playerAttributes➞goldCollected is 0
-				print appropriate message if gold picked up
-			else
+		if playerAttributes.isPlayer
+			if playerAttributes.goldCollected is 0
 				print appropriate message
+			else
+				print appropriate message w/ gold picked up
 		else
 			print appropriate message for spectator
-		print playerAttributes➞display
+		print display
 		call refresh() from ncurses
-	if first word of message is ERROR
+	else if first word of message is ERROR
 		print message to stderr
 		clear()
-		if playerAttributes➞isPlayer
-			print appropriate message
-		else
-			print appropriate message
-		print playerAttributes➞display
+		if playerAttributes.isPlayer
+			print appropriate message about invalid move
+		print playerAttributes.display
 		call refresh() from ncurses
 	else
 		print to stderr that message has bad format
@@ -149,11 +148,12 @@ static void checkDisplay(int nrow, int ncol);
 	call cbreak()
 	call noecho()
 	initialize row and col variables
-	set playerAttributes➞display to mem_malloc_assert(65507)
+	malloc memory for display the size of the max message length
 	call getmaxyx(stdscr, row, col) from ncurses
 	while row < nrow + 1 or col < ncol + 1
 		printw prompting user to increase window size and click enter
-		call getch() to check for new line character
+		while getch() doesn’t return a new line character
+			continue
 		call getmaxyx(stdscr, row, col)
 
 ---
@@ -165,138 +165,315 @@ static void checkDisplay(int nrow, int ncol);
 #### `allPlayers`:
 This is a hashtable (from libscs50 data structures) that stores all the players in the game. The key of the hashtable is a string representation of the player's address. The item is a player_t struct as defined in the player module.
 
+#### `addrID`:
+This is a hashtable (from libscs50 data structures) that maps (char* address, address index in `addresses`), where the address index is the index at which `addresses` store the actual addr_t of the address.
+
 #### `addresses`:
-This is a hashtable (from libscs50 data structures) that stores the string representation of the player's address as the key and the actual address as the item.
+This is an array of size MaxPlayers + 1 which stores all the addr_t of clients that have joined the game.
+Note: The last slot of `addresses` addresses[MaxPlayers] is a slot reserved for spectator's address.
+
+#### `grid`:
+This is the grid_t struct. Refer to `grid.h` for more information.
+
+#### `gold`:
+This is a counters (from libcs50 data structures) that maps (int location, gold at that location). It stores the locations of all the gold pile and the gold value in that pile.
 
 #### `game`:
 This holds all the information about the game:
-typedef struct game {
+
+struct game {
   hashtable_t* allPlayers;
-  hashtable_t* addresses;
-  int numGoldLeft;
+  hashtable_t* addrID;
+  addr_t* addresses;
+  int* numGoldLeft;
   int numPlayers;
   grid_t* grid;
   counters_t* gold;
-  address_t* spectatorAddress;
-} game_t;
+  int spectatorAddressID;
+  int port;
+}
 
 ### Definition of function prototypes
 
-A function to parse the command-line arguments, initialize the game struct and initialize the message module.
+This function validates the command-line arguments, printing to stderr if any errors are encountered, and sends a message to the server depending on whether the client is a player or spectator.
 ```c
 static int parseArgs(const int argc, char* argv[]);
 ```
 
-Do the initial setup for the game, pass seed if it exists, call function to build the grid, drop random Gold piles in random rooms, initialize the 'message' module, initialize the network and announce the port number and call message_loop(), to await clients
+This function performs error checks, reads from stdin, and calls message_send with the appropriate messages.
 ```c
-static void initializeGame(char* argv);
+static bool handleInput(void* arg);
 ```
 
-Handles all messages from client by comparing first word of message to known types of messages and then calling the appropriate modules to handle the message. Deals with bad messages by printing error. 
+This function handles all messages passed from the client to the server based on protocol in [requirements spec](https://github.com/cs50winter2022/nuggets-info/blob/main/REQUIREMENTS.md#network-protocol).
 ```c
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 ```
 
-Allows a new player to join if number of players is less than maxPlayers. Calls player module to create a new player and saves the player in the hashtable of all players.
+This is a function to check if the given file path name is readable.
 ```c
-static void playerJoin(char* name, hashtable_t* allPlayers, hashtable_t* addresses, addr_t* client, grid_t* grid, int* numPlayers)
+static bool isReadable(char* pathName);
 ```
 
-Allows a new spectator to join. If an existing spectator exists, kicks it out and replaces it with the new one.
+This function initializes new player to game to the game, sending OK, GRID message to the player
 ```c
-static void spectatorJoin(addr_t* address);
+static bool playerJoin(char* name, const addr_t client);
 ```
 
-Function to free all memory and delete each player in the game along with both hashtables used by server and the gold counter.
+This function checks if a given string is only filled with spaces
 ```c
-static void gameDelete();
+static bool isEmpty(const char* name);
 ```
 
-Helper function to iterate over hashtable and send a quit message to each player
+This function adds a spectator to the server. If there is already an existing spectator, QUIT the existing spectator and update spectator address. Send GRID, GOLD, DISPLAY message to new spectator.
 ```c
-static void sendQuit(void* arg, const char* addr, void* item);
+static void spectatorJoin(const addr_t* address);
 ```
+
+This function loads the map.txt given by the caller into a grid_t and stores it
+```c
+static void buildGrid(grid_t* grid, char** argv);
+```
+
+This function ends the game and send GOLD, DISPLAY, and QUIT messages to all clients.
+```c
+static void endGame();
+```
+
+This function is called in hashtable_delete for game->allPlayers and deletes the player, freeing up memory.
+```c
+static void deletePlayer(void* item);
+```
+
+This function deletes the item in the set
+```c
+static void itemDelete(void* item);
+```
+
+This function is called in hashtable_iterate, sending DISPLAY message with the grid to players.
+```c
+static void sendDisplayMessage(void* arg, const char* addr, void* item);
+```
+
+This function is called by hashtable_iterate and sends GOLD message to player, telling them the gold they recently collected, the gold in their purse, and the remaining gold in game.
+```c
+static void sendGoldMessage(void* arg, const char* addr, void* item);
+```
+
+This function is called by hashtable_iterate and sends QUIT GAME OVER message to clients
+```c
+static void sendEndMessage(void* arg, const char* addr, void* item);
+```
+
+This function updates the spectator's display if the spectator exists.
+```c
+static void updateSpectatorDisplay();
+```
+
+This function initializes the game, allocating memory for the game struct and initialize the variables in it.
+```c
+static void initializeGame(char** argv);
+```
+
+This function generates a random number of gold piles and a random number of gold in each pile for the game.
+```c
+static void initializeGoldPiles();
+```
+
+This function generates an array of random locations on the grid to put the gold piles.
+```c
+static void generateRandomLocations(int numGoldPiles, int* arr);
+```
+
+This function generates an array of random number of gold for each gold pile, summing up to GoldTotal
+```c
+static void generateGoldDistribution(int numGoldPiles, int* arr);
+```
+
 
 ### Detailed pseudo code
 
 #### `main`:
-  call parseArgs
-  initialize the 'message' module
+	call parseArgs
+	if parseArgs returns exit code 1, exit server
+	else, initialize the game by calling initializeGame.
+	initialize the 'message' module
 	initialize the network and announce the port number
 	call message_loop(), to await clients
-  exit with 0 code
+	exit with 0 code
 
 #### `parseArgs`:
-	validate commandline
-	verify map file can be opened for reading
-	if seed provided
-		verify it is a valid seed number
-		seed the random-number generator with that seed
+	if 2 or 3 arguments provided, including the command itself,
+		if 3 arguments,
+			return error code 1 if value is not a positive integer
+			srand(value) if it is a positive integer
+		else (if 2 arguments),
+			srand(getPid())
+		check if 2nd argument given is a readable file, returning error code if not readable
 	else
-		seed the random-number generator with getpid()
+		print to stderr and return error code
 
-#### `initializeGame`:
-  allocate memory for game struct
-  initialize the game struct
-	call grid_read to store map in a 2D array of characters
-	drop random Gold piles in random rooms
-	
-
-#### `spectatorJoin`:
-	if spectator is NULL
-		store address of spectator is spectator variable
-	else
-		Send QUIT message to current spectator address
-		replace address in spectator variable with address of new spectator
-    Send GRID message to spectator with grid size
-		Send GOLD message to spectator with current status of gold
-		Send DISPLAY message to spectator with entire map
-
-#### `playerJoin`:
-	If numPlayers< maxPlayers
-    call players_new to create new player
-		store the new player it the allPlayers hashtable with its address
-    increment numPlayers
-		Send GRID message to player with grid size
-		Send GOLD message to player with 0 gold
-		call display module to get a display string
-		Send DISPLAY message to player with display string
+### `handleInput`:
+	Adapted from message module. See message.c.
 
 #### `handleMessage`:
-	If message first word is PLAY
-		Call playerJoin with player name
-	If message first word is SPECTATE
-		Call spectatorJoin
-	If message first word is QUIT
-		Call player_quit in player module
-	if message is a keystroke character
-		if the character is lowercase
-			call player_move_regular from player module and pass the character
-		if the character is uppercase
-			call player_move_capital from player module and pass the character
-		if numGoldLeft becomes zero after move
-			Prepare summary of all gold by calling player_summary
-			send message QUIT with summary to all clients
-			end message loop and exit
-		otherwise, if there is still gold left
-			For each player in the hashtable
-				send them updated GOLD message
-				Calculate new display for them using display module
-				send them the updated DISPLAY message
-			if a spectator exists
-				send them updated GOLD message
-				send them updated DISPLAY message
+	if client sends PLAY:
+			call playerJoin to join the player
+			send GOLD message to all clients connected
+			send DISPLAY message to all clients connected
+			update spectator's display
+	else if client sends SPECTATE
+			call spectatorJoin, initializing the spectator
+	else if message starts with "KEY "
+			find the player in game->allPlayers
+			if character is lower character,
+				call player_moverRegular
+				if player_moveRegular returns true, it is a valid move and player moves and collects gold accordingly
+							if game->numGoldLeft is 0, no more gold in game, end he game and send QUIT message to all clients
+							update all clients' GOLD
+							update all clients' DISPLAY
+							updateSpectatorDisplay
+				else, it is an invalid move and server sends message to lient informing them that it is invalid
+			if character is uppercase,
+				if character is Q,
+						if it is a player
+								call player_quit
+						if it is a spectator
+								set spectatorAddressID to 0, quitting the spectator and marking that no spectator is connected
+						send QUIT message to spectator/player
+						sendGoldMessage to all clients
+						sendDisplayMessage to all clients
+						updateSpectatorDisplay
 
-#### `gameDelete`: 
-	delete the allPlayers hashtable and all the players inside it
-	delete the gold counter
-	delete the grid
-	free the spectator address
-	free the game struct
+				else
+						call player_moveCapital
+						if player_moveCapital returns true, it is a valid move and player moves and collects gold accordingly
+							if game->numGoldLeft is 0, no more gold in game, end the game and send QUIT message to all clients
+								update all clients' GOLD
+								update all clients' DISPLAY
+								updateSpectatorDisplay
+						else, it is an invalid move and server sends message to client informing them that it is invalid
 
-#### `sendQuit`:
-	create a message with "QUIT GAME 	OVER:\n summary"
-	send the message to provided address
+#### `isReadable`:
+	check if path is readable
+	return true if file able to open to read
+	return false if file cannot open to read
+
+#### `playerJoin`:
+	if numPlayers < MaxPlayers:
+		create a new player using player_new
+		if game->numGoldLeft is 0:
+			call endGame
+		create the OK message
+		create the GRID message
+		store the new player's addr_t in game->addresses
+		store the index of that player's address in game->addresses in game->addrID
+		store the new player in game->allPlayers
+		update the player's seenBefore
+		send OK and GRID message
+		increment game->numPlayers
+	else
+		send QUIT message to new client trying to connect
+
+#### `isEmpty`:
+	loops through the input string, and check if isspace
+		if character isspace,
+			return false
+	return true
+
+#### `spectatorJoin`:
+	if spectator exists
+		send QUIT message to the existing spectator
+	else
+		initialize spectatorAddressID to MaxPlayers, the special index stored for spectator addresses in game->addresses
+	store new spectator address in game->addresses
+	create GRID message
+	create GOLD message
+	create DISPLAY message
+	send them to spectator using message_send
+	free all unused memory
+
+#### `buildGrid`:
+	call grid_read from the grid module on the map filename given to server and store in game->grid
+
+#### `endGame`:
+	send GOLD messsage to all players
+	send DISPLAY message to all players
+	updateSpectatorDisplay
+	call player_summary and send end message to all players with the summary
+	if spectator is connected
+		send quit message to spectator
+	free all unused memory, deleting allPlayers, addrID, gold, grid, addresses, numGoldLeft and game.
+
+#### `deletePlayer`:
+	if player is not yet deleted,
+		call player_delete
+
+#### `itemDelete`:
+	deletes the item by calling mem_free
+
+#### `sendDisplayMessage`:
+	find the player's address id
+	if player is still playing, and player is not null, and address id exists in game->addrID,
+		get players newSeenBefore using grid_updateView
+		call grid_print to get the string of the grid that the player can see
+		create DISPLAY message
+		send DISPLAY message using message_send
+		free the messages
+
+#### `sendGoldMessage`:
+	find the player's address id
+	if player is still playing, and player is not null, and address id exists in game->addrID,
+		create GOLD message
+		send GOLD message using message_send
+
+#### `sendEndMessage`:
+	create the QUIT GAME OVER message
+	if the player exists and is still connected to server
+		get the player's addr_t
+		call message_send to player, sending the player the end of game message
+
+#### `updateSpectatorDisplay`:
+	if spectator is connected
+		create a gold message
+		create a display message
+		send gold and display message to the spectator
+	free all unused memory
+
+#### `initializeGame`:
+	allocate memory to game and check if successful
+	call buildGrid to create grid_t by loading the map file
+	set numGoldLeft
+	create the allPlayers hashtable
+	create the addrID hashtable that stores the ID to the addresses for each client connected
+	create the counters_t for gold that stores (key, count), where key is the location on the grid and count is the number of gold at that locaton
+	call initializeGoldPiles to create random gold piles in the map
+	allocate memory for addresses that stores an array of all the addr_t of clients
+	set spectatorAddressID and numPlayers to 0
+
+#### `initializeGoldPiles`:
+	calculate the maximum number of available spots on the grid
+	compare the maxAvailableSpots with GoldMaxNumPiles and take the smaller number
+	generate a random number of gold piles between GoldMinNumPiles and the smaller number calculated earlier
+	create an array with size number of gold piles storing the locations to put the gold piles
+	create an array with size number of gold piles storing the random number of gold in each pile summing up to GoldTotal
+	loop through number of gold piles generated, setting the location and the gold count in game->gold
+
+#### `generateRandomLocations`:
+	loop through the number of gold piles
+		generate a random location
+		if location is a valid spot on the grid to put the gold
+			if the location is not occupied by gold
+				store location
+
+#### `generateGoldDistribution`:
+	Calculate goldRemaining, the max value of gold that can be generated such that each gold pile has at least 1 gold in it.
+	loop through the number of gold piles - 1,
+		generate a random gold amount
+		store the gold amount in the array
+		update number of goldRemaining
+	allocate the remaining gold unallocated to the last gold pile
+
 
 ---
 
@@ -464,9 +641,9 @@ set_t* player_locations(hashtable_t* allPlayers)
 	free the player struct memory
 
 ### `player_summary`:
-  create a summary string
-  iterate over hashtable and add each player's summary
-  return the summary
+	create a summary string
+	iterate over hashtable and add each player's summary
+	return the summary
 
 ### `player_locations(hashtable_t* allPlayers)`:
   create a new set
@@ -583,142 +760,142 @@ static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int 
     return null
 
 #### `grid_locationConvert`
-  if grid not null, location >=0, location < grid's num columns * num rows
-    row number is  location/width
-    column number is location%width
-    return 2-element array of these two numbers
-  else
-    return NULL
+	if grid not null, location >=0, location < grid's num columns * num rows
+		row number is  location/width
+		column number is location%width
+		return 2-element array of these two numbers
+	else
+		return NULL
 
 #### `grid_isOpen`
-  if coordinates given by locationConvert on location are null
-    return false
-  if the coordinates given point to a room or passage spot in 2-d grid char array
-    return true
-  else
-    return false
+	if coordinates given by locationConvert on location are null
+		return false
+	if the coordinates given point to a room or passage spot in 2-d grid char array
+		return true
+	else
+		return false
 
 #### `grid_isRoom`
-  if coordinates given by locationConvert on location are null
-    return false
-  if the coordinates given point to a room character in 2-d grid char array
-    return true
-  else
-    return false
+	if coordinates given by locationConvert on location are null
+		return false
+	if the coordinates given point to a room character in 2-d grid char array
+		return true
+	else
+		return false
 
 #### `grid_isVisible`
-  if grid_isOpen on this location is true
-    initialize set of location keys
-    print the int key to a string literal
-    store an "@" item for that location key 
+	if grid_isOpen on this location is true
+		initialize set of location keys
+		print the int key to a string literal
+		store an "@" item for that location key 
 
-    grid_locationConvert on the int to get observer row, column number
-    for every row, col coordinate in grid
-      if not isBlocked on that coordinate from observer location
-        if location is less than radius away from observer
-          print that location to string key
-          if counters_get on gold counter for that location is >0
-            insert gold symbol for this string key into set
-          else if set_find on playerLocations set for that location is not NULL
-            insert that player's symbol this string key into set
-          else
-            insert dummy symbol "g" for this location key into the set
+		grid_locationConvert on the int to get observer row, column number
+		for every row, col coordinate in grid
+			if not isBlocked on that coordinate from observer location
+				if location is less than radius away from observer
+					print that location to string key
+					if counters_get on gold counter for that location is >0
+						insert gold symbol for this string key into set
+					else if set_find on playerLocations set for that location is not NULL
+						insert that player's symbol this string key into set
+					else
+						insert dummy symbol "g" for this location key into the set
 
-    return the locations set
-  else
-    return null
+		return the locations set
+	else
+		return null
 
 #### `grid_isBlocked`
-  if observer and point fall on same column
-    iterate from observer's row + or - 1 to the point 
-      if this location is not a room spot
-        return true (meaning input point is blocked)
-    return false (not blocked)
+	if observer and point fall on same column
+		iterate from observer's row + or - 1 to the point 
+			if this location is not a room spot
+				return true (meaning input point is blocked)
+		return false (not blocked)
 
-  if same row
-    do above prodecure for rows
-  
-  define a small tolerance value
-  calculate slope between observed point and observer using slope formula
+	if same row
+		do above procedure for rows
 
-  do the diagonal procedure:
-  define a unit vector for column (just + or -1 based on whether observer columns < or > point's col)
-  iterate from observer's col + unit vector to point's col
-    calculate the row (floating point)
-    if row is exactly on a grid point (within tolerance value)
-      if point is not room spot
-        return true (blockage)
-    if both the int row below and row above aren't room spots
-      return true
-  
-  repeat the diagonal procedure but define row unit vector, iterate through rows, and test the calculated columns (reverse roles of rows and columns)
+	define a small tolerance value
+	calculate slope between observed point and observer using slope formula
 
-  return false by default
+	do the diagonal procedure:
+	define a unit vector for column (just + or -1 based on whether observer columns < or > point's col)
+	iterate from observer's col + unit vector to point's col
+		calculate the row (floating point)
+		if row is exactly on a grid point (within tolerance value)
+			if point is not room spot
+				return true (blockage)
+		if both the int row below and row above aren't room spots
+			return true
+
+	repeat the diagonal procedure but define row unit vector, iterate through rows, and test the calculated columns (reverse roles of rows and columns)
+
+	return false by default
 
 #### `grid_updateView`
-  If grid not null
-    call grid_isVisible on the new location, with grid, players set, gold counter
-    if resulting visible set is not null
-      set_iterate through seen-before set, with visible set as arg, calling mergeHelper
-      set_delete the seen-before set
-      return the visible set
-  return seen-before set
+	If grid not null
+		call grid_isVisible on the new location, with grid, players set, gold counter
+		if resulting visible set is not null
+			set_iterate through seen-before set, with visible set as arg, calling mergeHelper
+			set_delete the seen-before set
+			return the visible set
+	return seen-before set
 
 #### `mergeHelper`
-  if set_find the string key (from seen-before) returns null for newly-visible
-    insert the key into newly visible, with dummy “g” item
+	if set_find the string key (from seen-before) returns null for newly-visible
+		insert the key into newly visible, with dummy “g” item
 
 #### `grid_displaySpectator`
-  if grid is not null,
-    create an empty spectator's set of integer keys (locations) and character items
-    convert integer location to string
-    for each location in grid
-      if grid_isOpen on location is true
-        call set_find on player locations with location as key 
-        if this returns non null
-          insert the location as key, player symbol as item into spectator set
-        if counters_get on gold counters for this location > 0
-          insert the location as key, gold symbol "*" item into spectator set
-        else
-          insert location key, dummy item "g" into spectator set
-      else
-          insert location key, dummy item "g" into spectator set
-    return spectator's set
-  else
-    return null   
-      
+	if grid is not null,
+		create an empty spectator's set of integer keys (locations) and character items
+		convert integer location to string
+		for each location in grid
+			if grid_isOpen on location is true
+				call set_find on player locations with location as key 
+				if this returns non null
+					insert the location as key, player symbol as item into spectator set
+				if counters_get on gold counters for this location > 0
+					insert the location as key, gold symbol "*" item into spectator set
+				else
+					insert location key, dummy item "g" into spectator set
+			else
+					insert location key, dummy item "g" into spectator set
+		return spectator's set
+	else
+		return null   
+			
  
 #### `grid_Print`
-  if grid and input locations set are not null
-    Initialize empty printstring.
-    for every int location in the grid
-      print location int to a string key
-      if set_find key on input set of locations gives null (means not visible)
-        append a space “ “ to the printstring
-      else if key corresponds to dummy item “g” (means visible, ordinary point)
-        append the grid character from that location to the printstring
-      else (means point contains special character like gold or player)
-        Append the char stored in the set to the printstring.
-      If int % grid width is 0
-        add a newline character to the printstring
-    return the printstring
-  else
-    return null
+	if grid and input locations set are not null
+		Initialize empty printstring.
+		for every int location in the grid
+			print location int to a string key
+			if set_find key on input set of locations gives null (means not visible)
+				append a space “ “ to the printstring
+			else if key corresponds to dummy item “g” (means visible, ordinary point)
+				append the grid character from that location to the printstring
+			else (means point contains special character like gold or player)
+				Append the char stored in the set to the printstring.
+			If int % grid width is 0
+				add a newline character to the printstring
+		return the printstring
+	else
+		return null
 
 #### `grid_getNumberRows`
-  if grid not null
-    Gives number of rows in grid
+	if grid not null
+		Gives number of rows in grid
 
 #### `grid_getNumberCols`
-  if grid not null  
-    Gives number of columns in grid
+	if grid not null  
+		Gives number of columns in grid
 
 #### `grid_delete`
-  if grid not null
-    loop through 2D char array in grid
-      free each 1D string
-    free the char array
-    free the grid
+	if grid not null
+		loop through 2D char array in grid
+			free each 1D string
+		free the char array
+		free the grid
 
 ---
 
@@ -726,46 +903,48 @@ static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int 
 
 ### unit testing
 
-Each module will be tested by a unittest class before integrating it with main. 
-For example, for player module, we will create a player, modify its coordinates, try to move it and delete it to make sure there are no memory leaks.
-
-#### grid module
-The grid module is tested with invalid filename (nonexistent file), for which it gives an error. 
-Then, grid is tested on hole.txt
-Grid reads from file, prints number of rows and columns in grid.
-Display the specator's view of the grid (everything is visible)
-Loop through all locations in grid, call grid_LocationConvert and grid_isOpen, which gives true for room, passage spots, false anywhere else.
-
-Test grid_isOpen on negative locations, locations outside grid array bounds, for which it gives false.
-
-Then, make set of player locations and symbols, counter of gold locations and amounts. Call grid_displaySpectator and grid_print, which gives the grid view but with gold and player symbols. By this test setup, gold and other players could appear in passages.
-
-Loop through each of the players in the set, call grid_isVisible and grid_print, displaying each player's limited view with gold and other player symbols. 
-
-Finally, loop through all locations in grid calling grid_updateView and grid_print on that location, which mimics a player moving through the grid and having their seen-before set constantly increased. By this test setup, the view does not increase as the player passes through not-open locations, but in valid locations, player sees other player and gold only in the visible portion of their seen-before set.
-
+We test each module, player and grid, rigorously. Within each module, we test the functions individually. Each module will be tested by a unittest program, titled `playertest.c` and `gridtest.c`, respectively, before integrating it with main. We also test run valgrind on the test file to ensure that there are no memory leaks. See [DESIGN](DESIGN.md) for more details.
 
 ### integration testing
 
-The complete main programs: the server and the client will be tested separately first with a number of invalid command line arguments. The server will be given a map to read a file. We will then create a test client to pass a variety of messages to the server and check that they are handled correctly. Each type of message, including error messages will be tested. 
-For client, we will test that it can correctly recieve and print all types of messages by manually passing a variety of messages to it. Error messages and other edge cases like window size being too small will also be tested.
+For server, we test it with the miniclient in the support directory. Using that, we check if our server can correctly receive messages from the client and send properly formatted messages back to the client. We test error and edge cases to ensure that the program handles all cases gracefully.
+For client, we test it with the shared server in the shared CS50 directory. Using that, we check if it can correctly receive and print all types of messages by manually passing a variety of messages to it. Error messages and other edge cases like window size being too small will also be tested.
+For more details, please see the design spec.
 
 ### system testing
 
-Client and server will be tested together by running sample games. We will test a number of possible cases for example:
-player stepping on another player
-player attempting to move to a location that is not open for moving
-player quitting in the middle of the game
-new spectator joining when a previous one already exists
-trying to have more than maxPlayers number of player join
+Client and server will be tested together by running sample games. We will re-run all the cases described in the design spec individually for server and client now together on both as a system. Some test cases are detailed below, but please refer to the design specification for more explanation.
+
+**On client joining as a player:**
+Moving in all directions (upper and lowercase)
+Moving in a direction where moving is not allowed
+Pressing an invalid keystroke
+Stepping on another player (should swap)
+More than maxPlayers trying to join
+Quitting
+Collecting all the gold and ending game
+Prints summary message when game is over
+
+**On client joining as spectator:**
+Trying to move (the system should not allow spectator to try moving)
+Updating each time a player joins
+Updating each time a player moves
+Updating each time a player quits
+Showing appropriate end message when game ends
+Having a new spectator join when one already exists
+Spectator quitting
 
 ---
 
 ## Limitations
 
-> None forseen at this point in development.
+> None forseen.
 
 
 ## Extra credit
-Grid implements a radius of visibility (defined as constant 5 ). Checks this when iterating through all points in the grid to determine if radius from them to player location is <= 5 (pythagorean theorem)
+Grid implements a radius of visibility (defined as constant 1000 in grid.c ). Change to something like value =5 to see functionality. Checks this when iterating through all points in the grid to determine if radius from them to player location is <= 5 (pythagorean theorem)
+
+Player implements: Player who quits before the end of the game gives up 
+their gold, leaving a new pile at their last location. This is done in the plyer_quit function which updates the game’s gold counter and variable tracking the number of gold left.
+
 

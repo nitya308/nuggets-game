@@ -23,7 +23,7 @@ int main()
   player_t* p2 = NULL;
 
   // creating a simple grid for testing
-  grid_t* grid = grid_read("testmap.txt");
+  grid_t* grid = grid_read("../maps/testmap.txt");
 
   // creating a simple gold counter for testing
   int numPlayers = 0;
