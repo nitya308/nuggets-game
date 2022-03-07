@@ -191,8 +191,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
     const char* quitContent = message + strlen("QUIT ");
     endwin();
-    printf("%s\n", "");
-    printf("%s\n", quitContent);
+    printf("\n%s\n", quitContent);
     return true;
   }
 
