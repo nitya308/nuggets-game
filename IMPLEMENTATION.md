@@ -71,7 +71,7 @@ static void checkDisplay(int nrow, int ncol);
 		print to stderr and exit w/ non-zero status
 	if playerName was received in command-line
 		set playerAttributes.isPlayer to true
-send play message to server
+		send play message to server
 	else
 		set playerAttributes.isPlayer to false
 		send spectate message to server
@@ -107,7 +107,7 @@ free display
 	if first word of message is QUIT 
 		endwin()
 		print appropriate quit message
-return true
+		return true
 	else if first word of message is GOLD
 		scan message for n p r
 		set playerAttributes.goldCollected to n
