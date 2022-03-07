@@ -576,7 +576,6 @@ sendGoldMessage(void* arg, const char* addr, void* item)
   int* id = NULL;
   id = hashtable_find(game->addrID, addr);
   if (id != NULL && *id != -1 && player != NULL) {  // if address exists and player still in game
-    printf("\n%s", "DOESN'T ENTER IF CONDITION");
     char goldM[50];
     sprintf(goldM, "GOLD %d %d %d\n", player_getRecentGold(player), player_getpurse(player), *(game->numGoldLeft));
     addr_t actualAddr = game->addresses[*id];  // get the address of player
