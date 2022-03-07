@@ -946,3 +946,9 @@ Grid implements a radius of visibility (defined as constant 1000 in grid.c ). Ch
 
 Player implements: Player who quits before the end of the game gives up 
 their gold, leaving a new pile at their last location. This is done in the plyer_quit function which updates the game’s gold counter and variable tracking the number of gold left.
+
+
+
+
+Player implements: Player who quits before the end of the game gives up 
+their gold, leaving a new pile at their last location. This is done in the plyer_quit function which updates the game’s gold counter and variable tracking the number of gold left.
