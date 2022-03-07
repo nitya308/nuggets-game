@@ -42,8 +42,9 @@ client: client.o $(LLIBS)
 miniclient: miniclient.o message.o log.o
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-# querier source dependencies
+# source dependencies
 server.o: $S/message.h $S/log.h $L/mem.h $L/file.h $P/player.h $G/grid.h
+client.o: $S/message.h $S/log.h $L/mem.h
 miniclient.o: message.h
 message.o: message.h
 log.o: log.h

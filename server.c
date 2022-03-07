@@ -111,8 +111,7 @@ int main(const int argc, char* argv[])
  *   allocate memory for addresses that stores an array of all the addr_t of clients
  *   set spectatorAddressID and numPlayers to 0
  */
-static void
-initializeGame(char** argv)
+static void initializeGame(char** argv)
 {
   game = mem_malloc(sizeof(game_t));
   if (game == NULL) {
@@ -153,8 +152,7 @@ initializeGame(char** argv)
  * Pseudocode:
  *   call grid_read from the grid module on the map filename given to server and store in game->grid
  */
-static void
-buildGrid(grid_t* grid, char** argv)
+static void buildGrid(grid_t* grid, char** argv)
 {
   char* filename = argv[1];
   game->grid = grid_read(filename);  // build the grid
@@ -173,8 +171,7 @@ buildGrid(grid_t* grid, char** argv)
  *  loop through number of gold piles generated, setting the location and the gold count in game->gold
  *
  */
-static void
-initializeGoldPiles()
+static void initializeGoldPiles()
 {
   int cols = grid_getNumberCols(game->grid);
   int rows = grid_getNumberRows(game->grid);
@@ -203,8 +200,7 @@ initializeGoldPiles()
  *        if the location is not occupied by gold
  *            store location
  */
-static void
-generateRandomLocations(int numGoldPiles, int* arr)
+static void generateRandomLocations(int numGoldPiles, int* arr)
 {
   int nRows = grid_getNumberRows(game->grid);
   int nCols = grid_getNumberCols(game->grid);
@@ -236,8 +232,7 @@ generateRandomLocations(int numGoldPiles, int* arr)
  *      update number of goldRemaining
  *   allocate the remaining gold unallocated to the last gold pile
  */
-static void
-generateGoldDistribution(int numGoldPiles, int* arr)
+static void generateGoldDistribution(int numGoldPiles, int* arr)
 {
   int goldRemaining = GoldTotal - numGoldPiles;  // track number of gold left to allocate -1 for each pile
   int i = numGoldPiles - 1;
@@ -276,8 +271,7 @@ generateGoldDistribution(int numGoldPiles, int* arr)
  *        print to stderr and return error code
  *
  */
-static int
-parseArgs(const int argc, char* argv[])
+static int parseArgs(const int argc, char* argv[])
 {
   if (argc == 2 || argc == 3) {
     if (argc == 3) {             // if map.txt and seed provided
@@ -312,8 +306,7 @@ parseArgs(const int argc, char* argv[])
  * return true if file able to open to read
  * return false if file cannot open to read
  */
-static bool
-isReadable(char* pathName)
+static bool isReadable(char* pathName)
 {
   FILE* fp;
   if ((fp = fopen(pathName, "r")) == NULL) {  // if unable to read file, return error.
@@ -371,8 +364,7 @@ isReadable(char* pathName)
  *                   updateSpectatorDisplay
  *               else, it is an invalid move and server sends message to client informing them that it is invalid
  */
-static bool
-handleMessage(void* arg, const addr_t from, const char* message)
+static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
@@ -460,8 +452,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
  *    true if there's only whitespaces in string provided
  *    false if there's non-spaces in string
  */
-static bool
-isEmpty(const char* name)
+static bool isEmpty(const char* name)
 {
   for (int i=0; i < strlen(name); i++) {
     if (isspace(name[i]) == 0) { // if not a whitespace
@@ -481,8 +472,7 @@ isEmpty(const char* name)
  *      send gold and display message to the spectator
  *   free all unused memory
  */
-static void
-updateSpectatorDisplay()
+static void updateSpectatorDisplay()
 {
   if (game->spectatorAddressID != 0) {  // if spectator is connected, update spectator's display
 
@@ -523,8 +513,7 @@ updateSpectatorDisplay()
  *      send quit message to spectator
  *   free all unused memory, deleting allPlayers, addrID, gold, grid, addresses, numGoldLeft and game.
  */
-static void
-endGame()
+static void endGame()
 {
   // Update gold and display one final time for all players
   hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
@@ -566,8 +555,7 @@ endGame()
  *      create GOLD message
  *      send GOLD message using message_send
  */
-static void
-sendGoldMessage(void* arg, const char* addr, void* item)
+static void sendGoldMessage(void* arg, const char* addr, void* item)
 {
   player_t* player = item;
   int* id = NULL;
@@ -592,8 +580,7 @@ sendGoldMessage(void* arg, const char* addr, void* item)
  *      send DISPLAY message using message_send
  *      free the messages
  */
-static void
-sendDisplayMessage(void* arg, const char* addr, void* item)
+static void sendDisplayMessage(void* arg, const char* addr, void* item)
 {
   // display message
   player_t* player = item;
@@ -624,8 +611,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
  *   if player is not yet deleted,
  *      call player_delete
  */
-static void
-deletePlayer(void* item)
+static void deletePlayer(void* item)
 {
   player_t* player = item;
   if (player != NULL) {
@@ -642,8 +628,7 @@ deletePlayer(void* item)
  *      get the player's addr_t
  *      call message_send to player, sending the player the end of game message
  */
-static void
-sendEndMessage(void* arg, const char* addr, void* item)
+static void sendEndMessage(void* arg, const char* addr, void* item)
 {
   char* summary = arg;
   char* message = mem_malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
@@ -658,8 +643,7 @@ sendEndMessage(void* arg, const char* addr, void* item)
 }
 
 // adapted from message.c
-static bool
-handleInput(void* arg)
+static bool handleInput(void* arg)
 {
   // allocate a buffer into which we can read a line of input
   // (it can't be any bigger than a message)
@@ -698,8 +682,7 @@ handleInput(void* arg)
  *   else
  *      send QUIT message to new client trying to connect
  */
-static bool
-playerJoin(char* name, const addr_t client)
+static bool playerJoin(char* name, const addr_t client)
 {
   if (game->numPlayers < MaxPlayers) {
     player_t* newPlayer = player_new(name, game->grid, game->allPlayers, game->numGoldLeft, game->gold, game->numPlayers);
@@ -761,8 +744,7 @@ playerJoin(char* name, const addr_t client)
  *    send them to spectator using message_send
  *    free all unused memory
  */
-static void
-spectatorJoin(const addr_t* address)
+static void spectatorJoin(const addr_t* address)
 {
   if (game->spectatorAddressID != 0) {  // if spectator exists, send quit message to spectator
     addr_t specAddr = game->addresses[game->spectatorAddressID];
