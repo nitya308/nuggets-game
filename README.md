@@ -11,6 +11,7 @@ Up to 26 players, and one spectator, may play a given game.
 Each player is randomly dropped into a room when joining the game.
 Players move about, collecting nuggets when they move onto a pile.
 When all gold nuggets are collected, the game ends and a summary is printed.
+Our map file is located in the `maps` folder, named `add-drop.txt`.
 
 ### Assumptions/Deviations
 We assume the provided map files are valid. No deviations from the provided specs were made.
