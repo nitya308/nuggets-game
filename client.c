@@ -4,19 +4,19 @@
  * a function to parse command-line args, a function to handle
  * client input, a function to handle server output, and a function
  * to make the display sufficiently large.
- * 
+ *
  * Ashna Kumar    3/7/22
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
 #include <ncurses.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "log.h"
 #include "mem.h"
 #include "message.h"
-#include "log.h"
-
 
 // Data structures
 typedef struct playerAttributes {
@@ -38,13 +38,12 @@ static bool handleInput(void* arg);
 static bool receiveMessage(void* arg, const addr_t from, const char* message);
 static void checkDisplay(int nrow, int ncol);
 
-
 /**************** main **********************/
 /**
  * Main function that handles flow of program,
  * calls other functions, and initializes other
  * modules.
- * 
+ *
  * Caller provides:
  *   Command-line arguments
  * We guarantee:
@@ -57,10 +56,8 @@ static void checkDisplay(int nrow, int ncol);
  */
 int main(const int argc, char* argv[])
 {
-
   // Validate argv[1] and argv[2] from command-line args first
   parseArgs(argc, argv);
-  
 
   // Check if message module can be initialized
   if (message_init(NULL) == 0) {
@@ -72,14 +69,14 @@ int main(const int argc, char* argv[])
 
   // Check if address can be formed
   if (!message_setAddr(argv[1], argv[2], &server)) {
-      fprintf(stderr, "Unable to form address from %s %s\n", argv[1], argv[2]);
-      exit(4);
+    fprintf(stderr, "Unable to form address from %s %s\n", argv[1], argv[2]);
+    exit(4);
   }
-  
+
   // Check if client is player or spectator
   if (argc == 4 && argv[3] != NULL) {
     playerAttributes.isPlayer = true;
-    char message[56] = "PLAY "; // Long enough to fit play and maxNameLength
+    char message[56] = "PLAY ";  // Long enough to fit play and maxNameLength
     strcat(message, argv[3]);
     message_send(server, message);
   }
@@ -90,19 +87,19 @@ int main(const int argc, char* argv[])
   }
 
   // Handle messages
-  bool loopResult = message_loop(&server, 0, NULL, handleInput, receiveMessage);
+  message_loop(&server, 0, NULL, handleInput, receiveMessage);
   message_done();
   endwin();
 
   mem_free(playerAttributes.display);
 
-  return loopResult? 0 : 1; // true if success, false if fail
+  return 0;  // true if success, false if fail
 }
 
 /**************** parseArgs **********************/
 /**
  * Parses and verifies server hostname and port
- * 
+ *
  * Caller provides:
  *   command-line arguments
  * We guarantee:
@@ -130,7 +127,7 @@ static void parseArgs(const int argc, char* argv[])
 /**
  * Verifies server addr pointer and handles input from
  * client keystrokes.
- * 
+ *
  * Caller provides:
  *   pointer to void
  * We guarantee:
@@ -162,9 +159,8 @@ static bool handleInput(void* arg)
   if (c == 'Q' || c == EOF) {
     // EOF/EOT case: stop looping
     message_send(*serverp, "KEY Q");
-    return true;
   }
-  
+
   else {
     // send any other keystroke to server if client is player
     if (playerAttributes.isPlayer) {
@@ -172,10 +168,6 @@ static bool handleInput(void* arg)
       char message[6] = "KEY ";
       strcat(message, str);
       message_send(*serverp, message);
-    }
-
-    else {
-      printw("You may not press anything besides Q.\n");
     }
   }
   return false;
@@ -185,7 +177,7 @@ static bool handleInput(void* arg)
 /**
  * Processes each message correctly and carries out the
  * appropriate logic to go with it.
- * 
+ *
  * Caller provides:
  *   arg param, server address, message from server
  * We guarantee:
@@ -200,6 +192,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
     const char* quitContent = message + strlen("QUIT ");
     endwin();
+    printf("%s\n", quitContent);
     return true;
   }
 
@@ -225,9 +218,9 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   else if (strncmp(message, "OK", strlen("OK")) == 0) {
     const char* id = message + strlen("OK ");
     playerAttributes.playerID = *id;
-  } 
+  }
 
-  // In the case of display message, 
+  // In the case of display message,
   else if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
     // Create variable to store message
     const char* displayContent = message + strlen("DISPLAY\n");
@@ -239,20 +232,20 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     // Print these messages only if client is a player
     if (playerAttributes.isPlayer) {
       if (playerAttributes.goldCollected == 0) {
-        printw("Player %c has %d nuggets (%d nuggets unclaimed).\n", 
-          playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
+        printw("Player %c has %d nuggets (%d nuggets unclaimed).\n",
+               playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
       }
       else {
-        printw("Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", 
-          playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft, 
-            playerAttributes.goldCollected);
+        printw("Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n",
+               playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft,
+               playerAttributes.goldCollected);
       }
     }
     // If client is spectator
     else {
       printw("Spectator: %d nuggets unclaimed.\n", playerAttributes.numGoldLeft);
     }
-    
+
     printw(displayContent);
     refresh();
   }
@@ -263,8 +256,8 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     clear();
     // Tell player their keystroke was inaccurate
     if (playerAttributes.isPlayer) {
-      printw("Player %c has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n", 
-        playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
+      printw("Player %c has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n",
+             playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
     }
     printw("%s", playerAttributes.display);
     refresh();
@@ -280,7 +273,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
 /**************** checkDisplay **********************/
 /**
  * Ensures client's display size is large enough to fit grid.
- * 
+ *
  * Caller provides:
  *   Number of rows and columns in grid
  * We guarantee:
