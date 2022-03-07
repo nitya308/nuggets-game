@@ -33,7 +33,6 @@ static void spectatorJoin(const addr_t* address);
 static void buildGrid(grid_t* grid, char** argv);
 static void endGame();
 static void deletePlayer(void* item);
-// static void itemcount(void* arg, const char* key, void* item);
 static void itemDelete(void* item);
 static void sendDisplayMessage(void* arg, const char* addr, void* item);
 static void sendGoldMessage(void* arg, const char* addr, void* item);
@@ -43,9 +42,6 @@ static void initializeGame(char** argv);
 static void initializeGoldPiles();
 static void generateRandomLocations(int numGoldPiles, int* arr);
 static void generateGoldDistribution(int numGoldPiles, int* arr);
-static void itemprint(FILE* fp, const char* key, void* item);
-static void playeritemprint(FILE* fp, const char* key, void* item);
-static void setitemprint(FILE* fp, const char* key, void* item);
 
 /**************** global types ****************/
 typedef struct game {
@@ -62,7 +58,7 @@ typedef struct game {
 
 /**************** local variables ****************/
 static game_t* game;                    // game struct storing the state of the game
-static const int MaxPlayers = 2;       // maximum number of players
+static const int MaxPlayers = 26;       // maximum number of players
 static const int GoldTotal = 250;       // amount of gold in the game
 static const int GoldMinNumPiles = 10;  // minimum number of gold piles
 static const int GoldMaxNumPiles = 30;  // maximum number of gold piles
@@ -680,33 +676,6 @@ handleInput(void* arg)
   else {
     return true;  // EOF
   }
-}
-
-static void
-itemprint(FILE* fp, const char* key, void* item)
-{
-  int* addrID = item;
-  if (addrID == NULL || key == NULL) {
-    fprintf(fp, "(null)");
-  }
-  else {
-    addr_t addr = game->addresses[*addrID];
-    fprintf(fp, "(%s, %s)", key, message_stringAddr(addr));
-  }
-  fflush(stdout);
-}
-
-static void
-playeritemprint(FILE* fp, const char* key, void* item)
-{
-  fprintf(fp, "%s ", key);
-  player_print((player_t*)item);
-}
-
-static void
-setitemprint(FILE* fp, const char* key, void* item)
-{
-  fprintf(fp, "%s %s", key, (char*)item);
 }
 
 /* ***************** playerJoin ********************** */
