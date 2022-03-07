@@ -196,14 +196,9 @@ static bool handleInput(void* arg)
  */
 static bool receiveMessage(void* arg, const addr_t from, const char* message)
 {
-<<<<<<< HEAD
   // In the case of a quit message, print appropriate output to client
   if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
     const char* quitContent = message + strlen("QUIT ");
-=======
-  if (strncmp(message, "QUIT", strlen("QUIT")) == 0) {
-    printw(message);
->>>>>>> 6ede9fa6d1dcefcef200a988d8398f7d007cf673
     endwin();
     return true;
   }
@@ -234,12 +229,8 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
 
   // In the case of display message, 
   else if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
-<<<<<<< HEAD
     // Create variable to store message
     const char* displayContent = message + strlen("DISPLAY\n");
-=======
-    const char* displayContent = message + strlen("DISPLAY") + 1;
->>>>>>> 6ede9fa6d1dcefcef200a988d8398f7d007cf673
     if (playerAttributes.display != NULL) {
       strcpy(playerAttributes.display, displayContent);
     }
