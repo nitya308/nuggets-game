@@ -8,7 +8,7 @@ We describe each program and module separately.
 We do not describe the `support` library nor the modules that enable features that go beyond the spec.
 We avoid repeating information that is provided in the requirements spec.
 
-## Player
+## Client
 
 The *client* acts in one of two modes:
 
@@ -60,57 +60,99 @@ Any errors are logged to stderr with an informative message (such as if argument
 
 ### Functional decomposition into modules
 
-* parseArgs: parse and verify hostname and port and send player/spectator joined message based on 3rd argument
+* main: calls parseArgs and functions in message module
+* parseArgs: parse and verify hostname and port and send message to server about whether client is player or spectator
+* handleInput: performs error checks, reads from stdin, and calls message_send with the appropriate messages
 * receiveMessage: called when message is recieved, performs action based on message
+* checkDisplay: makes sure display is large enough for grid
  
 ### Pseudo code for logic/algorithmic flow
 
 #### main
-Calling parseArgs with the arguments provided. Initializes the message loop
+Calling parseArgs with the arguments provided. Initializes the message loop and calls functions in message module.
 
 	call parseArgs
 	initialize message module
 	set address of server and store in in a variable
 	call message loop to listen for messages
-	Inside the message loop
-		Listen for keystrokes
-		while keystroke is received
-			Send message to server with keystroke	
-		when EOF pressed
-			Send message to server “Q”
-			exit
+	call message done
 
 #### parseArgs
-parses arguments of hostname and port and stores them in the variables given by main. Sends a join as player or spectator message based on 3rd argument. If any errors are found in the arguments, prints an error to stderr and exits 0.
+parses arguments of hostname and port and stores them in the variables given by main. Sends a join as player or spectator message based on 3rd argument. If any errors are found in the arguments, prints an error to stderr and exits with non-zero integer.
 
-	Parse and verify hostname and port from arguments
-	If any bad arguments are found
+	check if there are correct number of args
+	parse and verify hostname and port from arguments
+	if any bad arguments are found
 		print an error to stderr and exits 0.
-	If third argument (real name) is provided
-		Send message to server saying “PLAY real name”
-	If no playerName provided
-		Send message to server saying “SPECTATE”
+	if third argument (real name) is provided
+		set isPlayer value in playerAttributes struct accordingly
+		send message to server saying “PLAY real name”
+	if no playerName provided
+		set isPlayer value in playerAttributes struct accordingly
+		send message to server saying “SPECTATE"
+
+#### handleInput
+Checks if server address is valid, reads from stdin, and calls message_send with the appropriate messages
+
+	check if server address is valid
+		if not, print error message
+	get character from stdin
+	check if character is EOF or EOT
+		if so, call message_send with quit message
+		if not, call message_send with the inputted character
+
 
 #### receiveMessage
 handles all messages recieved from the server. Takes in the messages as a string, and performs the appropriate action.
 
-	If first word of message is QUIT 
-		Print explanation line
-		exit program
-	if first word of message is GOLD
-		print new display line with updated gold
-	If first word of message is GRID
-		if windowsize is less than grid
-			Prompt user to increase window size
-	If first word of message is DISPLAY	
-		Print the new grid on the screen
-	If error
-		Log to stderr and wait for next message
+	check if first word of message is QUIT
+		print explanation line
+		return true
+	check if first word of message is GOLD
+		read message from server and set values in playerAttributes struct based on message
+	if first word of message is GRID
+		gets the number of rows and columns
+	call checkDisplay with number of rows and cols
+	check if first word of message is OK
+		set playerID in playerAttributes struct
+	check if first word of message is DISPLAY
+		set display string in playerAttributes struct
+		clear screen
+		check if client is a player
+			check if gold picked up, print appropriate message
+			if not, print appropriate message
+		if not, print appropriate message for spectator
+		update display and refresh screen
+	check if first word of message is ERROR
+		print message to stderr
+		clear screen
+		check if client is a player
+			print appropriate message
+		if not, print appropriate message for spectator
+		update display and refresh screen
+	if first word of message is none of these
+		print to stderr that message has bad format
+	return false
+
+
+#### checkDisplay
+makes sure display screen is large enough for grid (nrow + 1 x ncol + 1) so game can be played properly
+
+	initialize display properly
+	while size of display is less than nrow + 1 x ncol + 1
+		prompt user to increase window size and click enter
 
 
 ### Major data structures
 
-The client does not use any major data structures.
+#### playerAttributes
+This struct stores:
+player ID: a character letter (eg: 'A', 'B', 'C')
+purse: integer number of coins it has
+isPlayer: bool determining whether player or spectator
+numGoldLeft: int of how much gold is remaining
+goldCollected: int of how much gold was just picked up
+display: stores display for player in a string
 
 ---
 
@@ -158,11 +200,11 @@ The server will run as follows:
 #### parseArgs
 verifies all arguments. If any errors are found in the arguments, prints an error to stderr and exits 0.
 
-	Verify that argument 1 mapfile can be opened for reading
+	verify that argument 1 mapfile can be opened for reading
 	if argument 2 is provided
 		if it is a positive integer
 			store it in seed variable
-	If any errors are found in the arguments, print an error to stderr and exit 0.
+	if any errors are found in the arguments, print an error to stderr and exit 0.
 
 #### initializeGame
 Do the initial setup for the game
@@ -177,35 +219,35 @@ Do the initial setup for the game
 #### spectatorJoin
 Allow a new spectator to join. If an existing spectator exists, kick it out and replace it with the new one.
 
-	If spectator does not exist
-		store address of spectator is spectator variable
-	If spectator exists
-		Send QUIT message to current spectator
+	if spectator does not exist
+		store address of spectator in spectator variable
+	if spectator exists
+		send QUIT message to current spectator
 		replace address in spectator variable with address of new spectator
-    Send GRID message to spectator with grid size
-		Send GOLD message to spectator with current status of gold
-		Send DISPLAY message to spectator with entire map
+    send GRID message to spectator with grid size
+		send GOLD message to spectator with current status of gold
+		send DISPLAY message to spectator with entire map
 
 #### playerJoin
 Allow a new player to join if number of players is less than maxPlayers. Create a new player data structure for them, initialize it and save the player in the hashtable of all players.
 
-	If number of player is less than maxPlayers
+	if number of player is less than maxPlayers
     create and initialize a new player struct
 		store the new player it the allPlayers hashtable with its address
-		Send GRID message to player with grid size
-		Send GOLD message to player with 0 gold
-		call display module to get a display string
-		Send DISPLAY message to player with display string
+		send GRID message to player with grid size
+		send GOLD message to player with 0 gold
+		call grid module to get a display string
+		send DISPLAY message to player with display string
 
 #### handleMessages
 Handle all messages passed from the client to the server based on protocol in requirements spec.
 
-	If message first word is PLAY
-		Call playerJoin with player name
-	If message first word is SPECTATE
-		Call spectatorJoin
-	If message first word is QUIT
-		Call player_quit in player module
+	if message first word is PLAY
+		call playerJoin with player name
+	if message first word is SPECTATE
+		call spectatorJoin
+	if message first word is QUIT
+		call player_quit in player module
 	if message is a keystroke character
 		if the character is lowercase
 			call player_move_regular from player module and pass the character
@@ -254,75 +296,106 @@ Handles all functionality to do with the grid and calculates visibility
 
 ### Functional decomposition
 
-1. grid_read: initializes the grid from file
-2. grid_isOpen: verifies whether given location is wall or not
-3. grid_isVisible: gives set of visible locations from viewpoint
-4. grid_displayVisible: gives visible set + known set, with gold and players in visible part only
-5. grid_print: turns set of locations into formatted string 
-6. grid_locationConvert: converts integer into 2-d coordinates
+1. grid_read: initializes the grid from file name
+2. grid_isOpen: verifies whether given location is room/passage or not
+3. grid_isRoom: verifies whether given location is room spot or not
+4. grid_isVisible: gives set of visible locations from viewpoint
+5. grid_updateView: gives visible set from new location + known set, with gold and players symbols in visible part only
+6. grid_displaySpectator: gives set of all locations, with gold and players symbols as chars
+7. grid_print: turns set of locations into formatted string 
+8. grid_locationConvert: converts integer into 2-d coordinates
+9. grid_getNumberRows: gives number of rows in grid
+10. grid_getNumberCols: gives number of cols in grid
+11. grid_delete: deletes the grid
 
 
 ### Pseudo code for logic/algorithmic flow
 
 #### grid_read
-	Reads from text file
-	stores each char in a 2D array of characters
-	stores the 2D array in Game data structure
+  Reads from file 
+  stores each char in a 2D array of characters
+  stores the 2D array in Game data structure
  
 #### grid_isOpen
-	Takes int location input
-	extracts grid from Game data structure
-	finds the location in the grid
-	returns false is this location is a wall
-	return true if this is an open space.
+  Takes int location input
+  extracts grid from Game data structure
+  finds the location in the grid
+  return true if this is passage or room
+  else return false
+
+#### grid_isRoom
+  Takes int location input
+  extracts grid from Game data structure
+  finds the location in the grid
+  returns true is this location is room spot
+  else return false
  
 #### grid_isVisible
-	Takes int location input
-	calulates a set of integer keys and character items, representing all the locations that are visible from the input location, according to requirements spec
-	returns this set
+  Takes int location input, other player locations and gold locations
+  initializes set of locations
+  for every point in the grid
+    if the point is not blocked by a wall/corner between it and player's vantage point
+    if point is less than a defined radius away
+      insert the location into set, with player or gold symbol if player or gold is in the location
+  returns this set
 
-#### grid_displayVisible
-Creates a set of locations and characters to display at that location to represent other players and gold
+#### grid_updateView
+Creates a set of locations and characters to display at that location to represent other players and gold. (Takes set of player locations/symbols, counter of gold locations, new player location, player's seen before set)
 
-	takes pointer to a player structure
-	create a set of everything visible by calling 	grid_isVisible
-	loop over allplayers hashtable
-		if player's location is in visible set
-			add the player's location to the set with player ID character
-	for each key (location) in the gold counter of Game
-		if the key (location) is in visible set
-			add the key (location) to the set with *
-	return the set
+  create a set of everything visible by calling grid_isVisible
+  for any location in player's seen before set 
+  if location is not in visible set 
+    append it to the visible set, but not the gold or player symbols
+  deletes the seen before set
+  returns the visible set
+  
 
 #### grid_displaySpectator
-Creates a set of locations and characters to display at that location to represent other players and gold
+Returns whole grid as set, with symbols for players and gold stored as items. (Takes set of player locations/symbols, counter of gold locations)
 
-	create an empty set of integer keys (locations) and character items
-	loop over allplayers hashtable
-		add the player's location to the set with player ID character
-	for each key in the gold counter of Game
-		add the key (location) to the set with *
-	return the set
+  initialize empty spectator set
+  for every location in grid
+    if location is in player locations set
+      insert the location key and player symbol into spectator set
+    else if location is in counters of gold
+      insert the location key and gold symbol into spectator set
+    else
+      insert location key and dummy item into spectator set
+  return the set
  
 #### grid_locationConvert
-	A helper function which takes an integer input, grid number of columns, grid number of rows
-	Turns it into a 2D coordinate on the grid through modulo division
+A function which takes an integer input, grid number of columns, grid number of rows
+Turns it into a 2D coordinate on the grid through modulo division
  
-#### grid_Print
-	creates a set of visible locations by calling grid_displayVisible or grid_displaySpectator
-	Initialize empty printstring.
-	For each location in the grid 
-		if location is not in the set of visible locations
-			add a space “ “ to the printstring. 
-		else
-			add the char stored in the set to the printstring.
-		when the row ends
-			add a newline character to the printstring
-	return the printstring
+#### grid_print
+Takes grid and set of locations input
+  
+  Initialize empty printstring.
+  For each location in the grid
+    if location is not in the set of visible locations
+      add a space “ “ to the printstring. 
+    else if set stores gold or player symbol for that location
+      add the gold/ player symbol to printstring
+    else
+      add the charcter from the grid array to printstring
+    when the row ends
+      add a newline character to the printstring
+  return the printstring
+
+#### grid_getNumberRows
+Gives number of rows
+
+#### grid_getNumberCols
+Gives number of columns
+
+#### grid_delete
+Frees all associated memory
 
 ### Major data structures
 Grid structure stores:
   2D array of chars, representing the grid
+  number of columns
+  number of rows
 
 
 ## player module
@@ -409,3 +482,9 @@ Takes the address of a player
 ### Major data structures
 
 It uses the player data structure defined above in server. It also uses the Game data structure from the server. 
+
+
+
+---
+## Extra credit
+Grid implements a radius of visibility (defined as constant 5 )

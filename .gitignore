@@ -17,6 +17,10 @@ core
 *.a
 a.out
 
+# binary files
+server
+client
+
 # Emacs backup and scratch files
 *~
 \#*\#
@@ -24,6 +28,15 @@ a.out
 
 # debugger symbols
 *.dSYM
+
+# log files
+*.log
+
+# text files
+*.txt
+
+# valgrind files
+vgcore*
 
 # MacOS stuff
 .DS_Store

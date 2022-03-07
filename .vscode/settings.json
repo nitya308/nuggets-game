@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "hashtable.h": "c",
+    "mem.h": "c",
+    "message.h": "c",
+    "map": "c",
+    "player.h": "c"
+  }
+}
