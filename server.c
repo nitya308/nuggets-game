@@ -127,23 +127,23 @@ initializeGame(char** argv)
   *(game->numGoldLeft) = GoldTotal;
   game->allPlayers = hashtable_new(MaxPlayers);
   if (game->allPlayers == NULL) {
-    endGame();      // end the game and free all memory
+    endGame();  // end the game and free all memory
     fprintf(stderr, "Failed to create allPlayers hashtable. Exiting...\n");
     exit(1);
   }
   game->addrID = hashtable_new(MaxPlayers);
   if (game->addrID == NULL) {
-    endGame();      // end the game and free all memory
+    endGame();  // end the game and free all memory
     fprintf(stderr, "Failed to create addresses hashtable. Exiting...\n");
     exit(1);
   }
   game->gold = counters_new();
   if (game->gold == NULL) {
-    endGame();      // end the game and free all memory
+    endGame();  // end the game and free all memory
     fprintf(stderr, "Failed to create gold counters. Exiting...\n");
     exit(1);
   }
-  initializeGoldPiles();      // initialize gold piles by generate random number of gold piles and random number of gold on the grid
+  initializeGoldPiles();  // initialize gold piles by generate random number of gold piles and random number of gold on the grid
   game->addresses = mem_malloc((MaxPlayers + 1) * sizeof(addr_t));
   game->spectatorAddressID = 0;  // no spectator initially. set value MaxPlayers if spectator connected
   game->numPlayers = 0;
@@ -164,7 +164,7 @@ buildGrid(grid_t* grid, char** argv)
 }
 
 /* ***************** initializeGoldPiles ********************** */
-/*  
+/*
  * Generates a random number of gold piles and a random number of gold in each pile for the game
  *
  * Pseudocode:
@@ -174,16 +174,16 @@ buildGrid(grid_t* grid, char** argv)
  *  create an array with size number of gold piles storing the locations to put the gold piles
  *  create an array with size number of gold piles storing the random number of gold in each pile summing up to GoldTotal
  *  loop through number of gold piles generated, setting the location and the gold count in game->gold
- *   
+ *
  */
 static void
 initializeGoldPiles()
 {
   int cols = grid_getNumberCols(game->grid);
   int rows = grid_getNumberRows(game->grid);
-  int maxAvailableSpots = (rows * cols) - (rows * 2) - (cols * 2);    // generate number of open spots to put gold
+  int maxAvailableSpots = (rows * cols) - (rows * 2) - (cols * 2);                        // generate number of open spots to put gold
   int max = (GoldMaxNumPiles > maxAvailableSpots) ? maxAvailableSpots : GoldMaxNumPiles;  // get the smaller number of piles
-  int numGoldPiles = (rand() % (max - GoldMinNumPiles + 1)) + GoldMinNumPiles;  // generate a value between min and max range of gold piles
+  int numGoldPiles = (rand() % (max - GoldMinNumPiles + 1)) + GoldMinNumPiles;            // generate a value between min and max range of gold piles
   int goldDistributionArray[numGoldPiles];
   int randomLocations[numGoldPiles];
   generateRandomLocations(numGoldPiles, randomLocations);         // generate an array of random valid locations on the grid
@@ -221,7 +221,7 @@ generateRandomLocations(int numGoldPiles, int* arr)
       else {  // if location not occupied by gold
         arr[i] = location;
         i++;
-        counters_set(game->gold, location, 1);        // mark location for having gold piles
+        counters_set(game->gold, location, 1);  // mark location for having gold piles
       }
     }
   }
@@ -261,23 +261,23 @@ generateGoldDistribution(int numGoldPiles, int* arr)
 /*
  * checks the arguments given by the caller, ensuring that maps.txt is readable and setting the random seed number
  * if [seed] is provided. Otherwise, generate a random seed using process id.
- * 
+ *
  * We Return:
  *    1 if invalid seed given or map.txt given is not readable
  *    0 if valid map.txt and valid seed (if given)
- * 
+ *
  * Pseudocode:
- *    if 2 or 3 arguments provided, including the command itself, 
+ *    if 2 or 3 arguments provided, including the command itself,
  *        if 3 arguments,
  *           return error code 1 if value is not a positive integer
  *           srand(value) if it is a positive integer
  *        else (if 2 arguments),
  *           srand(getPid())
  *        check if 2nd argument given is a readable file, returning error code if not readable
- *        
+ *
  *    else
  *        print to stderr and return error code
- *  
+ *
  */
 static int
 parseArgs(const int argc, char* argv[])
@@ -331,14 +331,14 @@ isReadable(char* pathName)
 /*
  * Handle all messages passed from the client to the server based on protocol
  * in requirements spec.
- * 
+ *
  * We return:
  *  true if ending game and exiting message loop
  *  false if game still ongoing and should remain in message loop
- * 
+ *
  * Pseudocode:
  *    if client sends PLAY:
- *        call playerJoin to join the player 
+ *        call playerJoin to join the player
  *        send GOLD message to all clients connected
  *        send DISPLAY message to all clients connected
  *        update spectator's display
@@ -364,7 +364,7 @@ isReadable(char* pathName)
  *              sendGoldMessage to all clients
  *              sendDisplayMessage to all clients
  *              updateSpectatorDisplay
- *              
+ *
  *           else
  *              call player_moveCapital
  *              if player_moveCapital returns true, it is a valid move and player moves and collects gold accordingly
@@ -381,7 +381,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
     char* name = mem_malloc(strlen(realName) + 1);
     strcpy(name, realName);
-    playerJoin(name, from);     // join player
+    playerJoin(name, from);                                         // join player
     hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
     hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
     updateSpectatorDisplay();
@@ -453,7 +453,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
 
 /* ***************** updateSpectatorDisplay ********************** */
 /* Updates the spectator's display if the spectator exists
- * 
+ *
  * Pseudocode:
  *   if spectator is connected
  *      create a gold message
@@ -461,7 +461,7 @@ handleMessage(void* arg, const addr_t from, const char* message)
  *      send gold and display message to the spectator
  *   free all unused memory
  */
-static void 
+static void
 updateSpectatorDisplay()
 {
   if (game->spectatorAddressID != 0) {  // if spectator is connected, update spectator's display
@@ -472,7 +472,7 @@ updateSpectatorDisplay()
 
     // creating display message
     set_t* playerLoc = player_locations(game->allPlayers);
-    
+
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
     char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
@@ -480,8 +480,8 @@ updateSpectatorDisplay()
     strcat(displayMessage, display);
 
     addr_t specAddr = game->addresses[game->spectatorAddressID];  // get spectator address using its index
-    message_send(specAddr, goldMsg);         // send gold messsage
-    message_send(specAddr, displayMessage);  // send display message
+    message_send(specAddr, goldMsg);                              // send gold messsage
+    message_send(specAddr, displayMessage);                       // send display message
 
     // clear memory space
     set_delete(playerLoc, itemDelete);
@@ -493,7 +493,7 @@ updateSpectatorDisplay()
 
 /* ***************** endGame ********************** */
 /* Ends the game and send GOLD, DISPLAY, and QUIT messages to all clients
- * 
+ *
  * Pseudocode:
  *   send GOLD messsage to all players
  *   send DISPLAY message to all players
@@ -539,7 +539,7 @@ endGame()
 
 /* ***************** sendGoldMessage ********************** */
 /* Sends GOLD message to player, telling them the gold they recently collected, the gold in their purse, and the remaining gold in game
- * 
+ *
  * Pseudocode:
  *   find the player's address id
  *   if player is still playing, and player is not null, and address id exists in game->addrID,
@@ -563,7 +563,7 @@ sendGoldMessage(void* arg, const char* addr, void* item)
 
 /* ***************** sendDisplayMessage ********************** */
 /* Sends DISPLAY message to player with the grid
- * 
+ *
  * Pseudocode:
  *   find the player's address id
  *   if player is still playing, and player is not null, and address id exists in game->addrID,
@@ -591,7 +591,6 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
     message_send(actualAddr, displayMessage);  // send display message
 
     set_delete(playerLocations, itemDelete);
-    set_delete(player_getSeenBefore(player), NULL);
     player_setSeenBefore(player, newSeenBefore);
 
     mem_free(display);
@@ -601,7 +600,7 @@ sendDisplayMessage(void* arg, const char* addr, void* item)
 
 /* ***************** deletePlayer ********************** */
 /* deletes the player, freeing up memory
- * 
+ *
  * Pseudocode:
  *   if player is not yet deleted,
  *      call player_delete
@@ -617,7 +616,7 @@ deletePlayer(void* item)
 
 /* ***************** sendEndMessage ********************** */
 /* Sends QUIT GAME OVER message to clients
- * 
+ *
  * Pseudocode:
  *   create the QUIT GAME OVER message
  *   if the player exists and is still connected to server
@@ -731,7 +730,7 @@ playerJoin(char* name, const addr_t client)
     // create an id for the new player and store it in game->addrID and game->addresses respectively
     int* newAddrID = mem_malloc(sizeof(int));
     *newAddrID = game->numPlayers;
-    game->addresses[game->numPlayers] = client;    // store the address of the player
+    game->addresses[game->numPlayers] = client;  // store the address of the player
 
     hashtable_insert(game->addrID, message_stringAddr(client), newAddrID);      // store new player's address
     hashtable_insert(game->allPlayers, message_stringAddr(client), newPlayer);  // store new player in allPlayers
@@ -753,11 +752,11 @@ playerJoin(char* name, const addr_t client)
 /*
  * Adds a spectator to the server. If there is already an existing spectator, QUIT the existing spectator and update spectator address
  * Send GRID, GOLD, DISPLAY message to spectator
- * 
+ *
  * Pseudocode:
  *    if spectator exists
  *        send QUIT message to the existing spectator
- *    else 
+ *    else
  *        initialize spectatorAddressID to MaxPlayers, the special index stored for spectator addresses in game->addresses
  *    store new spectator address in game->addresses
  *    create GRID message
