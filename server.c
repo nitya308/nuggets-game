@@ -28,6 +28,7 @@ static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static bool isReadable(char* pathName);
 static bool playerJoin(char* name, const addr_t client);
+static bool isEmpty(const char* name);
 static void spectatorJoin(const addr_t* address);
 static void buildGrid(grid_t* grid, char** argv);
 static void endGame();
@@ -61,7 +62,7 @@ typedef struct game {
 
 /**************** local variables ****************/
 static game_t* game;                    // game struct storing the state of the game
-static const int MaxPlayers = 26;       // maximum number of players
+static const int MaxPlayers = 2;       // maximum number of players
 static const int GoldTotal = 250;       // amount of gold in the game
 static const int GoldMinNumPiles = 10;  // minimum number of gold piles
 static const int GoldMaxNumPiles = 30;  // maximum number of gold piles
