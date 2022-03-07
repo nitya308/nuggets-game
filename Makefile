@@ -44,7 +44,7 @@ miniclient: miniclient.o message.o log.o
 
 # querier source dependencies
 server.o: $S/message.h $S/log.h $L/mem.h $L/file.h $P/player.h $G/grid.h
-client.o: $S/message.h $S/log.h
+client.o: $S/message.h $S/log.h $L/mem.h
 miniclient.o: message.h
 message.o: message.h
 log.o: log.h
