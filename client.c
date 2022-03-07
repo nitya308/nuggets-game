@@ -11,9 +11,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ncurses.h>
-#include "libcs50/mem.h"
-#include "support/message.h"
-#include "support/log.h"
+#include "mem.h"
+#include "message.h"
+#include "log.h"
 
 
 // Data structures
