@@ -18,4 +18,4 @@ Results of running `make test`, which calls gridtest.c, are printed to testing.o
 Assumes that map files are in valid format.
 
 ## Extra credit
-Implements radius of visibility = 5
+Implements radius of visibility. To change radius, change defined value in grid.c

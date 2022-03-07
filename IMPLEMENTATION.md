@@ -294,13 +294,13 @@ static void generateGoldDistribution(int numGoldPiles, int* arr);
 ### Detailed pseudo code
 
 #### `main`:
-  call parseArgs
+	call parseArgs
 	if parseArgs returns exit code 1, exit server
 	else, initialize the game by calling initializeGame.
-  initialize the 'message' module
+	initialize the 'message' module
 	initialize the network and announce the port number
 	call message_loop(), to await clients
-  exit with 0 code
+	exit with 0 code
 
 #### `parseArgs`:
 	if 2 or 3 arguments provided, including the command itself,
@@ -355,12 +355,12 @@ static void generateGoldDistribution(int numGoldPiles, int* arr);
 						else, it is an invalid move and server sends message to client informing them that it is invalid
 
 #### `isReadable`:
- check if path is readable
- return true if file able to open to read
- return false if file cannot open to read
+	check if path is readable
+	return true if file able to open to read
+	return false if file cannot open to read
 
 #### `playerJoin`:
-  if numPlayers < MaxPlayers:
+	if numPlayers < MaxPlayers:
 		create a new player using player_new
 		if game->numGoldLeft is 0:
 			call endGame
@@ -372,38 +372,38 @@ static void generateGoldDistribution(int numGoldPiles, int* arr);
 		update the player's seenBefore
 		send OK and GRID message
 		increment game->numPlayers
-  else
+	else
 		send QUIT message to new client trying to connect
 
 #### `isEmpty`:
-  loops through the input string, and check if isspace
+	loops through the input string, and check if isspace
 		if character isspace,
 			return false
 	return true
-	
+
 #### `spectatorJoin`:
-  if spectator exists
-    send QUIT message to the existing spectator
-  else
-    initialize spectatorAddressID to MaxPlayers, the special index stored for spectator addresses in game->addresses
-  store new spectator address in game->addresses
-  create GRID message
-  create GOLD message
-  create DISPLAY message
-  send them to spectator using message_send
-  free all unused memory
+	if spectator exists
+		send QUIT message to the existing spectator
+	else
+		initialize spectatorAddressID to MaxPlayers, the special index stored for spectator addresses in game->addresses
+	store new spectator address in game->addresses
+	create GRID message
+	create GOLD message
+	create DISPLAY message
+	send them to spectator using message_send
+	free all unused memory
 
 #### `buildGrid`:
 	call grid_read from the grid module on the map filename given to server and store in game->grid
 
 #### `endGame`:
-  send GOLD messsage to all players
-  send DISPLAY message to all players
-  updateSpectatorDisplay
-  call player_summary and send end message to all players with the summary
-  if spectator is connected
+	send GOLD messsage to all players
+	send DISPLAY message to all players
+	updateSpectatorDisplay
+	call player_summary and send end message to all players with the summary
+	if spectator is connected
 		send quit message to spectator
-  free all unused memory, deleting allPlayers, addrID, gold, grid, addresses, numGoldLeft and game.
+	free all unused memory, deleting allPlayers, addrID, gold, grid, addresses, numGoldLeft and game.
 
 #### `deletePlayer`:
 	if player is not yet deleted,
@@ -413,8 +413,8 @@ static void generateGoldDistribution(int numGoldPiles, int* arr);
 	deletes the item by calling mem_free
 
 #### `sendDisplayMessage`:
-  find the player's address id
-  if player is still playing, and player is not null, and address id exists in game->addrID,
+	find the player's address id
+	if player is still playing, and player is not null, and address id exists in game->addrID,
 		get players newSeenBefore using grid_updateView
 		call grid_print to get the string of the grid that the player can see
 		create DISPLAY message
@@ -422,8 +422,8 @@ static void generateGoldDistribution(int numGoldPiles, int* arr);
 		free the messages
 
 #### `sendGoldMessage`:
-  find the player's address id
-  if player is still playing, and player is not null, and address id exists in game->addrID,
+	find the player's address id
+	if player is still playing, and player is not null, and address id exists in game->addrID,
 		create GOLD message
 		send GOLD message using message_send
 
@@ -434,45 +434,45 @@ static void generateGoldDistribution(int numGoldPiles, int* arr);
 		call message_send to player, sending the player the end of game message
 
 #### `updateSpectatorDisplay`:
-  if spectator is connected
+	if spectator is connected
 		create a gold message
 		create a display message
 		send gold and display message to the spectator
-  free all unused memory
+	free all unused memory
 
 #### `initializeGame`:
-  allocate memory to game and check if successful
-  call buildGrid to create grid_t by loading the map file
-  set numGoldLeft
-  create the allPlayers hashtable
-  create the addrID hashtable that stores the ID to the addresses for each client connected
-  create the counters_t for gold that stores (key, count), where key is the location on the grid and count is the number of gold at that locaton
-  call initializeGoldPiles to create random gold piles in the map
-  allocate memory for addresses that stores an array of all the addr_t of clients
-  set spectatorAddressID and numPlayers to 0
+	allocate memory to game and check if successful
+	call buildGrid to create grid_t by loading the map file
+	set numGoldLeft
+	create the allPlayers hashtable
+	create the addrID hashtable that stores the ID to the addresses for each client connected
+	create the counters_t for gold that stores (key, count), where key is the location on the grid and count is the number of gold at that locaton
+	call initializeGoldPiles to create random gold piles in the map
+	allocate memory for addresses that stores an array of all the addr_t of clients
+	set spectatorAddressID and numPlayers to 0
 
 #### `initializeGoldPiles`:
-  calculate the maximum number of available spots on the grid
-  compare the maxAvailableSpots with GoldMaxNumPiles and take the smaller number
-  generate a random number of gold piles between GoldMinNumPiles and the smaller number calculated earlier
-  create an array with size number of gold piles storing the locations to put the gold piles
-  create an array with size number of gold piles storing the random number of gold in each pile summing up to GoldTotal
-  loop through number of gold piles generated, setting the location and the gold count in game->gold
+	calculate the maximum number of available spots on the grid
+	compare the maxAvailableSpots with GoldMaxNumPiles and take the smaller number
+	generate a random number of gold piles between GoldMinNumPiles and the smaller number calculated earlier
+	create an array with size number of gold piles storing the locations to put the gold piles
+	create an array with size number of gold piles storing the random number of gold in each pile summing up to GoldTotal
+	loop through number of gold piles generated, setting the location and the gold count in game->gold
 
 #### `generateRandomLocations`:
-  loop through the number of gold piles
+	loop through the number of gold piles
 		generate a random location
 		if location is a valid spot on the grid to put the gold
 			if the location is not occupied by gold
 				store location
 
 #### `generateGoldDistribution`:
-  Calculate goldRemaining, the max value of gold that can be generated such that each gold pile has at least 1 gold in it.
-  loop through the number of gold piles - 1,
+	Calculate goldRemaining, the max value of gold that can be generated such that each gold pile has at least 1 gold in it.
+	loop through the number of gold piles - 1,
 		generate a random gold amount
 		store the gold amount in the array
 		update number of goldRemaining
-  allocate the remaining gold unallocated to the last gold pile
+	allocate the remaining gold unallocated to the last gold pile
 
 
 ---
@@ -641,9 +641,9 @@ set_t* player_locations(hashtable_t* allPlayers)
 	free the player struct memory
 
 ### `player_summary`:
-  create a summary string
-  iterate over hashtable and add each player's summary
-  return the summary
+	create a summary string
+	iterate over hashtable and add each player's summary
+	return the summary
 
 ### `player_locations(hashtable_t* allPlayers)`:
   create a new set
@@ -760,142 +760,142 @@ static bool isBlocked(grid_t* grid, int rowObsrvr, int colObsrvr, int rowp, int 
     return null
 
 #### `grid_locationConvert`
-  if grid not null, location >=0, location < grid's num columns * num rows
-    row number is  location/width
-    column number is location%width
-    return 2-element array of these two numbers
-  else
-    return NULL
+	if grid not null, location >=0, location < grid's num columns * num rows
+		row number is  location/width
+		column number is location%width
+		return 2-element array of these two numbers
+	else
+		return NULL
 
 #### `grid_isOpen`
-  if coordinates given by locationConvert on location are null
-    return false
-  if the coordinates given point to a room or passage spot in 2-d grid char array
-    return true
-  else
-    return false
+	if coordinates given by locationConvert on location are null
+		return false
+	if the coordinates given point to a room or passage spot in 2-d grid char array
+		return true
+	else
+		return false
 
 #### `grid_isRoom`
-  if coordinates given by locationConvert on location are null
-    return false
-  if the coordinates given point to a room character in 2-d grid char array
-    return true
-  else
-    return false
+	if coordinates given by locationConvert on location are null
+		return false
+	if the coordinates given point to a room character in 2-d grid char array
+		return true
+	else
+		return false
 
 #### `grid_isVisible`
-  if grid_isOpen on this location is true
-    initialize set of location keys
-    print the int key to a string literal
-    store an "@" item for that location key 
+	if grid_isOpen on this location is true
+		initialize set of location keys
+		print the int key to a string literal
+		store an "@" item for that location key 
 
-    grid_locationConvert on the int to get observer row, column number
-    for every row, col coordinate in grid
-      if not isBlocked on that coordinate from observer location
-        if location is less than radius away from observer
-          print that location to string key
-          if counters_get on gold counter for that location is >0
-            insert gold symbol for this string key into set
-          else if set_find on playerLocations set for that location is not NULL
-            insert that player's symbol this string key into set
-          else
-            insert dummy symbol "g" for this location key into the set
+		grid_locationConvert on the int to get observer row, column number
+		for every row, col coordinate in grid
+			if not isBlocked on that coordinate from observer location
+				if location is less than radius away from observer
+					print that location to string key
+					if counters_get on gold counter for that location is >0
+						insert gold symbol for this string key into set
+					else if set_find on playerLocations set for that location is not NULL
+						insert that player's symbol this string key into set
+					else
+						insert dummy symbol "g" for this location key into the set
 
-    return the locations set
-  else
-    return null
+		return the locations set
+	else
+		return null
 
 #### `grid_isBlocked`
-  if observer and point fall on same column
-    iterate from observer's row + or - 1 to the point 
-      if this location is not a room spot
-        return true (meaning input point is blocked)
-    return false (not blocked)
+	if observer and point fall on same column
+		iterate from observer's row + or - 1 to the point 
+			if this location is not a room spot
+				return true (meaning input point is blocked)
+		return false (not blocked)
 
-  if same row
-    do above procedure for rows
-  
-  define a small tolerance value
-  calculate slope between observed point and observer using slope formula
+	if same row
+		do above procedure for rows
 
-  do the diagonal procedure:
-  define a unit vector for column (just + or -1 based on whether observer columns < or > point's col)
-  iterate from observer's col + unit vector to point's col
-    calculate the row (floating point)
-    if row is exactly on a grid point (within tolerance value)
-      if point is not room spot
-        return true (blockage)
-    if both the int row below and row above aren't room spots
-      return true
-  
-  repeat the diagonal procedure but define row unit vector, iterate through rows, and test the calculated columns (reverse roles of rows and columns)
+	define a small tolerance value
+	calculate slope between observed point and observer using slope formula
 
-  return false by default
+	do the diagonal procedure:
+	define a unit vector for column (just + or -1 based on whether observer columns < or > point's col)
+	iterate from observer's col + unit vector to point's col
+		calculate the row (floating point)
+		if row is exactly on a grid point (within tolerance value)
+			if point is not room spot
+				return true (blockage)
+		if both the int row below and row above aren't room spots
+			return true
+
+	repeat the diagonal procedure but define row unit vector, iterate through rows, and test the calculated columns (reverse roles of rows and columns)
+
+	return false by default
 
 #### `grid_updateView`
-  If grid not null
-    call grid_isVisible on the new location, with grid, players set, gold counter
-    if resulting visible set is not null
-      set_iterate through seen-before set, with visible set as arg, calling mergeHelper
-      set_delete the seen-before set
-      return the visible set
-  return seen-before set
+	If grid not null
+		call grid_isVisible on the new location, with grid, players set, gold counter
+		if resulting visible set is not null
+			set_iterate through seen-before set, with visible set as arg, calling mergeHelper
+			set_delete the seen-before set
+			return the visible set
+	return seen-before set
 
 #### `mergeHelper`
-  if set_find the string key (from seen-before) returns null for newly-visible
-    insert the key into newly visible, with dummy “g” item
+	if set_find the string key (from seen-before) returns null for newly-visible
+		insert the key into newly visible, with dummy “g” item
 
 #### `grid_displaySpectator`
-  if grid is not null,
-    create an empty spectator's set of integer keys (locations) and character items
-    convert integer location to string
-    for each location in grid
-      if grid_isOpen on location is true
-        call set_find on player locations with location as key 
-        if this returns non null
-          insert the location as key, player symbol as item into spectator set
-        if counters_get on gold counters for this location > 0
-          insert the location as key, gold symbol "*" item into spectator set
-        else
-          insert location key, dummy item "g" into spectator set
-      else
-          insert location key, dummy item "g" into spectator set
-    return spectator's set
-  else
-    return null   
-      
+	if grid is not null,
+		create an empty spectator's set of integer keys (locations) and character items
+		convert integer location to string
+		for each location in grid
+			if grid_isOpen on location is true
+				call set_find on player locations with location as key 
+				if this returns non null
+					insert the location as key, player symbol as item into spectator set
+				if counters_get on gold counters for this location > 0
+					insert the location as key, gold symbol "*" item into spectator set
+				else
+					insert location key, dummy item "g" into spectator set
+			else
+					insert location key, dummy item "g" into spectator set
+		return spectator's set
+	else
+		return null   
+			
  
 #### `grid_Print`
-  if grid and input locations set are not null
-    Initialize empty printstring.
-    for every int location in the grid
-      print location int to a string key
-      if set_find key on input set of locations gives null (means not visible)
-        append a space “ “ to the printstring
-      else if key corresponds to dummy item “g” (means visible, ordinary point)
-        append the grid character from that location to the printstring
-      else (means point contains special character like gold or player)
-        Append the char stored in the set to the printstring.
-      If int % grid width is 0
-        add a newline character to the printstring
-    return the printstring
-  else
-    return null
+	if grid and input locations set are not null
+		Initialize empty printstring.
+		for every int location in the grid
+			print location int to a string key
+			if set_find key on input set of locations gives null (means not visible)
+				append a space “ “ to the printstring
+			else if key corresponds to dummy item “g” (means visible, ordinary point)
+				append the grid character from that location to the printstring
+			else (means point contains special character like gold or player)
+				Append the char stored in the set to the printstring.
+			If int % grid width is 0
+				add a newline character to the printstring
+		return the printstring
+	else
+		return null
 
 #### `grid_getNumberRows`
-  if grid not null
-    Gives number of rows in grid
+	if grid not null
+		Gives number of rows in grid
 
 #### `grid_getNumberCols`
-  if grid not null  
-    Gives number of columns in grid
+	if grid not null  
+		Gives number of columns in grid
 
 #### `grid_delete`
-  if grid not null
-    loop through 2D char array in grid
-      free each 1D string
-    free the char array
-    free the grid
+	if grid not null
+		loop through 2D char array in grid
+			free each 1D string
+		free the char array
+		free the grid
 
 ---
 
@@ -948,7 +948,3 @@ Player implements: Player who quits before the end of the game gives up
 their gold, leaving a new pile at their last location. This is done in the plyer_quit function which updates the game’s gold counter and variable tracking the number of gold left.
 
 
-
-
-Player implements: Player who quits before the end of the game gives up 
-their gold, leaving a new pile at their last location. This is done in the plyer_quit function which updates the game’s gold counter and variable tracking the number of gold left.
