@@ -27,7 +27,7 @@ static int parseArgs(const int argc, char* argv[]);
 static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static bool isReadable(char* pathName);
-static void playerJoin(char* name, const addr_t client);
+static bool playerJoin(char* name, const addr_t client);
 static void spectatorJoin(const addr_t* address);
 static void buildGrid(grid_t* grid, char** argv);
 static void endGame();
@@ -379,13 +379,18 @@ handleMessage(void* arg, const addr_t from, const char* message)
 {
   if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
     const char* realName = message + strlen("PLAY ");  // get the real name after PLAY
-    char* name = mem_malloc(strlen(realName) + 1);
-    strcpy(name, realName);
-    playerJoin(name, from);                                         // join player
-    hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
-    hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
-    updateSpectatorDisplay();
-    mem_free(name);
+    if (isEmpty(realName)) {  // if no whitespaces in name provided
+      message_send(from, "QUIT Sorry - you must provide player's name.\n");
+    } else {
+      char* name = mem_malloc(strlen(realName) + 1);
+      strcpy(name, realName);
+      if (playerJoin(name, from)) {
+        hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
+        hashtable_iterate(game->allPlayers, NULL, sendDisplayMessage);  // update all player's displays
+        updateSpectatorDisplay();
+      }                                         // join player
+      mem_free(name);
+    }
   }
   else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
     spectatorJoin(&from);
@@ -449,6 +454,24 @@ handleMessage(void* arg, const addr_t from, const char* message)
     }
   }
   return false;  // stay in message loop
+}
+
+/* ***************** isEmpty ********************** */
+/*
+ * Checks if a given string has non-spaces characters
+ * We Return:
+ *    true if there's only whitespaces in string provided
+ *    false if there's non-spaces in string
+ */
+static bool
+isEmpty(const char* name)
+{
+  for (int i=0; i < strlen(name); i++) {
+    if (isspace(name[i]) == 0) { // if not a whitespace
+      return false;
+    }
+  }
+  return true;  // if only whitespaces in name provided
 }
 
 /* ***************** updateSpectatorDisplay ********************** */
@@ -706,7 +729,7 @@ setitemprint(FILE* fp, const char* key, void* item)
  *   else
  *      send QUIT message to new client trying to connect
  */
-static void
+static bool
 playerJoin(char* name, const addr_t client)
 {
   if (game->numPlayers < MaxPlayers) {
@@ -745,6 +768,10 @@ playerJoin(char* name, const addr_t client)
     (game->numPlayers)++;
 
     set_delete(playerLocations, itemDelete);
+    return true;
+  } else {
+    message_send(client, "QUIT Game is full: no more players can join.\n");
+    return false;
   }
 }
 
