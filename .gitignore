@@ -32,6 +32,9 @@ client
 # log files
 *.log
 
+# text files
+*.txt
+
 # valgrind files
 vgcore*
 
