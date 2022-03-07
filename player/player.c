@@ -40,13 +40,18 @@ typedef struct playerSwap {
 } player_swapstruct;
 
 // function prototypes
-player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* numGoldLeft, counters_t* gold, int numPlayers);
-bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor);
-bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
-bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft);
+player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers,
+  int* numGoldLeft, counters_t* gold, int numPlayers);
+bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers,
+  grid_t* grid, counters_t* gold, int newCoor);
+bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers,
+  grid_t* grid, counters_t* gold, int* numGoldLeft);
+bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers,
+  grid_t* grid, counters_t* gold, int* numGoldLeft);
 bool player_collectGold(player_t* player, int* numGoldLeft, counters_t* gold);
 bool player_swapLocations(player_t* currPlayer, hashtable_t* allPlayers, int newCoor);
-bool player_quit(const char* address, hashtable_t* allPlayers, counters_t* gold, int* numGoldLeft);
+bool player_quit(const char* address, hashtable_t* allPlayers, 
+  counters_t* gold,int* numGoldLeft);
 void player_delete(player_t* player);
 char* player_summary(hashtable_t* allPlayers);
 set_t* player_locations(hashtable_t* allPlayers);
@@ -70,7 +75,8 @@ static void stringfree(void* item);
 
 /**************** player_new ****************/
 /* see player.h for description */
-player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* numGoldLeft, counters_t* gold, int numPlayers)
+player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, 
+                            int* numGoldLeft, counters_t* gold, int numPlayers)
 {
   mem_assert(name, "name provided was null");
   mem_assert(grid, "grid provided was null");
@@ -90,7 +96,7 @@ player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* num
     name[MaxNameLength] = '\0';
   }
 
-  // replacing with an underscore _ any character for which both isgraph() and isblank() are false
+  // replacing with an underscore _ any character for which both isgraph() & isblank() are false
   int i = 0;
   while (name[i] != '\0') {
     if (!isgraph(name[i]) && !isblank(name[i])) {
@@ -133,7 +139,8 @@ player_t* player_new(char* name, grid_t* grid, hashtable_t* allPlayers, int* num
 
 /**************** player_updateCoordinate ****************/
 /* see player.h for description */
-bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int newCoor)
+bool player_updateCoordinate(player_t* player, hashtable_t* allPlayers, 
+                                  grid_t* grid, counters_t* gold, int newCoor)
 {
   player->currCoor = newCoor;
   set_t* playerLocations = player_locations(allPlayers);
@@ -150,7 +157,8 @@ static void stringfree(void* item)
 
 /**************** player_moveRegular ****************/
 /* see player.h for description */
-bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft)
+bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, 
+                              grid_t* grid, counters_t* gold, int* numGoldLeft)
 {
   int newCoor;
   int cols = grid_getNumberCols(grid);
@@ -227,7 +235,8 @@ bool player_moveRegular(player_t* player, char move, hashtable_t* allPlayers, gr
 
 /**************** player_moveCapital ****************/
 /* see player.h for description */
-bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, grid_t* grid, counters_t* gold, int* numGoldLeft)
+bool player_moveCapital(player_t* player, char move, hashtable_t* allPlayers, 
+                              grid_t* grid, counters_t* gold, int* numGoldLeft)
 {
   int recentGold = 0;  // counts all the gold collected across multiple moves here
   while (true) {

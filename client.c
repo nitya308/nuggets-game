@@ -28,7 +28,8 @@ typedef struct playerAttributes {
   char* display;
 } playerAttributes_t;
 
-// Global game variable (while it is not the 'game' struct seen in server, it is the global game variable for client-side use)
+// Global game variable (while it is not the 'game' struct seen in server;
+// it is the global game variable for client-side use)
 playerAttributes_t playerAttributes;
 
 // Function prototypes
@@ -239,7 +240,8 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
       }
       else {
         printw("Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", 
-          playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft, playerAttributes.goldCollected);
+          playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft, 
+            playerAttributes.goldCollected);
       }
     }
     // If client is spectator

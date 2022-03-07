@@ -18,7 +18,8 @@
  *   where map.txt is the path to a map file for the game
  *   where seed is the random seed number
  *
- * Assumption: The map.txt file is a valid map file (see https://github.com/cs50winter2022/nuggets-info/blob/main/REQUIREMENTS.md#valid-maps)
+ * Assumption: The map.txt file is a valid map file
+ * (see https://github.com/cs50winter2022/nuggets-info/blob/main/REQUIREMENTS.md#valid-maps)
  */
 
 /* *********************************************************************** */
@@ -106,7 +107,8 @@ int main(const int argc, char* argv[])
  *   set numGoldLeft
  *   create the allPlayers hashtable
  *   create the addrID hashtable that stores the ID to the addresses for each client connected
- *   create the counters_t for gold that stores (key, count), where key is the location on the grid and count is the number of gold at that locaton
+ *   create the counters_t for gold that stores (key, count), where key is the location on the grid
+ *     and count is the number of gold at that locaton
  *   call initializeGoldPiles to create random gold piles in the map
  *   allocate memory for addresses that stores an array of all the addr_t of clients
  *   set spectatorAddressID and numPlayers to 0
@@ -139,7 +141,9 @@ static void initializeGame(char** argv)
     fprintf(stderr, "Failed to create gold counters. Exiting...\n");
     exit(1);
   }
-  initializeGoldPiles();  // initialize gold piles by generate random number of gold piles and random number of gold on the grid
+
+  // initialize gold piles by generate random number of gold piles and random number of gold on the grid
+  initializeGoldPiles();
   game->addresses = mem_malloc_assert((MaxPlayers + 1) * sizeof(addr_t), "Out of memory for addresses variable.\n");
   game->spectatorAddressID = 0;  // no spectator initially. set value MaxPlayers if spectator connected
   game->numPlayers = 0;
@@ -175,13 +179,18 @@ static void initializeGoldPiles()
 {
   int cols = grid_getNumberCols(game->grid);
   int rows = grid_getNumberRows(game->grid);
-  int maxAvailableSpots = (rows * cols) - (rows * 2) - (cols * 2);                        // generate number of open spots to put gold
-  int max = (GoldMaxNumPiles > maxAvailableSpots) ? maxAvailableSpots : GoldMaxNumPiles;  // get the smaller number of piles
-  int numGoldPiles = (rand() % (max - GoldMinNumPiles + 1)) + GoldMinNumPiles;            // generate a value between min and max range of gold piles
+  // generate number of open spots to put gold
+  int maxAvailableSpots = (rows * cols) - (rows * 2) - (cols * 2);
+  // get the smaller number of piles
+  int max = (GoldMaxNumPiles > maxAvailableSpots) ? maxAvailableSpots : GoldMaxNumPiles;
+  // generate a value between min and max range of gold piles
+  int numGoldPiles = (rand() % (max - GoldMinNumPiles + 1)) + GoldMinNumPiles;
   int goldDistributionArray[numGoldPiles];
   int randomLocations[numGoldPiles];
-  generateRandomLocations(numGoldPiles, randomLocations);         // generate an array of random valid locations on the grid
-  generateGoldDistribution(numGoldPiles, goldDistributionArray);  // generate an array of random gold amount, summing up to goldTotal
+  // generate an array of random valid locations on the grid
+  generateRandomLocations(numGoldPiles, randomLocations);
+  // generate an array of random gold amount, summing up to goldTotal
+  generateGoldDistribution(numGoldPiles, goldDistributionArray);
   int idx = 0;
   while (idx < numGoldPiles) {  // put the randomly generated gold piles down
     counters_set(game->gold, randomLocations[idx], goldDistributionArray[idx]);
@@ -225,7 +234,8 @@ static void generateRandomLocations(int numGoldPiles, int* arr)
  * Generates an array of random number of gold for each gold pile, summing up to GoldTotal
  *
  * Pseudocode:
- *   Calculate goldRemaining, the max value of gold that can be generated such that each gold pile has at least 1 gold in it.
+ *   Calculate goldRemaining, the max value of gold that can be generated such that each
+ *     gold pile has at least 1 gold in it.
  *   loop through the number of gold piles - 1,
  *      generate a random gold amount
  *      store the gold amount in the array
@@ -251,7 +261,8 @@ static void generateGoldDistribution(int numGoldPiles, int* arr)
 
 /* ***************** parseArgs ********************** */
 /*
- * checks the arguments given by the caller, ensuring that maps.txt is readable and setting the random seed number
+ * checks the arguments given by the caller, ensuring that maps.txt is readable and setting
+ *   the random seed number
  * if [seed] is provided. Otherwise, generate a random seed using process id.
  *
  * We Return:
@@ -388,10 +399,13 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     char move = message[strlen("KEY ")];
     // if message is a character
     player_t* player = hashtable_find(game->allPlayers, message_stringAddr(from));
-    if (islower(move)) {                                                                                     // lower character
-      if (!player_moveRegular(player, move, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {  // if not valid keystroke given
-        fprintf(stderr, "Error. Invalid keystroke %s", message);                                             // invalid input keystroke
-        message_send(from, "ERROR. Invalid keystroke.\n");                                                   // invalid input keystroke
+    // lower character
+    if (islower(move)) {                                                        
+      // if not valid keystroke given                             
+      if (!player_moveRegular(player, move, game->allPlayers, game->grid, game->gold, game->numGoldLeft)) {
+        // invalid input keystroke
+        fprintf(stderr, "Error. Invalid keystroke %s", message);
+        message_send(from, "ERROR. Invalid keystroke.\n");
       }
       else {
         // player was successfully moved
@@ -485,7 +499,8 @@ static void updateSpectatorDisplay()
 
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
-    char* displayMessage = mem_malloc_assert(strlen("DISPLAY\n") + strlen(display) + 1, "Out of memory for display message.\n");
+    char* displayMessage = mem_malloc_assert(strlen("DISPLAY\n") + strlen(display) + 1,
+      "Out of memory for display message.\n");
     strcpy(displayMessage, "DISPLAY\n");
     strcat(displayMessage, display);
 
@@ -528,7 +543,7 @@ static void endGame()
   // send quit message with summary to spectator
   if (game->spectatorAddressID != 0) {
     char* quitSpectatorMessage = mem_malloc_assert(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1, 
-          "Out of memory for spectator message.\n");
+      "Out of memory for spectator message.\n");
     strcpy(quitSpectatorMessage, "QUIT GAME OVER:\n");
     strcat(quitSpectatorMessage, summary);
     addr_t specAddr = game->addresses[game->spectatorAddressID];
@@ -593,7 +608,8 @@ static void sendDisplayMessage(void* arg, const char* addr, void* item)
           playerLocations, game->gold);
 
     char* display = grid_print(game->grid, newSeenBefore);
-    char* displayMessage = mem_malloc_assert(strlen("DISPLAY\n") + strlen(display) + 1, "Out of memory for display message.\n");
+    char* displayMessage = mem_malloc_assert(strlen("DISPLAY\n") + strlen(display) + 1,
+      "Out of memory for display message.\n");
     strcpy(displayMessage, "DISPLAY\n");
     strcat(displayMessage, display);           // send all locations that player can see and have seen
     message_send(actualAddr, displayMessage);  // send display message
@@ -634,7 +650,7 @@ static void sendEndMessage(void* arg, const char* addr, void* item)
 {
   char* summary = arg;
   char* message = mem_malloc_assert(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1, 
-        "Out of memory for message in sendEndMessage.\n");
+    "Out of memory for message in sendEndMessage.\n");
   strcpy(message, "QUIT GAME OVER:\n");
   strcat(message, summary);
   int* id = hashtable_find(game->addrID, addr);
@@ -688,9 +704,11 @@ static bool handleInput(void* arg)
 static bool playerJoin(char* name, const addr_t client)
 {
   if (game->numPlayers < MaxPlayers) {
-    player_t* newPlayer = player_new(name, game->grid, game->allPlayers, game->numGoldLeft, game->gold, game->numPlayers);
+    player_t* newPlayer = player_new(name, game->grid, game->allPlayers, game->numGoldLeft, 
+      game->gold, game->numPlayers);
 
-    if (game->numGoldLeft == 0) {  // if no more gold left, end the game, sending QUIT messages with summary to all clients
+    // if no more gold left, end the game, sending QUIT messages with summary to all clients
+    if (game->numGoldLeft == 0) {
       endGame();
     }
     int buffer = 20;
@@ -716,7 +734,8 @@ static bool playerJoin(char* name, const addr_t client)
     set_t* playerLocations = player_locations(game->allPlayers);
     set_t* currSeenBfr = player_getSeenBefore(newPlayer);
     set_delete(currSeenBfr, NULL);
-    player_setSeenBefore(newPlayer, grid_updateView(game->grid, player_getCurrCoor(newPlayer), NULL, playerLocations, game->gold));
+    player_setSeenBefore(newPlayer, grid_updateView(game->grid, player_getCurrCoor(newPlayer), 
+      NULL, playerLocations, game->gold));
 
     message_send(client, okMessage);    // send the player message
     message_send(client, gridMessage);  // send grid message
@@ -732,14 +751,16 @@ static bool playerJoin(char* name, const addr_t client)
 
 /* ***************** spectatorJoin ********************** */
 /*
- * Adds a spectator to the server. If there is already an existing spectator, QUIT the existing spectator and update spectator address
+ * Adds a spectator to the server. If there is already an existing spectator, QUIT the existing spectator
+ *   and update spectator address
  * Send GRID, GOLD, DISPLAY message to spectator
  *
  * Pseudocode:
  *    if spectator exists
  *        send QUIT message to the existing spectator
  *    else
- *        initialize spectatorAddressID to MaxPlayers, the special index stored for spectator addresses in game->addresses
+ *        initialize spectatorAddressID to MaxPlayers, the special index stored for spectator addresses
+ *          in game->addresses
  *    store new spectator address in game->addresses
  *    create GRID message
  *    create GOLD message
