@@ -255,7 +255,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     clear();
     // Tell player their keystroke was inaccurate
     if (playerAttributes.isPlayer) {
-      printw("Player %c has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n",
+      printw("Player %c has %d nuggets (%d nuggets unclaimed). Invalid move\n",
              playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
     }
     printw("%s", playerAttributes.display);
