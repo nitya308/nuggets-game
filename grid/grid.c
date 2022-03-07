@@ -1,4 +1,10 @@
-// Grid module for nuggets 2022
+/*
+ * grid.C file for grid module
+ * performs all functions having to do with the game map
+ * including displaying view, visibiilty
+ *
+ *Matthew Timofeev 2022
+ */
 #include "grid.h"
 
 #include <math.h>
@@ -10,6 +16,7 @@
 #include "file.h"
 #include "mem.h"
 #include "set.h"
+#include "grid.h"
 
 #define RADIUS 1000
 

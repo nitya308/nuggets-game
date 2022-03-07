@@ -29,7 +29,7 @@ int main(const int argc, char* argv[])
 
   //read a small grid file (valid, and assume right format) into a grid structure
   printf("Reading grid from hole.txt...\n");
-  grid = grid_read("hole.txt");
+  grid = grid_read("../maps/hole.txt");
   if(grid == NULL){
     fprintf(stderr,"Error reading grid\n");
   }
