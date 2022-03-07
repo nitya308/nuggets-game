@@ -113,13 +113,13 @@ int main(const int argc, char* argv[])
  */
 static void initializeGame(char** argv)
 {
-  game = mem_malloc(sizeof(game_t));
+  game = mem_malloc_assert(sizeof(game_t), "Out of memory for game variable.\n");
   if (game == NULL) {
     fprintf(stderr, "Failed to create game. Exiting...\n");
     exit(1);
   }
   buildGrid(game->grid, argv);
-  game->numGoldLeft = mem_malloc(sizeof(int*));
+  game->numGoldLeft = mem_malloc_assert(sizeof(int*), "Out of memory for numGoldLeft.\n");
   *(game->numGoldLeft) = GoldTotal;
   game->allPlayers = hashtable_new(MaxPlayers);
   if (game->allPlayers == NULL) {
@@ -140,7 +140,7 @@ static void initializeGame(char** argv)
     exit(1);
   }
   initializeGoldPiles();  // initialize gold piles by generate random number of gold piles and random number of gold on the grid
-  game->addresses = mem_malloc((MaxPlayers + 1) * sizeof(addr_t));
+  game->addresses = mem_malloc_assert((MaxPlayers + 1) * sizeof(addr_t), "Out of memory for addresses variable.\n");
   game->spectatorAddressID = 0;  // no spectator initially. set value MaxPlayers if spectator connected
   game->numPlayers = 0;
 }
@@ -371,7 +371,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     if (isEmpty(realName)) {  // if no whitespaces in name provided
       message_send(from, "QUIT Sorry - you must provide player's name.\n");
     } else {
-      char* name = mem_malloc(strlen(realName) + 1);
+      char* name = mem_malloc_assert(strlen(realName) + 1, "Out of memory for name.\n");
       strcpy(name, realName);
       if (playerJoin(name, from)) {
         hashtable_iterate(game->allPlayers, NULL, sendGoldMessage);     // send gold messages to all players
@@ -485,7 +485,7 @@ static void updateSpectatorDisplay()
 
     set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
     char* display = grid_print(game->grid, spectatorLocations);
-    char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+    char* displayMessage = mem_malloc_assert(strlen("DISPLAY\n") + strlen(display) + 1, "Out of memory for display message.\n");
     strcpy(displayMessage, "DISPLAY\n");
     strcat(displayMessage, display);
 
@@ -527,7 +527,8 @@ static void endGame()
 
   // send quit message with summary to spectator
   if (game->spectatorAddressID != 0) {
-    char* quitSpectatorMessage = mem_malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
+    char* quitSpectatorMessage = mem_malloc_assert(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1, 
+          "Out of memory for spectator message.\n");
     strcpy(quitSpectatorMessage, "QUIT GAME OVER:\n");
     strcat(quitSpectatorMessage, summary);
     addr_t specAddr = game->addresses[game->spectatorAddressID];
@@ -588,10 +589,11 @@ static void sendDisplayMessage(void* arg, const char* addr, void* item)
   if (addrID != NULL && *addrID != -1 && player != NULL) {  // if player address exists and player still in game
     addr_t actualAddr = game->addresses[*addrID];           // get player's address
     set_t* playerLocations = player_locations(game->allPlayers);
-    set_t* newSeenBefore = grid_updateView(game->grid, player_getCurrCoor(player), player_getSeenBefore(player), playerLocations, game->gold);
+    set_t* newSeenBefore = grid_updateView(game->grid, player_getCurrCoor(player), player_getSeenBefore(player), 
+          playerLocations, game->gold);
 
     char* display = grid_print(game->grid, newSeenBefore);
-    char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+    char* displayMessage = mem_malloc_assert(strlen("DISPLAY\n") + strlen(display) + 1, "Out of memory for display message.\n");
     strcpy(displayMessage, "DISPLAY\n");
     strcat(displayMessage, display);           // send all locations that player can see and have seen
     message_send(actualAddr, displayMessage);  // send display message
@@ -631,7 +633,8 @@ static void deletePlayer(void* item)
 static void sendEndMessage(void* arg, const char* addr, void* item)
 {
   char* summary = arg;
-  char* message = mem_malloc(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1);
+  char* message = mem_malloc_assert(strlen(summary) + strlen("QUIT GAME OVER:\n") + 1, 
+        "Out of memory for message in sendEndMessage.\n");
   strcpy(message, "QUIT GAME OVER:\n");
   strcat(message, summary);
   int* id = hashtable_find(game->addrID, addr);
@@ -703,7 +706,7 @@ static bool playerJoin(char* name, const addr_t client)
     snprintf(gridMessage, gridLength, "GRID %d %d", grid_getNumberRows(game->grid), grid_getNumberCols(game->grid));
 
     // create an id for the new player and store it in game->addrID and game->addresses respectively
-    int* newAddrID = mem_malloc(sizeof(int));
+    int* newAddrID = mem_malloc_assert(sizeof(int), "Out of memory for new address id variable.\n");
     *newAddrID = game->numPlayers;
     game->addresses[game->numPlayers] = client;  // store the address of the player
 
@@ -767,7 +770,8 @@ static void spectatorJoin(const addr_t* address)
   set_t* playerLoc = player_locations(game->allPlayers);
   set_t* spectatorLocations = grid_displaySpectator(game->grid, playerLoc, game->gold);
   char* display = grid_print(game->grid, spectatorLocations);
-  char* displayMessage = mem_malloc(strlen("DISPLAY\n") + strlen(display) + 1);
+  char* displayMessage = mem_malloc_assert(strlen("DISPLAY\n") + strlen(display) + 1,
+        "Out of memory for display message");
   strcpy(displayMessage, "DISPLAY\n");
   strcat(displayMessage, display);
   addr_t specAddr = game->addresses[game->spectatorAddressID];

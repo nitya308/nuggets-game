@@ -4,6 +4,8 @@
  * a function to parse command-line args, a function to handle
  * client input, a function to handle server output, and a function
  * to make the display sufficiently large.
+ * 
+ * Ashna Kumar    3/7/22
  */
 
 #include <stdlib.h>
@@ -188,6 +190,7 @@ static bool handleInput(void* arg)
  */
 static bool receiveMessage(void* arg, const addr_t from, const char* message)
 {
+  // In the case of a quit message, print appropriate output to client
   if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
     const char* quitContent = message + strlen("QUIT ");
     endwin();
@@ -195,14 +198,17 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     return true;
   }
 
+  // In the case of gold message, assign variables depending on message
   else if (strncmp(message, "GOLD", strlen("GOLD")) == 0) {
     int n, p, r;
+    // Parse message to get specific integer values
     sscanf(message, "GOLD %d %d %d", &n, &p, &r);
     playerAttributes.goldCollected = n;
     playerAttributes.purse = p;
     playerAttributes.numGoldLeft = r;
   }
 
+  // In the case of grid message, call checkDisplay with # of rows and columns
   else if (strncmp(message, "GRID", strlen("GRID")) == 0) {
     int nrows;
     int ncols;
@@ -210,17 +216,22 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     checkDisplay(nrows, ncols);
   }
 
+  // In the case of ok message, set player ID variable to given ID
   else if (strncmp(message, "OK", strlen("OK")) == 0) {
     const char* id = message + strlen("OK ");
     playerAttributes.playerID = *id;
-  }
+  } 
 
+  // In the case of display message, 
   else if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
+    // Create variable to store message
     const char* displayContent = message + strlen("DISPLAY\n");
     if (playerAttributes.display != NULL) {
       strcpy(playerAttributes.display, displayContent);
     }
     clear();
+
+    // Print these messages only if client is a player
     if (playerAttributes.isPlayer) {
       if (playerAttributes.goldCollected == 0) {
         printw("Player %c has %d nuggets (%d nuggets unclaimed).\n", 
@@ -231,6 +242,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
           playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft, playerAttributes.goldCollected);
       }
     }
+    // If client is spectator
     else {
       printw("Spectator: %d nuggets unclaimed.\n", playerAttributes.numGoldLeft);
     }
@@ -239,9 +251,11 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     refresh();
   }
 
+  // In the case of error message from server, clear display and print to stderr
   else if (strncmp(message, "ERROR", strlen("ERROR")) == 0) {
     fprintf(stderr, "Error message received from server.\n");
     clear();
+    // Tell player their keystroke was inaccurate
     if (playerAttributes.isPlayer) {
       printw("Player %c has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n", 
         playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
@@ -250,6 +264,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     refresh();
   }
 
+  // In the case of any other message received from server
   else {
     fprintf(stderr, "Server message has bad format.\n");
   }
@@ -279,9 +294,10 @@ static void checkDisplay(int nrow, int ncol)
   int row;
   int col;
 
-  playerAttributes.display = mem_malloc_assert(65507, "Out of memory\n");
+  playerAttributes.display = mem_malloc_assert(65507, "Out of memory for display\n");
   getmaxyx(stdscr, row, col);
 
+  // While dimensions are not large enough, prompt user to expand their display window
   while (row < nrow + 1 || col < ncol + 1) {
     printw("Please increase the size of your display window and click enter\n");
     while (getch() != '\n') {
