@@ -17,11 +17,11 @@ We assume the provided map files are valid. No deviations from the provided spec
 
 ### Instructions
 In order to make the client and server, simply type in `make all` into the command line, 
-as instructed in the Makefile. To test, simply type `./server maps/mapfile.txt` with the name
-of some map as the mapfile. Once the server announces the port number, in another window
-run `./client hostname port playerName` or just `./client hostname port` depending if you
-want to be a player or spectator. To run valgrind, type `valgrind` or `myvalgrind` followed
-by the appropriate test arguments.
+as instructed in the Makefile. To test, simply type `./server 2>server.log maps/mapfile.txt`
+with the name of some map as the mapfile. Once the server announces the port number, in another
+window run `./client 2>player.log hostname port playerName` or just `./client 2>spectator.log hostname port`
+depending on if you want to be a player or spectator. To run valgrind, type `valgrind` or `myvalgrind`
+followed by the appropriate test arguments.
 
 ### Additional Notes
 There are some inconsistencies with the ncurses display in which at completely random times,

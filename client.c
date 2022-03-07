@@ -108,7 +108,6 @@ int main(const int argc, char* argv[])
  */
 static void parseArgs(const int argc, char* argv[])
 {
-  printf("%d", argc);
   // Check that command-line usage is correct
   if (argc != 3 && argc != 4) {
     fprintf(stderr, "There are an invalid number of arguments.\n");
