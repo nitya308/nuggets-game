@@ -90,13 +90,13 @@ int main(const int argc, char* argv[])
   }
 
   // Handle messages
-  message_loop(&server, 0, NULL, handleInput, receiveMessage);
+  bool loopResult = message_loop(&server, 0, NULL, handleInput, receiveMessage);
   message_done();
   endwin();
 
   mem_free(playerAttributes.display);
 
-  return 0; // true if success, false if fail
+  return loopResult? 0 : 1; // true if success, false if fail
 }
 
 /**************** parseArgs **********************/
@@ -162,6 +162,7 @@ static bool handleInput(void* arg)
   if (c == 'Q' || c == EOF) {
     // EOF/EOT case: stop looping
     message_send(*serverp, "KEY Q");
+    return true;
   }
   
   else {
@@ -171,6 +172,10 @@ static bool handleInput(void* arg)
       char message[6] = "KEY ";
       strcat(message, str);
       message_send(*serverp, message);
+    }
+
+    else {
+      printw("You may not press anything besides Q.\n");
     }
   }
   return false;
@@ -191,11 +196,15 @@ static bool handleInput(void* arg)
  */
 static bool receiveMessage(void* arg, const addr_t from, const char* message)
 {
+<<<<<<< HEAD
   // In the case of a quit message, print appropriate output to client
   if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
     const char* quitContent = message + strlen("QUIT ");
+=======
+  if (strncmp(message, "QUIT", strlen("QUIT")) == 0) {
+    printw(message);
+>>>>>>> 6ede9fa6d1dcefcef200a988d8398f7d007cf673
     endwin();
-    printf("%s\n", quitContent);
     return true;
   }
 
@@ -225,8 +234,12 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
 
   // In the case of display message, 
   else if (strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
+<<<<<<< HEAD
     // Create variable to store message
     const char* displayContent = message + strlen("DISPLAY\n");
+=======
+    const char* displayContent = message + strlen("DISPLAY") + 1;
+>>>>>>> 6ede9fa6d1dcefcef200a988d8398f7d007cf673
     if (playerAttributes.display != NULL) {
       strcpy(playerAttributes.display, displayContent);
     }
