@@ -191,7 +191,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
   if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
     const char* quitContent = message + strlen("QUIT ");
     endwin();
-    printf("%s\n", quitContent);
+    printf("\n%s\n", quitContent);
     return true;
   }
 
@@ -255,7 +255,7 @@ static bool receiveMessage(void* arg, const addr_t from, const char* message)
     clear();
     // Tell player their keystroke was inaccurate
     if (playerAttributes.isPlayer) {
-      printw("Player %c has %d nuggets (%d nuggets unclaimed). Unknown keystroke\n",
+      printw("Player %c has %d nuggets (%d nuggets unclaimed). Invalid move\n",
              playerAttributes.playerID, playerAttributes.purse, playerAttributes.numGoldLeft);
     }
     printw("%s", playerAttributes.display);
