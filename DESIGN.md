@@ -23,6 +23,8 @@ See the requirements spec for both the command-line and interactive UI.
 
 hostname is IP address where the server is running, port number is the port on which the server expects messages and the third (optional) argument determines whether to join as a *player* or *spectator*.
 
+_**GRADER**_: It is not explained how the third parameter to client indicates _spectator_ or _player_.
+
 ### Inputs and outputs
 
 Players will be able to move around the map using the following keystrokes:
@@ -52,7 +54,9 @@ Every gridpoint is one of these characters:
    * `+` a corner boundary
    * `.` an empty room spot
    * `#` an empty passage spot
- 
+
+_**GRADER**_: Description of possible gridpoint characters doesn't include `@` for the player or `[A-Z]` for other players, if any.
+
 **ERROR LOGS**
 
 Any errors are logged to stderr with an informative message (such as if arguments are NULL, malloc out of memory errors)
@@ -165,6 +169,8 @@ where map.text is a valid map file and there is an optional seed which will be p
 The server takes in a map file as an input. A map file is a `.txt` file that contains a grid of ascii characters representing a map of walls, empty spots, passageways, and solid rock. The server also takes in an optional positive integer seed for the random-number generator.
 
 It announces the port number in the terminal and sends messages back to the client.
+
+_**GRADER**_: You don't mention that the server may receive input from and send output to many clients over the network.
 
 Any errors are logged to our log file which we keep as stderr
 
@@ -401,6 +407,9 @@ This data structure stores the following information about each player
 
 #### allplayers
 This will be a hashtable (from libcs50 data structures) that will store all the player in the game
+
+_**GRADER**_: Hashtable is overkill for such a small lookup
+
 The key of the hashtable will be a string representation of the player's address.
 The item will be a player data type as defined above.
 
