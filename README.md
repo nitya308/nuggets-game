@@ -39,11 +39,10 @@ This repository contains the code for the CS50 "Nuggets" game, in which players 
 ```
 
 * The server can handle up to 27 players at a given time. Messages between the server and client are parsed by the _message module_
-<img width="815" alt="Screen Shot 2022-12-01 at 11 09 57 PM" src="https://user-images.githubusercontent.com/64368452/205123381-8e35bd62-21c8-46d4-af8b-6dac96a3e0ca.png">
-
+<img width="808" alt="Screen Shot 2022-12-01 at 11 09 57 PM copy" src="https://user-images.githubusercontent.com/64368452/205124261-63dad5e9-0c11-4179-9ca6-b46238c7a754.png">
 
 * Players can only see the part of the grid directly in their line of sight, i.e. not blocked diagonally or directly by room walls. They can also see previously visited rooms. This is calculated by the _grid module_.
-<img width="804" alt="Screen Shot 2022-12-01 at 11 12 17 PM" src="https://user-images.githubusercontent.com/64368452/205123408-f80273f7-7367-45b7-9169-bf3574fbd089.png">
+<img width="700" alt="Screen Shot 2022-12-01 at 11 12 17 PM" src="https://user-images.githubusercontent.com/64368452/205123408-f80273f7-7367-45b7-9169-bf3574fbd089.png">
 
 * If a player lands on the same location as another player, the two are swapped. A list of all other players and locations is thus kept to calculate potential swaps in any move.
 
