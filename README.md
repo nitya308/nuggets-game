@@ -85,7 +85,7 @@ struct game {
   int port;
 }
 
-### important functions
+### Important Functions
 
 This function handles all messages passed from the client to the server based on protocol in [requirements spec](https://github.com/cs50winter2022/nuggets-info/blob/main/REQUIREMENTS.md#network-protocol).
 ```c
@@ -126,9 +126,10 @@ This function generates an array of random number of gold for each gold pile, su
 ```c
 static void generateGoldDistribution(int numGoldPiles, int* arr);
 ```
-For a detailed list of prototypes and code please see [IMPLEMENTATION.md]
+For a detailed list of prototypes and code please see [IMPLEMENTATION.md](https://github.com/nitya308/nuggets-game/blob/main/IMPLEMENTATION.md)
 
-## player module
+## Player Module
+Handles each player in the game
 
 ### Data structures
 
@@ -154,7 +155,7 @@ struct playerSwap {
 };
 ```
 
-### important functions
+### Important Functions
 
 Updates the coordinates of the given player to the new coordinate give.
 ```c
@@ -193,6 +194,7 @@ char* player_summary(hashtable_t* allPlayers);
 
 ## Grid module
 Handles all functionality to do with the grid and calculates visibility
+
 ### Data structures
 Grid structure stores:
   2D array of chars, representing the grid
@@ -206,7 +208,7 @@ int nrows;
 int ncols;
 } grid_t;
 ```
-### important functions
+### Important Functions
 
 Takes int location input and grid structure.finds the location in the grid and states whether it is passage/room spot or not.
 ```c
@@ -221,3 +223,5 @@ Modifies the player’s seen-before set of locations to include the newly visibl
 ```c
 set_t* grid_updateView(grid_t* grid, int newlocation, set_t* seenBefore, set_t* playerLocations, counters_t* gold);
 ```
+
+For a detailed list of all functions and code explanations please see [IMPLEMENTATION.md](https://github.com/nitya308/nuggets-game/blob/main/IMPLEMENTATION.md)
