@@ -1,16 +1,17 @@
 # Nuggets Game
 ## CS50: Software Design and Implementation at Dartmouth College 🌲
 
-### Overview
+### Overview and Features
 This repository contains the code for the CS50 "Nuggets" game, in which players explore a set of rooms and passageways in search of gold nuggets.
-The rooms and passages are defined by a *map* loaded by the server at the start of the game.
-The gold nuggets are randomly distributed in *piles* within the rooms.
-Up to 26 players, and one spectator, may play a given game.
-Each player is randomly dropped into a room when joining the game.
-Players move about, collecting nuggets when they move onto a pile.
-When all gold nuggets are collected, the game ends and a summary is printed.
-The winner is the player who collects the most gold.
-Our map file is located in the `maps` folder, named `add-drop.txt`.
+* The rooms and passages are defined by a *map* loaded by the server at the start of the game.
+* The gold nuggets are randomly distributed in *piles* within the rooms.
+* Up to 26 players, and one spectator, may play a given game.
+* Each player is randomly dropped into a room when joining the game.
+* Players move about, collecting nuggets when they move onto a pile.
+* Players can only see the part of the grid directly in their line of sight, i.e. not blocked diagonally or directly by room walls. This is calculated by the grid module.
+* If a player moves into a spot occupied by another player, they are swapped.
+* When all gold nuggets are collected, the game ends and a summary is printed.
+* The winner is the player who collects the most gold.
 
 ## Client
 
