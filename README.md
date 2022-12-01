@@ -1,17 +1,60 @@
 # Nuggets Game
 ## CS50: Software Design and Implementation at Dartmouth College 🌲
 
-### Overview and Features
+### Overview
 This repository contains the code for the CS50 "Nuggets" game, in which players explore a set of rooms and passageways in search of gold nuggets.
 * The rooms and passages are defined by a *map* loaded by the server at the start of the game.
 * The gold nuggets are randomly distributed in *piles* within the rooms.
-* Up to 26 players, and one spectator, may play a given game.
 * Each player is randomly dropped into a room when joining the game.
 * Players move about, collecting nuggets when they move onto a pile.
-* Players can only see the part of the grid directly in their line of sight, i.e. not blocked diagonally or directly by room walls. This is calculated by the grid module.
 * If a player moves into a spot occupied by another player, they are swapped.
 * When all gold nuggets are collected, the game ends and a summary is printed.
 * The winner is the player who collects the most gold.
+
+### Features
+
+* Maps are parsed and loaded from text files similar to this:
+```
+  +----------+
+  |..........|                 +---------+
+  |..........####              |.........|                +-------+
+  |..........|                 +-----#---+                |.......|
+  +---------#+                       #              #######.......|
+            #                        #              #     +---#---+
+            #  +-----------+         #     +--------#+        #
+            ####...........##############  |.........|        #
+               |...........|            #  |.........|        #
+               +-----------+            ####.........|        #
+                                           +----#----+        #
+                                                #    +--------#--+
+     +---------------------------------+        #    |...........|
+     |.................................|        ######...........|
+     |.................................|        #    |...........|
+     |......+---------------+..........|        #    |...........|
+     |......|               |..........##########    +-----------+
+     |......|               |..........|
+     |......|               |..........|
+     |......|               |..........|
+     +------+               +----------+
+```
+
+* The server can handle up to 27 players at a given time. Messages between the server and client are parsed by the _message module_
+
+* Players can only see the part of the grid directly in their line of sight, i.e. not blocked diagonally or directly by room walls. They can also see previously visited rooms. This is calculated by the _grid module_.
+
+* If a player lands on the same location as another player, the two are swapped. A list of all other players and locations is thus kept to calculate potential swaps in any move.
+
+* A player can move in 8 directions:
+The eight movement keys are shown relative to the player (@) below.
+
+   |     |     |     |
+   |:---:|:---:|:---:|
+   |  y  |  k  |  u  |
+   |  h  |  @  |  l  |
+   |  b  |  j  |  n  |
+
+   A capital letter moves the player in that direction until a wall is hit (collecting all gold along the way).
+
 
 ## Client
 
